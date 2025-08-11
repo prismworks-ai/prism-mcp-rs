@@ -87,14 +87,18 @@ examples: ## Check all examples compile
 	@cargo check --example websocket_client --features websocket
 
 # Documentation
-docs: ## Generate comprehensive documentation with rustdoc integration
-	@echo "📖 Generating comprehensive documentation..."
-	@bash scripts/build-docs.sh
+docs: ## Generate documentation (separate from build process)
+	@echo "📖 Generating documentation..."
+	@bash scripts/generate-docs.sh
 
 docs-open: ## Generate and open documentation
 	@echo "📖 Generating and opening documentation..."
-	@bash scripts/build-docs.sh
+	@bash scripts/generate-docs.sh
 	@cargo doc --all-features --no-deps --document-private-items --open
+
+docs-rustdoc: ## Generate only rustdoc documentation
+	@echo "📚 Generating rustdoc..."
+	@cargo doc --all-features --no-deps
 
 docs-check: ## Check documentation quality
 	@echo "🔍 Checking documentation quality..."

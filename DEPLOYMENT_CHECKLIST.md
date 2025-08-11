@@ -1,6 +1,6 @@
 # prism-mcp-rs Deployment Checklist
 
-> Last Updated: 2025-08-11
+> Last Updated: 2025-08-11 (v0.1.0 Release)
 
 ## ✅ Crate Deployment Readiness
 
@@ -10,7 +10,7 @@
 - [x] 111 files included in package
 - [x] All examples compile
 - [x] Build passes with all features
-- [ ] Version number updated in Cargo.toml (currently 0.1.0)
+- [x] Version number updated in Cargo.toml (v0.1.0)
 
 ### Documentation
 - [x] Comprehensive rustdoc generation integrated
@@ -24,8 +24,8 @@
 - [x] Build passes with warnings (1 dead_code warning - acceptable)
 - [x] All features compile
 - [x] Examples demonstrate all major features
-- [ ] Run `cargo clippy` for final linting
-- [ ] Run `cargo fmt` for final formatting
+- [x] Run `cargo clippy` for final linting (completed)
+- [x] Run `cargo fmt` for final formatting (completed)
 
 ### Repository Hygiene
 - [x] .gitignore properly configured
@@ -33,8 +33,8 @@
 - [x] Build artifacts excluded from package
 - [x] Profiling data moved to .local/
 - [x] Test files excluded from package
-- [ ] Commit all changes
-- [ ] Tag release version
+- [x] Commit all changes (initial commit + build fix)
+- [x] Tag release version (v0.1.0)
 
 ## ⚠️ GitHub Push Readiness
 

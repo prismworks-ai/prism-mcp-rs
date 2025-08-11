@@ -34,27 +34,33 @@ fn main() {
 }
 
 fn ensure_directories() {
-    let dirs = vec!["docs", "docs/api", ".local", ".local/reports"];
-
-    for dir in dirs {
-        let path = Path::new(dir);
-        if !path.exists() {
-            fs::create_dir_all(path).unwrap_or_else(|_| panic!("Failed to create {dir} directory"));
-        }
-    }
+    // Skip directory creation during package builds
+    // These directories are only needed for local development
+    // and should not be created during cargo publish
+    
+    // let dirs = vec!["docs", "docs/api", ".local", ".local/reports"];
+    // 
+    // for dir in dirs {
+    //     let path = Path::new(dir);
+    //     if !path.exists() {
+    //         fs::create_dir_all(path).unwrap_or_else(|_| panic!("Failed to create {dir} directory"));
+    //     }
+    // }
 }
 
 fn cleanup_stray_files() {
-    // Move any profiling data to .local
-    let stray_files = vec!["build_rs_cov.profraw", "default.profraw"];
-
-    for file in stray_files {
-        let source = Path::new(file);
-        if source.exists() {
-            let dest = Path::new(".local").join(file);
-            fs::rename(source, dest).ok();
-        }
-    }
+    // Skip file cleanup during package builds
+    // This is only needed for local development
+    
+    // let stray_files = vec!["build_rs_cov.profraw", "default.profraw"];
+    // 
+    // for file in stray_files {
+    //     let source = Path::new(file);
+    //     if source.exists() {
+    //         let dest = Path::new(".local").join(file);
+    //         fs::rename(source, dest).ok();
+    //     }
+    // }
 }
 
 fn generate_api_docs() {

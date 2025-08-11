@@ -1,0 +1,7 @@
+cargo:warning=Generating API documentation...
+cargo:warning=Documentation generation complete
+cargo:warning=Adding improved documentation headers...
+cargo:warning=improved headers added successfully
+cargo:rerun-if-changed=docs/
+cargo:rerun-if-changed=src/
+cargo:rerun-if-changed=scripts/docs/

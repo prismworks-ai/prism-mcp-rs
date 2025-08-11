@@ -1,0 +1,8 @@
+# Files to ignore for rustfmt
+# Script files and generated code
+scripts/
+target/
+*.generated.rs
+*_generated.rs
+# Schema files if they're auto-generated (uncomment if needed)
+# schema/

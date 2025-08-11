@@ -1,0 +1,120 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage reports
+tarpaulin-report.html
+cobertura.xml
+lcov.info
+coverage/
+
+# Benchmarks
+/target/criterion/
+benchmark-comparison/
+benchmarks-results/
+
+# Documentation
+/target/doc/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Backup files
+*.bak
+*.backup
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Build artifacts
+/dist/
+/build/
+
+# Testing
+/test-results/
+
+# Profiling
+*.prof
+*.profraw
+perf.data*
+build_rs_cov.profraw
+
+# Security
+audit.json
+audit-results.json
+security-audit-results/
+
+# Local development
+.local/
+local/
+scratch/
+playground/
+my-docs/
+
+# Development analysis and reports (auto-generated)
+dependency-analysis/
+license-check-results/
+.local-ci-status
+
+# Personal/Development files
+*_SUMMARY.md
+*_OVERVIEW.md
+*_PLAN.md
+*upgrade_plan*
+*personal*
+*private*
+*notes*
+*todo*
+*draft*
+
+# AI Context system (local development aid)
+.aicontext/
+
+# Deployment and release scripts (keep public CI/dev scripts)
+scripts/prepare_open_source.sh
+scripts/deploy.sh
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.generated.*
+
+# Enterprise-related content (should not leak to OSS)
+*enterprise*
+*commercial*
+*proprietary*
+
+# AI Context system files
+.aicontext/
+
+# Local development files
+.local/

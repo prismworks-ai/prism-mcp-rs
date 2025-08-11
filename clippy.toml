@@ -1,0 +1,61 @@
+# Clippy configuration file
+# See: https://doc.rust-lang.org/clippy/configuration.html
+# Using only stable/valid clippy configuration options
+
+# Avoid false positives by increasing the threshold for some lints
+cognitive-complexity-threshold = 30
+type-complexity-threshold = 250
+too-many-arguments-threshold = 8
+too-many-lines-threshold = 200
+enum-variant-size-threshold = 200
+trivial-copy-size-limit = 128
+single-char-binding-names-threshold = 4
+literal-representation-threshold = 16384
+
+# String matching
+max-suggested-slice-pattern-length = 3
+
+# Documentation
+doc-valid-idents = [
+    "HTTP", "HTTPS", "TCP", "UDP", "WebSocket", "JSON", "RPC", "API", "SDK",
+    "MCP", "LLM", "AI", "URL", "URI", "UUID", "SHA", "MD5", "UTF", "ASCII",
+    "HTML", "CSS", "JS", "JavaScript", "TypeScript", "YAML", "TOML", "XML",
+    "OAuth", "JWT", "TLS", "SSL", "gRPC", "REST", "CRUD", "SQL", "NoSQL",
+    "CLI", "GUI", "IDE", "OS", "POSIX", "GNU", "BSD", "MIT", "GPL", "LGPL",
+    "GitHub", "GitLab", "Docker", "Kubernetes", "AWS", "GCP", "Azure"
+]
+
+# Allowed/denied names
+allowed-scripts = ["Latin", "Cyrillic", "Greek", "Arabic", "Hebrew", "Hiragana", "Katakana", "Han"]
+
+# Function complexity
+avoid-breaking-exported-api = true
+msrv = "1.85"
+
+# Suppress certain lints for specific patterns
+allowed-idents-below-min-chars = ["a", "b", "c", "i", "j", "k", "x", "y", "z", "id", "db", "tx", "rx"]
+
+# Path-specific configurations
+disallowed-names = ["foo", "bar", "baz", "quux"]
+
+# Cargo configuration
+cargo-ignore-publish = false
+
+# Enum variant names
+enum-variant-name-threshold = 3
+
+# Vec/String capacity
+vec-box-size-threshold = 4096
+max-trait-bounds = 3
+
+# Expression handling
+allow-expect-in-tests = true
+allow-unwrap-in-tests = true
+
+# Arithmetic operations
+arithmetic-side-effects-allowed = ["*", "/", "%"]
+arithmetic-side-effects-allowed-unary = ["-"]
+
+# Allow certain clippy lints in test code
+allow-print-in-tests = true
+allow-dbg-in-tests = true

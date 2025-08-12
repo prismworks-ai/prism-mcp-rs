@@ -16,6 +16,11 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch:
 
+# Cancel in-progress runs when a new push happens
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -31,7 +36,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       
       - name: Install cargo-outdated
-        uses: taiki-e/install-action@cargo-outdated
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-outdated
       
       - name: Check outdated dependencies
         run: |

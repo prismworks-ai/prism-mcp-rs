@@ -1,7 +1,7 @@
-// ! complete tool validation system for MCP SDK
-// !
-// ! Module provides complete parameter validation, type checking,
-// ! and coercion capabilities for tool arguments according to JSON Schema specifications.
+//! Complete tool validation system for MCP SDK
+//!
+//! This module provides complete parameter validation, type checking,
+//! and coercion capabilities for tool arguments according to JSON Schema specifications.
 
 use crate::core::error::{McpError, McpResult};
 use serde_json::{Map, Value};

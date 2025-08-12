@@ -100,25 +100,25 @@ cargo build --features "server-full" --examples  # All server examples
 
 ## Example Categories
 
-### 🚀 Getting Started
+### Getting Started
 Start with these examples to understand the basics:
 1. `convenience_methods_demo` - Simplest server setup
 2. `enhanced_echo_server` - Basic server with tools
 3. `transport_selection_guide` - Choose the right transport
 
-### 🏗️ Building Applications
+### Building Applications
 For building production applications:
 1. `production_error_handling_demo` - Error handling patterns
 2. `advanced_features_showcase` - Advanced MCP features
 3. `database_server` - Persistent server example
 
-### 🔄 Advanced Features
+### Advanced Features
 For leveraging advanced MCP 2025 features:
 1. `advanced_2025_features` - Latest specification features
 2. `bidirectional_communication_demo` - Server-initiated requests
 3. `streaming_http_showcase` - Large payload handling
 
-### 📊 Performance & Testing
+### Performance & Testing
 For optimization and benchmarking:
 1. `performance_benchmarks` - Transport comparison
 2. `transport_benchmark` - Detailed benchmarking

@@ -1,7 +1,7 @@
-// ! Error types for the MCP Rust SDK
-// !
-// ! Module defines all error types that can occur within the MCP SDK,
-// ! providing structured error handling with detailed context.
+//! Error types for the MCP Rust SDK
+//!
+//! This module defines all error types that can occur within the MCP SDK,
+//! providing structured error handling with detailed context.
 
 use thiserror::Error;
 

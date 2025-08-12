@@ -258,7 +258,7 @@ async fn demo_completion_api() -> McpResult<()> {
     };
     let uri_arg = CompletionArgument {
         name: "uri".to_string(),
-        value: "file:///docs/api/".to_string(),
+        value: "file:///docs/".to_string(),
     };
 
     match server
@@ -267,7 +267,7 @@ async fn demo_completion_api() -> McpResult<()> {
     {
         Ok(completions) => {
             info!("[x] Resource completion successful!");
-            info!("Note: Input: 'file:///docs/api/'");
+            info!("Note: Input: 'file:///docs/'");
             info!("Note: Suggestions: {:?}", completions);
         }
         Err(e) => {

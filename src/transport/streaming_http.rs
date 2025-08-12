@@ -232,7 +232,7 @@ pub struct StreamingConfig {
     pub chunk_threshold: usize,
     /// Chunk size for streaming operations
     pub chunk_size: usize,
-    /// Enable complete compression
+    /// Enable compression support
     pub enable_compression: bool,
     /// Compression algorithm to use
     pub compression_type: CompressionType,
@@ -679,7 +679,7 @@ impl ContentAnalyzer {
     }
 }
 
-/// complete streaming buffer with flow control
+/// Streaming buffer with flow control
 #[cfg(feature = "streaming-http")]
 pub struct StreamingBuffer {
     buffer: BytesMut,
@@ -782,7 +782,7 @@ impl StreamingBuffer {
     }
 }
 
-/// Streaming compressor for complete compression algorithms
+/// Streaming compressor for multiple compression algorithms
 #[cfg(feature = "streaming-compression")]
 pub struct StreamingCompressor {
     compression_type: CompressionType,
@@ -871,7 +871,7 @@ impl StreamingCompressor {
     }
 }
 
-/// Streaming HTTP client transport with complete features
+/// Streaming HTTP client transport with advanced features
 #[cfg(feature = "streaming-http")]
 pub struct StreamingHttpClientTransport {
     client: reqwest::Client,

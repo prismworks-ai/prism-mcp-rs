@@ -1,13 +1,14 @@
 # API Reference
 
-> **Auto-generated from Rust source code**  
-> Last Updated: $(date +"%Y-%m-%d %H:%M:%S")
+## Overview
 
-## Documentation
+The complete API documentation for the Prism MCP SDK is automatically generated and hosted on docs.rs when the crate is published. This page provides quick links to access the documentation.
 
-- [Online Documentation](https://docs.rs/prism-mcp-rs) (once published)
-- [Local Documentation](../target/doc/prism_mcp_rs/index.html) (run `cargo doc --open`)
-- [GitHub Repository](https://github.com/prismworks-ai/prism-mcp-rs)
+## Documentation Links
+
+- **[Online Documentation](https://docs.rs/prism-mcp-rs)** - Official API documentation (available after crate publication)
+- **[Local Documentation](../target/doc/prism_mcp_rs/index.html)** - Generate locally with `cargo doc --open`
+- **[GitHub Repository](https://github.com/prismworks-ai/prism-mcp-rs)** - Source code and examples
 
 ## Core Modules
 
@@ -57,12 +58,4 @@ server.run_stdio().await?;
 
 ## Feature Flags
 
-| Feature | Description | Default |
-|---------|-------------|--------|
-| `stdio` | STDIO transport support | ✅ |
-| `http` | HTTP transport with Axum server | ❌ |
-| `websocket` | WebSocket transport | ❌ |
-| `streaming-http` | Streaming HTTP support | ❌ |
-| `validation` | JSON Schema validation | ❌ |
-| `plugin` | Plugin system support | ❌ |
-| `full` | All features enabled | ❌ |
+For a complete list of available features and their descriptions, see the [main README](../README.md#available-features).

@@ -1,7 +1,7 @@
-// ! Core abstractions and types for the MCP SDK
-// !
-// ! Module contains the fundamental building blocks for MCP implementations,
-// ! including error handling, resource management, tool execution, and prompt handling.
+//! Core abstractions and types for the MCP SDK
+//!
+//! This module contains the fundamental building blocks for MCP implementations,
+//! including error handling, resource management, tool execution, and prompt handling.
 
 pub mod completion;
 pub mod completion_handlers;

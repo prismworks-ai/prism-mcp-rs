@@ -104,7 +104,7 @@ serde_yaml = { version = "0.9", optional = true }
 [dev-dependencies]
 tokio-test = "0.4"
 tempfile = "3.8"
-criterion = "0.7"
+criterion = { version = "0.5", features = ["html_reports"] }
 pretty_assertions = "1.4"
 chrono = { version = "0.4", features = ["serde"] }
 futures = "0.3"
@@ -124,6 +124,9 @@ streaming-http = ["http", "bytes", "futures", "tokio-stream", "http-body-util"]
 streaming-http2 = ["streaming-http", "h2", "hyper"]
 streaming-compression = ["streaming-http", "flate2", "brotli", "zstd"]
 streaming-full = ["streaming-http", "streaming-http2", "streaming-compression"]
+
+# Benchmark features
+bench = ["http", "websocket", "plugin"]
 
 # Convenience Methods Demo
 [[example]]
@@ -218,3 +221,20 @@ required-features = ["http", "tracing-subscriber"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+
+# Benchmarks
+[[bench]]
+name = "client_benchmarks"
+harness = false
+required-features = ["bench"]
+
+[[bench]]
+name = "server_benchmarks"
+harness = false
+required-features = ["bench"]
+
+[[bench]]
+name = "plugin_benchmarks"
+harness = false
+required-features = ["bench"]

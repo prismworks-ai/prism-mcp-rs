@@ -1,13 +1,13 @@
-// ! Plugin System for Dynamic Tool Loading
-// !
-// ! Module provides a complete plugin system for dynamically loading and managing
-// ! MCP tools at runtime. It supports:
-// !
-// ! - Dynamic library loading (.so, .dll, .dylib)
-// ! - Hot reloading without server restart
-// ! - Configuration-based plugin management
-// ! - Automatic tool discovery and registration
-// ! - Plugin isolation and lifecycle management
+//! Plugin System for Dynamic Tool Loading
+//!
+//! This module provides a complete plugin system for dynamically loading and managing
+//! MCP tools at runtime. It supports:
+//!
+//! - Dynamic library loading (.so, .dll, .dylib)
+//! - Hot reloading without server restart
+//! - Configuration-based plugin management
+//! - Automatic tool discovery and registration
+//! - Plugin isolation and lifecycle management
 
 pub mod api;
 pub mod config;

@@ -27,7 +27,7 @@ pub struct ServerConfig {
     pub max_concurrent_requests: usize,
     /// Request timeout in milliseconds
     pub request_timeout_ms: u64,
-    /// Whether to validate all incoming requests
+    /// Whether to validate incoming requests
     pub validate_requests: bool,
     /// Whether to enable detailed logging
     pub enable_logging: bool,

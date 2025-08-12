@@ -1,8 +1,8 @@
-// ! Tool system for MCP servers
-// !
-// ! Module provides the abstraction for implementing and managing tools in MCP servers.
-// ! Tools are functions that can be called by clients to perform specific operations.
-// ! improved with complete parameter validation, type checking, and metadata support.
+//! Tool system for MCP servers
+//!
+//! This module provides the abstraction for implementing and managing tools in MCP servers.
+//! Tools are functions that can be called by clients to perform specific operations,
+//! enhanced with complete parameter validation, type checking, and metadata support.
 
 use async_trait::async_trait;
 use serde_json::Value;
@@ -185,7 +185,7 @@ impl Tool {
         result
     }
 
-    /// Execute the tool without validation or performance tracking (for complete use cases)
+    /// Execute the tool without validation or performance tracking (for specialized use cases)
     pub async fn call_unchecked(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
         if !self.enabled {
             return Err(McpError::validation(format!(
@@ -485,7 +485,7 @@ impl ToolHandler for TimestampTool {
     }
 }
 
-/// Builder for creating tools with fluent API, complete validation, and improved metadata
+/// Builder for creating tools with fluent API, validation, and enhanced metadata
 pub struct ToolBuilder {
     name: String,
     description: Option<String>,
@@ -907,7 +907,7 @@ pub trait ValidatedToolHandler: ToolHandler {
 // improved Built-in Tool Examples
 // ============================================================================
 
-/// improved calculator tool with complete validation
+/// Calculator tool with comprehensive validation
 pub struct CalculatorTool;
 
 #[async_trait]
@@ -1001,7 +1001,7 @@ impl ValidatedToolHandler for CalculatorTool {
     }
 }
 
-/// Text processing tool with complete string validation
+/// Text processing tool with string validation
 pub struct TextProcessorTool;
 
 #[async_trait]

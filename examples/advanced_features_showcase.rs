@@ -265,7 +265,7 @@ async fn demo_completion_api() -> McpResult<()> {
     };
     let uri_arg = CompletionArgument {
         name: "uri".to_string(),
-        value: "file:///docs/api/".to_string(),
+        value: "file:///docs/".to_string(),
     };
 
     match composite_handler
@@ -273,7 +273,7 @@ async fn demo_completion_api() -> McpResult<()> {
         .await
     {
         Ok(completions) => {
-            println!("   Input: 'file:///docs/api/'");
+            println!("   Input: 'file:///docs/'");
             println!("   Suggestions: {completions:?}");
         }
         Err(e) => {

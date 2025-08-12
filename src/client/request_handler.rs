@@ -92,10 +92,10 @@ pub trait ClientRequestHandler: Send + Sync {
     async fn handle_ping(&self, params: PingParams) -> McpResult<PingResult>;
 }
 
-/// Default implementation that rejects all server requests
+/// Default implementation that rejects server requests by default
 ///
 /// This is the default request handler that provides minimal responses
-/// to all server-initiated requests. It's used when no custom handler
+/// to server-initiated requests. It's used when no custom handler
 /// is configured.
 pub struct DefaultClientRequestHandler;
 
@@ -195,7 +195,7 @@ impl InteractiveClientRequestHandler {
 
     /// Set whether to auto-accept elicitation requests
     ///
-    /// When enabled, all elicitation requests are automatically accepted
+    /// When enabled, elicitation requests are automatically accepted
     /// with empty form data. This is useful for testing and automation.
     ///
     /// # Arguments

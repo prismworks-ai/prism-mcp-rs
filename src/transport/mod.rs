@@ -1,7 +1,7 @@
-// ! Transport layer implementations
-// !
-// ! Module provides concrete implementations of the transport traits
-// ! for different communication protocols including STDIO, HTTP, and WebSocket.
+//! Transport layer implementations
+//!
+//! This module provides concrete implementations of the transport traits
+//! for different communication protocols including STDIO, HTTP, and WebSocket.
 
 pub mod traits;
 

@@ -1,10 +1,10 @@
-// ! MCP protocol implementation (2025-06-18)
-// !
-// ! Module contains the core protocol types and message handling for the
-// ! Model Context Protocol version 2025-06-18, including JSON-RPC message
-// ! serialization, validation, and new features like improved content system,
-// ! annotations, improved capabilities, full metadata support, batch operations,
-// ! and complete schema introspection.
+//! MCP protocol implementation (2025-06-18)
+//!
+//! This module contains the core protocol types and message handling for the
+//! Model Context Protocol version 2025-06-18, including JSON-RPC message
+//! serialization, validation, and new features like improved content system,
+//! annotations, improved capabilities, full metadata support, batch operations,
+//! and complete schema introspection.
 
 pub mod batch;
 pub mod discovery;

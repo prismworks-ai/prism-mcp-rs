@@ -1,6 +1,6 @@
-// ! MCP server implementation
-// !
-// ! Module provides the main server implementation for the Model Context Protocol.
+//! MCP server implementation
+//!
+//! This module provides the main server implementation for the Model Context Protocol.
 
 pub mod discovery_handler;
 pub mod handlers;

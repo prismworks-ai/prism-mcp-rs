@@ -1,10 +1,10 @@
 # Scripts Directory
 
-> **Organized automation scripts for the MCP Protocol SDK**
+> **Organized automation scripts for the Prism MCP SDK**
 
 This directory contains all automation and utility scripts for the project, organized by purpose.
 
-# Directory Structure
+## Directory Structure
 
 ```
 scripts/
@@ -15,9 +15,9 @@ scripts/
 └── doc-templates/ # Documentation templates
 ```
 
-# Categories
+## Categories
 
-# 📊 CI Scripts (`ci/`)
+## CI Scripts (`ci/`)
 
 Scripts for continuous integration and testing:
 
@@ -37,9 +37,9 @@ Scripts for continuous integration and testing:
 cp scripts/ci/pre-push.git/hooks/
 ```
 
-# Documentation Scripts (`docs/`)
+## Documentation Scripts (`docs/`)
 
-improved documentation generation with v2 headers:
+Improved documentation generation with v2 headers:
 
 - `generate-docs-v2.sh` - Generate docs with improved headers
 - `add-doc-headers-v2.py` - Add v2 headers with 2-click issue reporting
@@ -68,7 +68,7 @@ make docs
 make docs-headers # Headers only
 ```
 
-# 🛠️ Development Scripts (`dev/`)
+## Development Scripts (`dev/`)
 
 Development environment setup and verification:
 
@@ -82,7 +82,7 @@ Development environment setup and verification:
 # Verify environment./scripts/dev/verify-environment.sh
 ```
 
-# Utility Scripts (`utils/`)
+## Utility Scripts (`utils/`)
 
 Various utility scripts for project maintenance:
 
@@ -103,30 +103,30 @@ Various utility scripts for project maintenance:
 # Create GitHub labels./scripts/utils/create-labels.sh
 ```
 
-# Documentation Templates (`doc-templates/`)
+## Documentation Templates (`doc-templates/`)
 
 Templates for documentation headers:
 
 - `header-manual.md` - Template for manually written docs
 - `header-generated.md` - Template for auto-generated docs
 
-# Best Practices
+## Best Practices
 
-# Script Organization
+### Script Organization
 
 1. **Keep scripts focused** - Each script should do one thing well
 2. **Use appropriate categories** - Place scripts in the correct subdirectory
 3. **Document scripts** - Include usage comments at the top of each script
 4. **Make scripts executable** - Use `chmod +x script.sh` for shell scripts
 
-# Documentation Generation Workflow
+### Documentation Generation Workflow
 
 1. **Write/update source code** with proper documentation comments
 2. **Run `make docs`** to generate documentation with v2 headers
 3. **Check quality** with `make docs-check`
 4. **Commit changes** including updated documentation
 
-# 2-Click Issue Reporting System
+### 2-Click Issue Reporting System
 
 All documentation now includes a 2-click issue reporting system:
 
@@ -140,7 +140,7 @@ The system automatically:
 - Includes document metadata (path, type, URL)
 - Provides a structured template for the issue description
 
-# Integration with Build System
+## Integration with Build System
 
 The documentation scripts are integrated with the build system:
 
@@ -148,29 +148,29 @@ The documentation scripts are integrated with the build system:
 - **Makefile** - Provides convenient targets for documentation tasks
 - **GitHub Actions** - Runs documentation generation in CI/CD
 
-# Environment Requirements
+## Environment Requirements
 
 - **Python 3.6+** - For documentation scripts
 - **Rust toolchain** - For cargo doc generation
 - **Bash** - For shell scripts
 - **Git** - For hooks and version control
 
-# Troubleshooting
+## Troubleshooting
 
-# Permission Denied
+### Permission Denied
 ```bash
 # Make scripts executable
 chmod +x scripts/**/*.sh
 chmod +x scripts/**/*.py
 ```
 
-# Python Module Not Found
+### Python Module Not Found
 ```bash
 # Install required Python packages
 pip3 install --user -r scripts/requirements.txt
 ```
 
-# Documentation Not Generating
+### Documentation Not Generating
 ```bash
 # Check script permissions
 ls -la scripts/docs/
@@ -182,7 +182,7 @@ bash -x scripts/docs/generate-docs-v2.sh
 python3 --version # Should be 3.6+
 ```
 
-# Contributing
+## Contributing
 
 When adding new scripts:
 
@@ -192,6 +192,6 @@ When adding new scripts:
 4. Make script executable: `chmod +x script.sh`
 5. Test completely before committing
 
-# License
+## License
 
-All scripts in this directory are part of the MCP Protocol SDK and are licensed under the same terms as the main project.
+All scripts in this directory are part of the Prism MCP SDK and are licensed under the same terms as the main project.

@@ -1,8 +1,8 @@
-// ! Complete MCP Protocol Types for 2025-06-18 Specification
-// !
-// ! Module contains all the core types defined by the Model Context Protocol
-// ! specification version 2025-06-18, with simplified JSON-RPC (no batching) and
-// ! improved metadata handling
+//! Complete MCP Protocol Types for 2025-06-18 Specification
+//!
+//! This module contains all the core types defined by the Model Context Protocol
+//! specification version 2025-06-18, with simplified JSON-RPC (no batching) and
+//! improved metadata handling
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -373,7 +373,7 @@ pub struct EmbeddedResource {
     pub meta: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// ContentBlock union type (2025-06-18 complete with ResourceLink)
+/// ContentBlock union type (2025-06-18 including ResourceLink)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type")]
 pub enum ContentBlock {
@@ -1185,7 +1185,7 @@ pub struct JsonRpcNotification {
     pub params: Option<serde_json::Value>,
 }
 
-/// Complete JSON-RPC message types (2025-06-18)
+/// JSON-RPC message types (2025-06-18)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum JsonRpcMessage {

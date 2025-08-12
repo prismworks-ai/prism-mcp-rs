@@ -13,13 +13,13 @@ use std::collections::HashMap;
 // Schema Introspection Types
 // ============================================================================
 
-/// Complete introspection result with full schema information
+/// Introspection result with schema information
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct IntrospectionResult {
     /// Protocol version and compatibility information
     pub protocol: ProtocolInfo,
 
-    /// Complete method schemas
+    /// Method schemas
     pub methods: MethodSchemas,
 
     /// Type definitions used across the protocol
@@ -55,7 +55,7 @@ pub struct ProtocolInfo {
     pub version_features: HashMap<String, Vec<String>>,
 }
 
-/// Complete method schemas with full documentation
+/// Method schemas with documentation
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct MethodSchemas {
     /// Request methods (client to server)
@@ -71,7 +71,7 @@ pub struct MethodSchemas {
     pub subscriptions: Vec<MethodSchema>,
 }
 
-/// Complete schema for a single method
+/// Schema for a single method
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct MethodSchema {
     /// Method name
@@ -86,10 +86,10 @@ pub struct MethodSchema {
     /// Method category
     pub category: String,
 
-    /// Full JSON Schema for parameters
+    /// JSON Schema for parameters
     pub params: serde_json::Value,
 
-    /// Full JSON Schema for result
+    /// JSON Schema for result
     pub result: serde_json::Value,
 
     /// Error schemas Method can return
@@ -519,7 +519,7 @@ impl IntrospectionProvider {
         }
     }
 
-    /// Build complete introspection for MCP 2025-06-18
+    /// Build introspection for MCP 2025-06-18
     pub fn build_complete_introspection(&self) -> IntrospectionResult {
         let mut builder = SchemaBuilder::new();
 

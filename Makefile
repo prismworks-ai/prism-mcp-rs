@@ -1,5 +1,17 @@
-# Makefile for MCP Protocol SDK
-# Provides easy commands to run CI checks locally before pushing
+# Makefile for Prism MCP SDK
+#
+# This Makefile serves as the primary developer interface, providing convenient
+# targets for common development tasks. It wraps complex commands in simple,
+# memorable targets.
+#
+# For detailed documentation about the build system and development workflow,
+# see DEVELOPMENT.md in the project root.
+#
+# Quick usage:
+#   make quick       - Run quick validation before committing
+#   make check       - Run standard CI checks before pushing
+#   make full        - Run complete CI pipeline
+#   make help        - Show all available targets
 
 .PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean install-tools setup-hooks
 
@@ -35,7 +47,7 @@ check: ## Run standard CI checks (mirrors GitHub Actions)
 # Full CI pipeline
 full: ## Run full CI pipeline including all matrix combinations
 	@echo "🚀 Running full CI pipeline..."
-	@./scripts/local-ci.sh --full
+	@./scripts/ci/local-ci.sh --full
 
 # Formatting
 fmt: ## Check code formatting
@@ -87,13 +99,14 @@ examples: ## Check all examples compile
 	@cargo check --example websocket_client --features websocket
 
 # Documentation
-docs: ## Generate documentation (separate from build process)
+docs: ## Generate documentation
 	@echo "📖 Generating documentation..."
-	@bash scripts/generate-docs.sh
+	@cargo doc --all-features --no-deps
+	@echo "✅ Documentation generated at target/doc/prism_mcp_rs/index.html"
+	@echo "🌐 After publishing: https://docs.rs/prism-mcp-rs"
 
 docs-open: ## Generate and open documentation
 	@echo "📖 Generating and opening documentation..."
-	@bash scripts/generate-docs.sh
 	@cargo doc --all-features --no-deps --document-private-items --open
 
 docs-rustdoc: ## Generate only rustdoc documentation
@@ -104,12 +117,8 @@ docs-check: ## Check documentation quality
 	@echo "🔍 Checking documentation quality..."
 	@python3 scripts/docs/check-docs-quality.py
 
-docs-sync: docs docs-check ## Generate docs with v3 headers and check quality
-	@echo "✅ Documentation synchronized with v3 headers"
-
-docs-headers: ## Update documentation headers to v3
-	@echo "🏷️ Updating documentation headers to v3..."
-	@python3 scripts/docs/add-doc-headers-v3.py
+docs-sync: docs-rustdoc docs-check ## Generate rustdoc and check quality
+	@echo "✅ Documentation generated and checked"
 
 # Security
 security: ## Run security audit
@@ -138,6 +147,25 @@ coverage: ## Generate code coverage report
 	@cargo llvm-cov report --cobertura --output-path .local/reports/cobertura.xml
 	@cargo llvm-cov report
 	@echo "Coverage report generated in .local/reports/ directory"
+
+# Reports (NEW)
+reports: ## Generate coverage and benchmark reports in markdown format
+	@echo "📊 Generating coverage and benchmark reports..."
+	@./scripts/ci/local-ci-enhanced.sh --reports
+
+report-coverage: ## Generate markdown coverage report
+	@echo "📊 Generating coverage report..."
+	@chmod +x scripts/ci/generate-coverage-report.sh scripts/ci/simple-coverage.sh
+	@./scripts/ci/generate-coverage-report.sh || ./scripts/ci/simple-coverage.sh
+	@echo "Coverage report saved to reports/coverage-report.md"
+
+report-bench: ## Generate markdown benchmark report
+	@echo "⚡ Generating benchmark report..."
+	@chmod +x scripts/ci/run-benchmarks.sh
+	@cargo build --benches --features bench
+	@./scripts/ci/run-benchmarks.sh
+	@echo "Benchmark report saved to reports/benchmark-report.md"
+
 
 coverage-open: ## Generate and open coverage report
 	@$(MAKE) coverage
@@ -173,10 +201,10 @@ install-tools: ## Install required development tools
 # Git hooks
 setup-hooks: ## Set up Git hooks for automatic CI
 	@echo "🪝 Setting up Git hooks..."
-	@cp scripts/pre-push .git/hooks/pre-push
+	@cp scripts/ci/pre-push .git/hooks/pre-push
 	@chmod +x .git/hooks/pre-push
 	@echo "✅ Pre-push hook installed!"
-	@echo "   Now 'git push' will automatically run CI checks"
+	@echo "   Now 'git push' will automatically run comprehensive CI checks"
 
 remove-hooks: ## Remove Git hooks
 	@echo "🪝 Removing Git hooks..."
@@ -196,15 +224,15 @@ push-ready: check ## Check if code is ready to push
 # CI simulation
 ci-local: ## Run exact same checks as GitHub Actions
 	@echo "🚀 Running local CI (mirrors GitHub Actions)..."
-	@./scripts/local-ci.sh
+	@./scripts/ci/local-ci.sh
 
 ci-quick: ## Quick CI check
 	@echo "🚀 Running quick CI check..."
-	@./scripts/local-ci.sh --quick
+	@./scripts/ci/local-ci.sh --quick
 
 ci-full: ## Full CI pipeline with all matrix combinations
 	@echo "🚀 Running full CI pipeline..."
-	@./scripts/local-ci.sh --full
+	@./scripts/ci/local-ci.sh --full
 
 # Release preparation
 release-check: ## Comprehensive check before release

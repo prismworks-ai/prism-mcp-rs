@@ -17,267 +17,147 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)
 [![GitHub release](https://img.shields.io/github/release/prismworks-ai/prism-mcp-rs.svg)](https://github.com/prismworks-ai/prism-mcp-rs/releases)
 [![Discord](https://img.shields.io/discord/123456789?logo=discord&label=Discord)](https://discord.gg/prismworks)
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](https://github.com/sponsors/prismworks-ai)
-
-Production-ready Rust implementation of the Model Context Protocol (MCP), providing comprehensive client and server implementations with multiple transport support and a revolutionary plugin architecture for tool development.
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-Support-pink.svg)](https://github.com/sponsors/prismworks-ai)
 
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
-> 📊 For live CI/CD status and all badges, visit our [GitHub repository](https://github.com/prismworks-ai/prism-mcp-rs)
+## Overview
 
-## Why Choose Prism MCP SDK
+The Prism MCP SDK provides a Rust implementation of the Model Context Protocol with a distinctive plugin architecture. This architecture enables runtime composition of MCP servers through dynamically loadable plugins, transforming how MCP tools are developed, distributed, and deployed.
 
-### Distinctive Features
+## Documentation
 
-#### Plugin Architecture for Tool Development
-- **Decoupled Tools** - Tools are completely decoupled from MCP servers, enabling independent development and deployment
-- **Dynamic Loading** - Add and remove tools at runtime without server restarts
-- **Separate Crate Distribution** - Deploy tools as independent crates with their own versioning and release cycles
-- **Apache 2.0 Protection** - Plugin developers maintain full control over licensing of their tools while benefiting from SDK protection
-- **Tool Ecosystem Foundation** - Architecture ready for community plugin contributions and marketplace development
+- [Development Guide](DEVELOPMENT.md) - Build system, workflows, and contribution process
+- [Plugin Development Guide](docs/PLUGIN_GUIDE.md) - Complete guide to building plugins
+- [Plugin Types Reference](docs/PLUGIN_TYPES.md) - Detailed component specifications
+- [API Documentation](https://docs.rs/prism-mcp-rs) - Complete API reference
+- [Contributing Guide](CONTRIBUTING.md) - Code of conduct and submission guidelines
 
-#### Unmatched Developer Experience
-- **Prism CLI Integration** - Comprehensive CLI tools via [prism-cli](https://crates.io/crates/prism-cli) ([GitHub](https://github.com/prismworks-ai/mcp-rs-dev/tree/main/tools/prism-cli))
-- **One-Shot Commands** - SDK convenience commands via `prs` command for rapid development
-- **Project Scaffolding** - Generate complete MCP projects with a single command
-- **Tool Testing Framework** - Built-in testing utilities for plugin development
-- **Hot Reload Support** - Develop tools with instant feedback during development
+## Key Innovation: Plugin architecture
 
-#### Complete MCP 2025-06-18 Specification Support
-- Full audio content support for multimodal interactions
-- Advanced annotation system for tools and content metadata
-- Argument autocompletion for improved developer experience
-- File system roots for controlled resource access
-- Bidirectional communication enabling server-initiated requests
-- Resource templates with pattern-based discovery
+### Traditional MCP development challenges
 
-#### Production Architecture
-- Zero unsafe code - 100% safe Rust implementation
-- 65%+ test coverage with comprehensive test suite
-- Memory safety guaranteed through Rust's ownership system
-- Production-tested implementations
-
-#### Performance Characteristics
-- 100,000+ messages/second throughput (WebSocket)
-- Sub-millisecond latency for local operations
-- 10MB base memory footprint
-- Support for 10,000+ concurrent connections
-
-#### Transport Layer Features
-- HTTP/2 with server push and multiplexing
-- WebSocket with automatic compression
-- Intelligent reconnection with exponential backoff
-- Transport-agnostic API design
-
-### Feature Comparison
-
-| Feature | Prism MCP SDK | Other Rust SDKs | TypeScript SDK |
-|---------|---------------|-----------------|----------------|
-| MCP 2025-06-18 Specification | Complete | Partial | Partial |
-| **Plugin Architecture** | **Complete** | No | No |
-| ├ Tool Handlers | Yes | Static only | Static only |
-| ├ Resource Handlers | Yes | Static only | Static only |
-| ├ Prompt Handlers | Yes | No | Limited |
-| ├ Completion Handlers | Yes | No | Limited |
-| └ Hot Reload Support | Yes | No | No |
-| Dynamic Loading | Runtime | Compile-time | Limited |
-| CLI Development Tools | Yes ([prism-cli](https://crates.io/crates/prism-cli)) | No | No |
-| Audio Content Support | Yes | No | Limited |
-| Bidirectional Communication | Yes | No | Yes |
-| Zero Unsafe Code | Yes | No | N/A |
-| HTTP/2 Server Push | Yes | No | No |
-| WebSocket Compression | Yes | Limited | Yes |
-| Test Coverage | 65%+ | ~40% | ~50% |
-| Production Examples | 15+ | 3-5 | 5-7 |
-| Component Isolation | Complete | None | Partial |
-| Independent Versioning | Per-plugin | Monolithic | Monolithic |
-| Apache 2.0 Plugin Protection | Yes | No | No |
-
-## Core Features
-
-### Protocol Implementation
-- Complete MCP protocol compliance
-- Support for WebSocket, HTTP/2, HTTP/1.1, and stdio transports
-- Asynchronous operations using Tokio runtime
-- Type-safe API with compile-time validation
-- Zero unsafe code throughout the codebase
-
-### Plugin System
-
-#### Architecture Overview
-
-Plugins are dynamically loadable libraries that extend MCP server capabilities without requiring server modifications or restarts. Each plugin can provide multiple component types:
-
-- **Tools**: Executable functions that perform operations
-- **Resources**: Data providers accessible via URI patterns
-- **Prompts**: Template generators for LLM interactions
-- **Completions**: Autocomplete providers for enhanced UX
-
-#### Key Capabilities
-
-- **Runtime Loading**: Load/unload plugins without server restart
-- **Component Isolation**: Each plugin operates in its own namespace
-- **Version Management**: Independent versioning per plugin
-- **Hot Reload**: Update plugins while server is running
-- **Distribution Flexibility**: Via crates.io, git, or binaries
-
-### Developer Tools
-- Integration with [prism-cli](https://crates.io/crates/prism-cli) for project management
-- Built-in debugging and profiling support
-- Extensive example collection
-- Complete API documentation
-- Testing utilities and mocks
-
-## Installation
-
-```toml
-[dependencies]
-prism-mcp-rs = "0.1.0"
-```
-
-With optional features:
-
-```toml
-[dependencies]
-prism-mcp-rs = {
-    version = "0.1.0",
-    features = ["websocket", "http", "stdio", "plugin", "full"]
-}
-```
-
-### Available Features
-
-| Feature | Description |
-|---------|-------------|
-| `websocket` | WebSocket transport support |
-| `http` | HTTP/1.1 and HTTP/2 transport |
-| `stdio` | Standard I/O transport |
-| `plugin` | Plugin system for dynamic tools |
-| `auth` | Authentication mechanisms |
-| `tls` | TLS/SSL support |
-| `full` | All features enabled |
-| `minimal` | Core functionality only |
-
-## Quick Start
-
-### Using Prism CLI (Recommended)
-
-```bash
-# Install the CLI (provides the 'prs' command)
-cargo install prism-cli
-
-# Use the 'prs' command for development
-prs new plugin my-plugin  # Create new plugin project
-prs build                  # Build the project
-prs test                   # Run tests
-prs dev                    # Run development server with hot reload
-prs publish                # Publish to registry
-```
-
-### Manual Server Implementation
+Standard MCP implementations compile all tools directly into server binaries:
 
 ```rust
-use prism_mcp_rs::prelude::*;
-use std::collections::HashMap;
-use serde_json::{json, Value};
-
-// Define a tool handler
-struct CalculatorHandler;
-
-#[async_trait]
-impl ToolHandler for CalculatorHandler {
-    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        let a = arguments.get("a").and_then(|v| v.as_f64()).unwrap_or(0.0);
-        let b = arguments.get("b").and_then(|v| v.as_f64()).unwrap_or(0.0);
-        let operation = arguments.get("operation")
-            .and_then(|v| v.as_str())
-            .unwrap_or("add");
-
-        let result = match operation {
-            "add" => a + b,
-            "subtract" => a - b,
-            "multiply" => a * b,
-            "divide" if b != 0.0 => a / b,
-            _ => 0.0,
-        };
-
-        Ok(ToolResult {
-            content: vec![ContentBlock::text(format!("Result: {}", result))],
-        })
-    }
+// Traditional approach: Monolithic server
+struct MCPServer {
+    tool1: Tool1,  // Compiled into binary
+    tool2: Tool2,  // Compiled into binary
+    // Adding new tools requires:
+    // - Source code modification
+    // - Complete recompilation  
+    // - Server restart (downtime)
+    // - Full redeployment
 }
+```
+
+This approach creates several limitations:
+- Tools are tightly coupled to server implementations
+- Adding or updating tools requires server downtime
+- All components share the same version and release cycle
+- Tool developers must maintain entire server codebases
+- Limited code reuse across different servers
+
+### Plugin-based architecture
+
+The Prism MCP SDK introduces plugins as composable units:
+
+```rust
+// Prism approach: Composable server
+struct PrismServer {
+    plugin_manager: PluginManager,
+    // Adding tools through plugins:
+    // - Drop plugin file into directory
+    // - No compilation required
+    // - No restart needed (hot reload)
+    // - No redeployment
+}
+```
+
+This architecture provides:
+- Runtime plugin loading and unloading
+- Independent versioning for each plugin
+- Hot reload capability during development
+- Simplified tool distribution and sharing
+- Reduced barriers to contribution
+
+## Architectural components
+
+### Plugin system design
+
+Plugins serve as containers for MCP components, bundling related functionality:
+
+```
+Plugin (Dynamic Library)
+├── Tools (Executable functions)
+├── Resources (Data providers)
+├── Prompts (Message templates)
+└── Completions (Autocomplete providers)
+```
+
+Each plugin operates independently with:
+- Isolated namespace and state
+- Independent lifecycle management
+- Configurable capabilities
+- Version compatibility checking
+
+### Server composition model
+
+Servers become lightweight hosts that compose functionality from plugins:
+
+```yaml
+# plugins.yaml - Declarative server configuration
+plugins:
+  - name: github-tools
+    version: "1.2.0"
+    enabled: true
+    
+  - name: database-tools  
+    version: "2.0.1"
+    enabled: true
+    
+  - name: api-tools
+    version: "0.5.0"
+    enabled: false  # Disabled without removal
+```
+
+## Technical capabilities
+
+### Dynamic loading
+
+The SDK uses Rust's `libloading` crate for safe dynamic library loading:
+
+```rust
+use prism_mcp_rs::plugin::PluginManager;
 
 #[tokio::main]
-async fn main() -> McpResult<()> {
-    // Initialize server
-    let mut server = McpServer::new("calculator-server", "1.0.0");
+async fn main() -> Result<()> {
+    let mut manager = PluginManager::new();
     
-    // Register tool
-    server.register_tool(
-        "calculator",
-        "Perform basic math operations",
-        json!({
-            "type": "object",
-            "properties": {
-                "a": {"type": "number"},
-                "b": {"type": "number"},
-                "operation": {
-                    "type": "string",
-                    "enum": ["add", "subtract", "multiply", "divide"]
-                }
-            }
-        }),
-        Box::new(CalculatorHandler),
-    )?;
-
-    // Run with selected transport
-    #[cfg(feature = "websocket")]
-    server.run_with_websocket("127.0.0.1:8080").await?;
+    // Load plugin at runtime
+    manager.load_plugin("./plugins/github-tools.so").await?;
     
-    #[cfg(feature = "http")]
-    server.run_with_http("127.0.0.1:8080").await?;
+    // Plugin immediately available
+    let tools = manager.list_tools();
     
-    #[cfg(feature = "stdio")]
-    server.run_with_stdio().await?;
+    // Support for hot reload
+    manager.reload_plugin("github-tools").await?;
     
     Ok(())
 }
 ```
 
-### Plugin Development
+### Plugin development
 
-#### Traditional Approach vs Plugin Architecture
+Plugins are standard Rust crates with specific traits:
 
-**Traditional MCP Implementation:**
 ```rust
-// All components compiled into server binary
-struct MyServer {
-    tool1: Tool1,  // Compiled in
-    tool2: Tool2,  // Compiled in
-    // Adding new tool requires:
-    // 1. Modify server code
-    // 2. Recompile entire server
-    // 3. Restart server (downtime)
-    // 4. Redeploy everything
-}
-```
-
-**Prism Plugin Architecture:**
-```rust
-// Server remains unchanged
-struct MyServer {
-    plugin_manager: PluginManager,
-    // Adding new tool requires:
-    // 1. Load plugin file
-    // No compilation, no restart, no downtime
-}
-
-// Plugins are separate crates
 use prism_mcp_rs::plugin::*;
+use async_trait::async_trait;
 
 pub struct MyPlugin {
-    name: String,
-    version: String,
+    // Plugin state
 }
 
 #[async_trait]
@@ -290,13 +170,164 @@ impl Plugin for MyPlugin {
             supports_hot_reload: true,
         }
     }
+    
+    // Additional trait methods
 }
 
 // Export for dynamic loading
 plugin_export!(MyPlugin);
 ```
 
-### Client Implementation
+### MCP protocol support
+
+The SDK implements comprehensive MCP specification support:
+
+#### Protocol features
+- Tools, resources, prompts, and completions
+- Audio content and multimodal support
+- Bidirectional communication
+- Argument autocompletion
+- Resource templates and patterns
+- Annotations and metadata
+
+#### Transport layers
+- **HTTP/2**: Server push and multiplexing support
+- **WebSocket**: Automatic compression
+- **Standard I/O**: CLI integration
+- **Reconnection**: Exponential backoff strategy
+
+## Installation
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+prism-mcp-rs = "0.1.0"
+```
+
+With specific features:
+
+```toml
+[dependencies]
+prism-mcp-rs = {
+    version = "0.1.0",
+    features = ["plugin", "websocket", "http"]
+}
+```
+
+### Available features
+
+| Feature | Description |
+|---------|-------------|
+| `plugin` | Plugin system support |
+| `websocket` | WebSocket transport |
+| `http` | HTTP/1.1 and HTTP/2 transport |
+| `stdio` | Standard I/O transport |
+| `auth` | Authentication mechanisms |
+| `tls` | TLS/SSL support |
+| `full` | All features enabled |
+| `minimal` | Core functionality only |
+
+## Usage examples
+
+### Server with plugin support
+
+```rust
+use prism_mcp_rs::prelude::*;
+
+#[tokio::main]
+async fn main() -> McpResult<()> {
+    let mut server = McpServer::new("my-server", "1.0.0");
+    
+    // Initialize plugin manager
+    let plugin_manager = PluginManager::new();
+    
+    // Load plugins from directory
+    plugin_manager.load_from_directory("./plugins").await?;
+    
+    // Attach to server
+    server.with_plugin_manager(plugin_manager);
+    
+    // Run with selected transport
+    server.run_with_websocket("127.0.0.1:8080").await?;
+    
+    Ok(())
+}
+```
+
+### Plugin development
+
+```rust
+use prism_mcp_rs::plugin::*;
+use async_trait::async_trait;
+use serde_json::{json, Value};
+use std::collections::HashMap;
+
+pub struct CalculatorPlugin;
+
+#[async_trait]
+impl Plugin for CalculatorPlugin {
+    fn name(&self) -> &str {
+        "calculator"
+    }
+    
+    fn version(&self) -> &str {
+        "1.0.0"
+    }
+    
+    fn description(&self) -> &str {
+        "Basic arithmetic operations"
+    }
+    
+    async fn initialize(&mut self) -> McpResult<()> {
+        Ok(())
+    }
+    
+    fn capabilities(&self) -> PluginCapabilities {
+        PluginCapabilities {
+            provides_tools: true,
+            provides_resources: false,
+            provides_prompts: false,
+            supports_hot_reload: true,
+        }
+    }
+}
+
+// Tool implementation
+pub struct CalculatorTool;
+
+#[async_trait]
+impl ToolHandler for CalculatorTool {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let a = arguments.get("a")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
+        let b = arguments.get("b")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
+        let operation = arguments.get("operation")
+            .and_then(|v| v.as_str())
+            .unwrap_or("add");
+        
+        let result = match operation {
+            "add" => a + b,
+            "subtract" => a - b,
+            "multiply" => a * b,
+            "divide" if b != 0.0 => a / b,
+            _ => 0.0,
+        };
+        
+        Ok(ToolResult {
+            content: vec![ContentBlock::text(format!("Result: {}", result))],
+        })
+    }
+}
+
+// Export the plugin
+plugin_export!(CalculatorPlugin);
+```
+
+### Client implementation
 
 ```rust
 use prism_mcp_rs::prelude::*;
@@ -304,8 +335,7 @@ use serde_json::json;
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    // Connect client
-    #[cfg(feature = "websocket")]
+    // Connect to server
     let session = ClientSession::connect_with_websocket(
         "ws://localhost:8080",
         "my-client",
@@ -315,9 +345,9 @@ async fn main() -> McpResult<()> {
     // Initialize connection
     session.initialize().await?;
     
-    // Call tool
+    // Call tool from plugin
     let result = session.call_tool(
-        "calculator",
+        "calculator.add",
         json!({
             "a": 10,
             "b": 5,
@@ -331,254 +361,317 @@ async fn main() -> McpResult<()> {
 }
 ```
 
-## Transport Configuration
+## Development tools
 
-### WebSocket Transport
+### Related tools
 
-```rust
-// Server
-server.run_with_websocket("127.0.0.1:8080").await?;
+For enhanced development experience with the Prism MCP SDK, consider using the companion developer tools available in the [mcp-rs-dev](https://github.com/prismworks-ai/mcp-rs-dev) repository. These tools provide CLI utilities for plugin development, testing, and deployment workflows.
 
-// Client
-let session = ClientSession::connect_with_websocket(
-    "ws://localhost:8080",
-    "client-name",
-    "1.0.0"
-).await?;
-```
-
-### HTTP/2 Transport
-
-```rust
-// Server configuration
-let config = HttpServerConfig {
-    enable_http2: true,
-    enable_compression: true,
-    ..Default::default()
-};
-server.run_with_http_config("127.0.0.1:8080", config).await?;
-
-// Client connection
-let session = ClientSession::connect_with_http(
-    "http://localhost:8080",
-    "client-name",
-    "1.0.0"
-).await?;
-```
-
-### Standard I/O Transport
-
-```rust
-// Server
-server.run_with_stdio().await?;
-
-// Client
-let session = ClientSession::connect_with_stdio(
-    "path/to/server",
-    "client-name",
-    "1.0.0"
-).await?;
-```
-
-## Advanced Usage
-
-### Dynamic Plugin Loading
-
-```rust
-use prism_mcp_rs::plugin::PluginManager;
-
-// Initialize plugin manager
-let mut plugin_manager = PluginManager::new();
-
-// Load plugin from file
-plugin_manager.load_plugin("path/to/plugin.so").await?;
-
-// List loaded plugins
-let plugins = plugin_manager.list_plugins();
-
-// Unload plugin
-plugin_manager.unload_plugin("plugin-name").await?;
-```
-
-### Resource Management
-
-```rust
-struct FileResourceHandler;
-
-#[async_trait]
-impl ResourceHandler for FileResourceHandler {
-    async fn read(&self, uri: &str) -> McpResult<ResourceContents> {
-        let content = tokio::fs::read_to_string(uri).await?;
-        Ok(ResourceContents {
-            uri: uri.to_string(),
-            mime_type: Some("text/plain".to_string()),
-            content: Content::text(content),
-        })
-    }
-}
-
-// Register resource handler
-server.register_resource(
-    "file:///configs/*.json",
-    "Configuration files",
-    Box::new(FileResourceHandler),
-)?;
-```
-
-### Error Handling
-
-```rust
-use prism_mcp_rs::core::error::{McpError, ErrorCode};
-
-match session.call_tool("tool_name", args).await {
-    Ok(result) => println!("Success: {:?}", result),
-    Err(McpError::Protocol { code, message, .. }) => {
-        eprintln!("Protocol error {}: {}", code, message);
-    }
-    Err(McpError::Transport(e)) => {
-        eprintln!("Transport error: {}", e);
-    }
-    Err(e) => eprintln!("Error: {}", e),
-}
-```
-
-## Project Structure
-
-```
-prism-mcp-rs/
-├── core/           # Core protocol implementation
-│   ├── protocol/   # MCP protocol types and messages
-│   ├── error/      # Error types and handling
-│   └── handlers/   # Tool and resource handlers
-├── transport/      # Transport layer implementations
-│   ├── websocket/  # WebSocket transport
-│   ├── http/       # HTTP/1.1 and HTTP/2
-│   └── stdio/      # Standard I/O transport
-├── plugin/         # Plugin system
-│   ├── loader/     # Dynamic loading mechanisms
-│   ├── registry/   # Plugin registry and discovery
-│   └── sandbox/    # Plugin isolation
-├── server/         # Server implementation
-├── client/         # Client implementation
-└── examples/       # Example implementations
-```
-
-## Performance Metrics
-
-| Metric | Value |
-|--------|-------|
-| Message Throughput | 100,000+ messages/second (WebSocket) |
-| Response Latency | <1ms (local) |
-| Memory Usage | ~10MB base footprint |
-| Concurrent Connections | 10,000+ (with tuning) |
-| Plugin Load Time | <100ms |
-| Tool Execution Overhead | <1ms |
-
-## Testing
+### Testing
 
 ```bash
 # Run all tests
 cargo test
 
-# Run with all features
+# Test with all features
 cargo test --all-features
 
-# Run specific module tests
-cargo test transport::
-
-# Run plugin tests
+# Test specific module
 cargo test plugin::
+
+### CI/CD and quality metrics
+
+The project includes comprehensive CI/CD with automatic reporting:
+
+#### 📊 Automatic reports
+
+- **Coverage reports**: Code coverage metrics with trends
+- **Benchmark reports**: Performance metrics for all components
+- **Format**: Markdown, viewable directly on GitHub
+- **Location**: `reports/` directory
+
+#### 🚀 For contributors
+
+**No tokens needed!** All CI features work automatically:
+- Testing, linting, and validation
+- Coverage and benchmark generation
+- PR checks and status updates
+
+#### 📦 For maintainers
+
+Only publishing to crates.io requires the `CRATES_IO_TOKEN` secret.
+
+```bash
+# Generate reports locally
+make reports              # Both coverage and benchmarks
+make report-coverage      # Coverage only
+make report-bench         # Benchmarks only
+
+# Or use CI scripts
+./scripts/ci/local-ci-enhanced.sh --reports
+```
 
 # Run integration tests
 cargo test --test integration
 ```
 
-## Enterprise Platform Integration
+### API usage patterns
 
-While the SDK provides core MCP functionality, enterprises requiring advanced features such as centralized authentication, audit logging, rate limiting, and metrics can leverage the Prismworks Platform. The platform extends SDK capabilities with:
+The SDK provides comprehensive APIs for building MCP servers and clients:
 
-- Centralized tool registry and marketplace
-- Enterprise authentication and authorization
-- Comprehensive audit trails and compliance reporting
-- Advanced monitoring and observability
-- Multi-tenant support and isolation
+#### Creating a basic MCP server
 
-Contact contact@prismworks.ai for platform access.
+```rust
+use prism_mcp_rs::prelude::*;
+use prism_mcp_rs::server::McpServer;
+use prism_mcp_rs::transport::stdio::StdioTransport;
 
-## Licensing
+#[tokio::main]
+async fn main() -> McpResult<()> {
+    // Initialize server
+    let mut server = McpServer::new("example-server", "1.0.0");
+    
+    // Add tool handler
+    server.add_tool(
+        Tool::new("example_tool")
+            .with_description("An example tool")
+            .with_handler(|args| async move {
+                Ok(ToolResult::text("Tool executed successfully"))
+            })
+    )?;
+    
+    // Run with stdio transport
+    let transport = StdioTransport::new();
+    server.run(transport).await
+}
+```
 
-### SDK License
-The Prism MCP SDK is licensed under the MIT License, providing maximum flexibility for both open-source and commercial use.
+#### Loading plugins dynamically
 
-### Plugin Developer Rights
-The SDK's plugin architecture extends Apache 2.0 license protection to plugin developers, ensuring:
-- Full control over plugin licensing terms
-- Protection from patent claims when using SDK interfaces
-- Freedom to distribute plugins under any compatible license
-- Commercial deployment without SDK licensing restrictions
+```rust
+use prism_mcp_rs::plugin::{PluginManager, PluginConfig};
 
-Plugin developers maintain complete ownership and licensing control of their tools while benefiting from the SDK's legal protections.
+// Create plugin manager
+let mut manager = PluginManager::new();
 
-## Documentation
+// Load individual plugin
+manager.load_plugin("./plugins/my_plugin.so").await?;
 
-- [API Documentation](https://docs.rs/prism-mcp-rs) - Complete API reference
-- [Prism CLI Documentation](https://github.com/prismworks-ai/mcp-rs-dev/tree/main/tools/prism-cli) - CLI tools and commands
-- [Plugin Development Guide](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/docs/PLUGIN_GUIDE.md) - Creating and distributing plugins
-- [Examples](https://github.com/prismworks-ai/prism-mcp-rs/tree/main/examples) - Production examples
-- [MCP Specification](https://modelcontextprotocol.io/specification) - Protocol specification
-- [Contributing Guide](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CONTRIBUTING.md) - Contribution guidelines
+// Load all plugins from directory
+manager.load_from_directory("./plugins").await?;
 
-### Example Applications
+// Configure plugin
+let config = PluginConfig {
+    enabled: true,
+    hot_reload: true,
+    settings: serde_json::json!({
+        "api_key": "your-key",
+        "timeout": 30
+    }),
+};
+manager.configure_plugin("my_plugin", config).await?;
+
+// List loaded plugins
+for plugin in manager.list_plugins() {
+    println!("Plugin: {} v{}", plugin.name(), plugin.version());
+}
+```
+
+#### Building a plugin
+
+```rust
+use prism_mcp_rs::plugin::*;
+use async_trait::async_trait;
+
+// Define your plugin struct
+pub struct MyPlugin {
+    // Plugin state
+}
+
+// Implement the Plugin trait
+#[async_trait]
+impl Plugin for MyPlugin {
+    fn name(&self) -> &str { "my_plugin" }
+    fn version(&self) -> &str { "1.0.0" }
+    
+    async fn initialize(&mut self) -> McpResult<()> {
+        // Setup code here
+        Ok(())
+    }
+    
+    fn capabilities(&self) -> PluginCapabilities {
+        PluginCapabilities {
+            provides_tools: true,
+            provides_resources: true,
+            provides_prompts: false,
+            supports_hot_reload: true,
+        }
+    }
+}
+
+// Export plugin for dynamic loading
+plugin_export!(MyPlugin);
+```
+
+#### Client session management
+
+```rust
+use prism_mcp_rs::client::{ClientSession, ClientConfig};
+use prism_mcp_rs::transport::websocket::WebSocketTransport;
+
+// Configure client
+let config = ClientConfig {
+    name: "my-client",
+    version: "1.0.0",
+    timeout: Duration::from_secs(30),
+    retry_strategy: RetryStrategy::exponential_backoff(),
+};
+
+// Connect to server
+let transport = WebSocketTransport::connect("ws://localhost:8080").await?;
+let session = ClientSession::new(config, transport);
+
+// Initialize connection
+session.initialize().await?;
+
+// List available tools
+let tools = session.list_tools().await?;
+for tool in tools {
+    println!("Tool: {} - {}", tool.name, tool.description);
+}
+
+// Call a tool
+let result = session.call_tool(
+    "example_tool",
+    serde_json::json!({ "param": "value" })
+).await?;
+```
+
+
+## Plugin distribution
+
+### Distribution channels
+
+Plugins can be distributed through multiple channels:
+
+1. **Crates.io**: Standard Rust package registry
+2. **Git repositories**: Direct git dependencies
+3. **Binary packages**: Compiled dynamic libraries
+4. **Private registries**: Enterprise distribution
+
+### Plugin manifest
+
+```json
+{
+  "name": "example-plugin",
+  "version": "1.0.0",
+  "description": "Example plugin implementation",
+  "mcp_version": "2025-06-18",
+  "sdk_version": "0.1.0",
+  "entry_point": "libexample_plugin.so",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true,
+    "completions": true,
+    "hot_reload": true
+  }
+}
+```
+
+## Deployment patterns
+
+### Domain-specific servers
+
+Compose specialized servers from generic plugins:
+
+```yaml
+# devops-server.yaml
+plugins:
+  - kubernetes-tools
+  - terraform-tools
+  - aws-tools
+  - monitoring-tools
+
+# data-science-server.yaml  
+plugins:
+  - jupyter-tools
+  - pandas-tools
+  - visualization-tools
+  - ml-tools
+```
+
+### Progressive enhancement
+
+Add capabilities incrementally without modifying server code:
+
+```rust
+// Initial deployment: Basic server
+let server = McpServer::new("server", "1.0.0");
+
+// Later: Add plugins by dropping files into plugins/
+// No code changes or recompilation required
+```
+
+### A/B testing
+
+Test different tool implementations safely:
+
+```rust
+// Load multiple versions
+manager.load_plugin("search-v1.so").await?;
+manager.load_plugin("search-v2.so").await?;
+
+// Route based on criteria
+if client.is_beta_tester() {
+    manager.enable_plugin("search-v2");
+} else {
+    manager.enable_plugin("search-v1");
+}
+```
+
+## Performance characteristics
+
+- **Plugin loading**: Sub-10ms per plugin
+- **Hot reload**: Sub-50ms interruption
+- **Memory isolation**: Per-plugin memory management
+- **Concurrent execution**: Async plugin execution
+- **Message throughput**: Optimized for high volume
+
+## Enterprise integration
+
+Organizations requiring enterprise features can leverage:
+
+- Private plugin registries
+- Plugin-level access control
+- Audit logging for compliance
+- Performance monitoring
+- SLA-backed support
+
+Contact contact@prismworks.ai for enterprise offerings.
+
+## Examples
 
 | Example | Description |
 |---------|-------------|
-| [Plugin Development](examples/plugin/) | Creating and loading dynamic tools |
-| [WebSocket Server/Client](examples/server/websocket_server.rs) | Bidirectional real-time communication |
+| [Plugin Development](examples/plugins/) | Creating and loading plugins |
+| [WebSocket Server](examples/server/websocket_server.rs) | WebSocket transport implementation |
 | [HTTP/2 Server](examples/server/http2_server.rs) | HTTP/2 with server push |
-| [Calculator Tool](examples/plugins/calculator/) | Complete tool plugin example |
+| [Calculator Plugin](examples/plugins/calculator/) | Complete plugin example |
 | [Database Server](examples/server/database_server.rs) | Resource management patterns |
-| [Error Handling](examples/production_error_handling_demo.rs) | Production error handling |
-| [Performance Benchmarks](examples/performance_benchmarks.rs) | Benchmarking utilities |
-| [Advanced Features](examples/advanced_2025_features.rs) | Audio, annotations, completion |
-| [CLI Integration](examples/cli_integration/) | Using prism-cli for development |
+| [Error Handling](examples/production_error_handling_demo.rs) | Production error patterns |
+| [Performance Tests](examples/performance_benchmarks.rs) | Benchmarking utilities |
+| [CLI Integration](examples/cli_integration/) | Using prism-cli |
 
-## Contributing
+## Licensing
 
-Contributions are welcome. Please refer to the [Contributing Guide](CONTRIBUTING.md) for detailed information on development setup, coding standards, and submission process.
+The Prism MCP SDK is licensed under the MIT License. Plugins may choose any compatible license.
 
-### Development Setup
+## Support
 
-```bash
-# Clone repository
-git clone https://github.com/prismworks-ai/prism-mcp-rs.git
-cd prism-mcp-rs
-
-# Initialize development environment
-make dev-setup
-
-# Run tests
-make test
-
-# Verify changes before commit
-make commit-ready
-```
-
-## Related Projects
-
-### MCP Ecosystem
-- [prism-cli](https://crates.io/crates/prism-cli) - Developer CLI with `prs` command
-- [mcp-rs-dev](https://github.com/prismworks-ai/mcp-rs-dev) - Development tools and example plugins
-- [mcp-rs-registry](https://github.com/prismworks-ai/mcp-rs-registry) - Plugin discovery and registry
-
-## About Prismworks AI
-
-Prismworks AI develops enterprise AI integration infrastructure. The Prism MCP SDK represents our commitment to providing production-grade tools for the Model Context Protocol ecosystem.
-
-## Contact
-
-- **Email**: contact@prismworks.ai
-- **Issues**: [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
+- [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
+- [GitHub Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
+- Email: sdk@prismworks.ai
 
 ---
 

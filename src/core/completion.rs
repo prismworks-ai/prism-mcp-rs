@@ -1,7 +1,7 @@
-// ! Completion handling for MCP servers
-// !
-// ! Module provides the foundation for implementing autocompletion features
-// ! in MCP servers, supporting the completion API introduced in MCP 2025-06-18.
+//! Completion handling for MCP servers
+//!
+//! This module provides the foundation for implementing autocompletion features
+//! in MCP servers, supporting the completion API introduced in MCP 2025-06-18.
 
 use crate::core::error::McpResult;
 use crate::protocol::messages::{CompletionArgument, CompletionReference};

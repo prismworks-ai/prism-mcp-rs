@@ -1,7 +1,16 @@
 //! Build script for prism-mcp-rs SDK
 //!
-//! This minimal build script only handles what's necessary for the crate build process.
-//! Documentation generation is handled separately via scripts/generate-docs.sh
+//! This build script is intentionally minimal, following Rust best practices
+//! for library crates. It only handles essential build-time configuration:
+//!
+//! - Sets environment variables for version information
+//! - Configures rebuild triggers for important files
+//! - Does NOT generate documentation (handled automatically by docs.rs)
+//!
+//! For development workflows and build commands, see:
+//! - Makefile: Primary developer interface with convenient targets
+//! - DEVELOPMENT.md: Complete development guide and workflow documentation
+//! - scripts/ci/: CI simulation scripts that mirror GitHub Actions
 
 fn main() {
     // Tell Cargo to rerun if important files change

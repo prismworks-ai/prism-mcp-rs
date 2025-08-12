@@ -1,7 +1,7 @@
-// ! Resource system for MCP servers
-// !
-// ! Module provides the abstraction for implementing and managing resources in MCP servers.
-// ! Resources represent data that can be read by clients, such as files, database records, or API endpoints.
+//! Resource system for MCP servers
+//!
+//! This module provides the abstraction for implementing and managing resources in MCP servers.
+//! Resources represent data that can be read by clients, such as files, database records, or API endpoints.
 
 use async_trait::async_trait;
 use std::collections::HashMap;

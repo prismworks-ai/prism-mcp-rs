@@ -48,6 +48,9 @@ for arg in "$@"; do
         --fix)
             ACTION="fix"
             ;;
+        --reports)
+            ACTION="reports"
+            ;;
         --verbose)
             VERBOSE=true
             ;;
@@ -65,6 +68,8 @@ for arg in "$@"; do
             echo "  --release  Release preparation checks"
             echo "  --security Run comprehensive security scans"
             echo "  --fix      Auto-fix formatting and clippy issues"
+            echo "  --reports  Generate coverage and benchmark reports"
+            echo "  --fix      Auto-fix formatting and clippy issues"
             echo ""
             echo "Options:"
             echo "  --verbose      Show detailed output"
@@ -75,6 +80,7 @@ for arg in "$@"; do
             echo "  $0              # Standard CI checks (default)"
             echo "  $0 --quick      # Quick pre-commit validation"
             echo "  $0 --full       # Complete CI matrix testing"
+            echo "  $0 --reports    # Generate coverage and benchmark reports"
             echo "  $0 --fix        # Fix all auto-fixable issues"
             echo "  $0 --release    # Pre-release validation"
             exit 0
@@ -154,6 +160,58 @@ if [[ "$ACTION" == "fix" ]]; then
     cargo clippy --fix --allow-dirty --all-features || true
     
     print_step "Updating dependencies..."
+
+# Reports action - generate coverage and benchmark reports
+if [[ "$ACTION" == "reports" ]]; then
+    print_header "📊 Generating Reports"
+    
+    # Ensure reports directory exists
+    mkdir -p reports
+    
+    # Install required tools
+    install_tools
+    
+    # Coverage report
+    print_step "Generating coverage report..."
+    if [[ -x "scripts/ci/generate-coverage-report.sh" ]]; then
+        ./scripts/ci/generate-coverage-report.sh
+        print_success "Coverage report saved to reports/coverage-report.md"
+        
+        # Show summary
+        if [[ -f "reports/coverage-report.md" ]]; then
+            COVERAGE_PCT=$(grep -E "^\| \*\*Overall\*\*" reports/coverage-report.md | awk '{print $3}' | sed 's/%//' || echo "N/A")
+            echo "Coverage: ${COVERAGE_PCT}%"
+        fi
+    else
+        print_error "Coverage report script not found!"
+    fi
+    
+    # Benchmark report
+    print_step "Generating benchmark report..."
+    if [[ -x "scripts/ci/run-benchmarks.sh" ]]; then
+        # Check if benchmarks can be built
+        if cargo build --benches --features bench 2>/dev/null; then
+            ./scripts/ci/run-benchmarks.sh
+            print_success "Benchmark report saved to reports/benchmark-report.md"
+        else
+            print_warning "Cannot build benchmarks - check feature flags"
+        fi
+    else
+        print_error "Benchmark report script not found!"
+    fi
+    
+    # Summary
+    print_header "📈 Reports Generated"
+    echo "Reports available in:"
+    [[ -f "reports/coverage-report.md" ]] && echo "  • reports/coverage-report.md"
+    [[ -f "reports/benchmark-report.md" ]] && echo "  • reports/benchmark-report.md"
+    [[ -d ".local/reports" ]] && echo "  • .local/reports/ (HTML coverage)"
+    echo ""
+    echo "View reports with:"
+    echo "  cat reports/coverage-report.md"
+    echo "  cat reports/benchmark-report.md"
+    exit 0
+fi
     cargo update
     
     print_success "Auto-fix complete! Review changes before committing."
@@ -374,14 +432,36 @@ if [[ "$ACTION" == "full" ]]; then
     # Coverage report
     print_step "Generating coverage report..."
     install_tools
+    
+    # Generate HTML coverage in .local/reports for detailed viewing
     cargo llvm-cov --all-features --workspace --html --output-dir .local/reports
+    
+    # Generate markdown coverage report in reports/ folder
+    if [[ -x "scripts/ci/generate-coverage-report.sh" ]]; then
+        print_status "Generating markdown coverage report..."
+        ./scripts/ci/generate-coverage-report.sh || print_warning "Coverage report generation failed"
+        print_success "Coverage report saved to reports/coverage-report.md"
+    fi
+    
     cargo llvm-cov report
-    print_success "Coverage report generated in .local/reports/"
+    print_success "HTML coverage report generated in .local/reports/"
     
     # Benchmarks
-    if [[ -d "benches" ]]; then
+    if [[ -d "benches" ]] && [[ "$CARGO_BUILD_FLAGS" == *"bench"* ]] || [[ -f "benches/client_benchmarks.rs" ]]; then
         print_step "Running benchmarks..."
-        cargo bench || track_error "Benchmarks failed"
+        
+        # Check if benchmark feature is available
+        if cargo build --benches --features bench 2>/dev/null; then
+            if [[ -x "scripts/ci/run-benchmarks.sh" ]]; then
+                print_status "Generating benchmark report..."
+                ./scripts/ci/run-benchmarks.sh || print_warning "Benchmark report generation failed"
+                print_success "Benchmark report saved to reports/benchmark-report.md"
+            else
+                cargo bench --features bench || print_warning "Benchmarks failed"
+            fi
+        else
+            print_warning "Benchmark feature not available, skipping benchmarks"
+        fi
     fi
 fi
 

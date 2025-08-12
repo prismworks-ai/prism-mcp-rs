@@ -23,9 +23,9 @@ pub struct ClientConfig {
     pub max_retries: u32,
     /// Retry delay in milliseconds
     pub retry_delay_ms: u64,
-    /// Whether to validate all outgoing requests
+    /// Whether to validate outgoing requests
     pub validate_requests: bool,
-    /// Whether to validate all incoming responses
+    /// Whether to validate incoming responses
     pub validate_responses: bool,
 }
 
@@ -516,14 +516,14 @@ impl McpClient {
     // Streaming HTTP Transport Methods
     // ========================================================================
 
-    /// Connect to an MCP server with streaming HTTP transport - complete efficiency
+    /// Connect to an MCP server with streaming HTTP transport for optimal efficiency
     ///
     /// This is a convenience method that:
     /// 1. Creates a streaming HTTP transport with smart content analysis
     /// 2. Connects to the server
     /// 3. Returns the initialization result
     ///
-    /// complete for:
+    /// Optimized for:
     /// - Large payload applications (>100KB)
     /// - Memory-constrained environments
     /// - High-performance requirements
@@ -531,7 +531,7 @@ impl McpClient {
     ///
     /// Features:
     /// - Chunked transfer encoding for large payloads
-    /// - complete compression (Gzip, Brotli, Zstd)
+    /// - Multiple compression algorithms (Gzip, Brotli, Zstd)
     /// - HTTP/2 Server Push support
     /// - smart content analysis
     /// - Automatic fallback to traditional HTTP
@@ -631,7 +631,7 @@ impl McpClient {
     /// Connect with performance-improved streaming HTTP configuration
     ///
     /// This configuration is improved for high-performance scenarios
-    /// with larger chunk sizes, complete compression, and HTTP/2 features.
+    /// with larger chunk sizes, multi-algorithm compression, and HTTP/2 features.
     ///
     /// # Arguments
     /// * `server_url` - The HTTP URL of the MCP server

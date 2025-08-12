@@ -1,7 +1,7 @@
-// ! Prompt system for MCP servers
-// !
-// ! Module provides the abstraction for implementing and managing prompts in MCP servers.
-// ! Prompts are templates that can be used to generate messages for language models.
+//! Prompt system for MCP servers
+//!
+//! This module provides the abstraction for implementing and managing prompts in MCP servers.
+//! Prompts are templates that can be used to generate messages for language models.
 
 use async_trait::async_trait;
 use serde_json::Value;

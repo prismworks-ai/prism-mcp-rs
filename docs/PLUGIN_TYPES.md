@@ -4,6 +4,12 @@
 
 The Prism MCP SDK plugin system supports four distinct component types that plugins can provide. This document details each component type, its purpose, interface, and implementation patterns.
 
+## Related Documentation
+
+- [Plugin Development Guide](PLUGIN_GUIDE.md) - Complete guide to creating and distributing plugins
+- [API Documentation](https://docs.rs/prism-mcp-rs) - Full API documentation (available after publication)
+- [Example Plugins](../examples/README.md#plugin-development) - Working examples
+
 ## Component Type Matrix
 
 | Component | Purpose | Handler Trait | Primary Use Cases |

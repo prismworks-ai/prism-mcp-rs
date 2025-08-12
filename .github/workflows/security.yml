@@ -118,17 +118,18 @@ jobs:
         uses: taiki-e/install-action@cargo-audit
       
       - name: Generate SARIF
-        run: cargo audit --json | python3 -c "
-import sys, json
-sarif = {
-    'version': '2.1.0',
-    'runs': [{
-        'tool': {'driver': {'name': 'cargo-audit', 'version': '0.18.0'}},
-        'results': []
-    }]
-}
-print(json.dumps(sarif))
-" > audit.sarif
+        run: |
+          cargo audit --json | python3 -c "
+          import sys, json
+          sarif = {
+              'version': '2.1.0',
+              'runs': [{
+                  'tool': {'driver': {'name': 'cargo-audit', 'version': '0.18.0'}},
+                  'results': []
+              }]
+          }
+          print(json.dumps(sarif))
+          " > audit.sarif
         continue-on-error: true
       
       - name: Upload SARIF

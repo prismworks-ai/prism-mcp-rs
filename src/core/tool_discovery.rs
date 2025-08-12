@@ -234,7 +234,7 @@ impl ToolRegistry {
     /// Clean up deprecated tools based on policy
     pub fn cleanup_deprecated_tools(&mut self, policy: &DeprecationCleanupPolicy) -> Vec<String> {
         let mut removed_tools = Vec::new();
-        
+
         #[cfg(feature = "chrono")]
         let current_time = Utc::now();
 

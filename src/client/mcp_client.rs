@@ -688,10 +688,11 @@ impl McpClient {
     /// Ok(())
     /// }
     /// ```
+    #[allow(unused_variables)] // server_url may not be used depending on features
     pub async fn connect_with_recommended_transport(
         &mut self,
         use_case: TransportUseCase,
-        _server_url: &str,
+        server_url: &str,
     ) -> McpResult<InitializeResult> {
         match use_case {
             TransportUseCase::CommandLine
@@ -700,7 +701,7 @@ impl McpClient {
                 // STDIO for command-line and desktop applications
                 #[cfg(feature = "stdio")]
                 {
-                    self.connect_with_stdio_simple(_server_url).await
+                    self.connect_with_stdio_simple(server_url).await
                 }
                 #[cfg(not(feature = "stdio"))]
                 {

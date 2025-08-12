@@ -1,0 +1,120 @@
+name: Dependencies
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Check for outdated dependencies
+  outdated:
+    name: Check Outdated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-outdated
+        uses: taiki-e/install-action@cargo-outdated
+      
+      - name: Check outdated dependencies
+        run: |
+          echo "## Dependency Status Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Direct Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cargo outdated --depth 1 >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### All Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cargo outdated >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+  
+  # Update dependencies (PR only)
+  update:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Update dependencies
+        run: cargo update
+      
+      - name: Test with updated dependencies
+        run: cargo test --all-features
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies'
+          title: 'chore: weekly dependency updates'
+          body: |
+            ## Weekly Dependency Updates
+            
+            This PR contains the latest compatible dependency updates.
+            
+            ### Changes
+            - Updated Cargo.lock with latest compatible versions
+            - All tests pass with updated dependencies
+            
+            ### Review Checklist
+            - [ ] Review dependency changes in Cargo.lock
+            - [ ] Verify no breaking changes
+            - [ ] Check CI passes
+          branch: deps/weekly-update
+          delete-branch: true
+  
+  # Dependency tree analysis
+  tree:
+    name: Dependency Tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Generate dependency tree
+        run: |
+          echo "## Dependency Tree" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cargo tree --depth 2 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check for duplicate dependencies
+        run: |
+          echo "## Duplicate Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cargo tree --duplicates >> $GITHUB_STEP_SUMMARY || echo "No duplicates found ✓" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Count dependencies
+        run: |
+          TOTAL_DEPS=$(cargo tree --no-indent | wc -l)
+          DIRECT_DEPS=$(cargo tree --depth 1 --no-indent | wc -l)
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Direct dependencies**: $DIRECT_DEPS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total dependencies**: $TOTAL_DEPS" >> $GITHUB_STEP_SUMMARY

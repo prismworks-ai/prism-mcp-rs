@@ -42,6 +42,9 @@ for arg in "$@"; do
         --release)
             ACTION="release"
             ;;
+        --security)
+            ACTION="security"
+            ;;
         --fix)
             ACTION="fix"
             ;;
@@ -60,6 +63,7 @@ for arg in "$@"; do
             echo "  --quick    Quick validation (format, clippy, basic tests)"
             echo "  --full     Full CI pipeline with all combinations"
             echo "  --release  Release preparation checks"
+            echo "  --security Run comprehensive security scans"
             echo "  --fix      Auto-fix formatting and clippy issues"
             echo ""
             echo "Options:"
@@ -124,6 +128,18 @@ install_tools() {
         cargo install cargo-deny
     fi
     
+    # Check for cargo-outdated
+    if ! command -v cargo-outdated &> /dev/null; then
+        print_warning "cargo-outdated not found, installing..."
+        cargo install cargo-outdated
+    fi
+    
+    # Check for cargo-vet (optional)
+    if ! command -v cargo-vet &> /dev/null; then
+        print_warning "cargo-vet not found (optional)..."
+        print_warning "Install with: cargo install cargo-vet"
+    fi
+    
     print_success "All required tools installed"
 }
 
@@ -141,6 +157,58 @@ if [[ "$ACTION" == "fix" ]]; then
     cargo update
     
     print_success "Auto-fix complete! Review changes before committing."
+    exit 0
+fi
+
+# Security action - comprehensive security checks
+if [[ "$ACTION" == "security" ]]; then
+    print_header "🔒 Comprehensive Security Scan"
+    
+    # Install security tools
+    install_tools
+    
+    print_step "Running vulnerability scan..."
+    cargo audit || track_error "Critical vulnerabilities found!"
+    
+    print_step "Checking for security advisories..."
+    cargo audit --deny warnings || track_error "Security advisories found!"
+    
+    print_step "License compliance check..."
+    if [[ -f "deny.toml" ]]; then
+        cargo deny check licenses || track_error "License compliance failed!"
+        cargo deny check bans || print_warning "Banned dependencies found"
+        cargo deny check advisories || print_warning "Advisory issues found"
+    fi
+    
+    print_step "Checking for outdated dependencies..."
+    echo "Dependencies with updates available:"
+    cargo outdated || true
+    
+    print_step "Supply chain verification..."
+    if command -v cargo-vet &> /dev/null; then
+        cargo vet --locked || print_warning "Supply chain verification failed"
+    fi
+    
+    print_step "Generating security report..."
+    echo ""
+    echo "Security Summary:"
+    echo "=================="
+    cargo audit --json 2>/dev/null | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    vulns = data.get('vulnerabilities', {}).get('count', 0)
+    print(f'Vulnerabilities: {vulns}')
+except:
+    pass
+" || true
+    
+    if [[ ${#ERRORS[@]} -eq 0 ]]; then
+        print_success "Security scan completed - No critical issues found!"
+    else
+        print_error "Security scan found ${#ERRORS[@]} critical issues!"
+        exit 1
+    fi
     exit 0
 fi
 
@@ -248,9 +316,48 @@ else
     print_warning "Install with: rustup toolchain install 1.82.0"
 fi
 
-# 8. Security Audit
-print_step "Security Audit (mirrors 'security' job)"
-cargo audit || print_warning "Security audit found issues (non-blocking)"
+# 8. Security Audit (Enhanced)
+print_step "Security Audit (mirrors 'security' workflow)"
+
+# Install security tools if missing
+if ! command -v cargo-audit &> /dev/null; then
+    print_warning "cargo-audit not found, installing..."
+    cargo install cargo-audit
+fi
+
+if ! command -v cargo-deny &> /dev/null; then
+    print_warning "cargo-deny not found, installing..."
+    cargo install cargo-deny
+fi
+
+if ! command -v cargo-outdated &> /dev/null; then
+    print_warning "cargo-outdated not found, installing..."
+    cargo install cargo-outdated
+fi
+
+# Run security checks
+print_status "Checking for known vulnerabilities..."
+cargo audit || track_error "Security vulnerabilities found"
+
+print_status "Checking for security advisories with strict mode..."
+cargo audit --deny warnings || print_warning "Security warnings found (non-blocking)"
+
+print_status "Checking license compliance..."
+if [[ -f "deny.toml" ]]; then
+    cargo deny check licenses || print_warning "License compliance issues (non-blocking)"
+else
+    print_warning "deny.toml not found, skipping license check"
+fi
+
+print_status "Checking for outdated dependencies..."
+cargo outdated --exit-code 1 || print_warning "Outdated dependencies found (non-blocking)"
+
+print_status "Checking supply chain security..."
+if command -v cargo-vet &> /dev/null; then
+    cargo vet --locked || print_warning "Supply chain issues (non-blocking)"
+else
+    print_warning "cargo-vet not installed, skipping supply chain check"
+fi
 
 # Full action - complete matrix testing
 if [[ "$ACTION" == "full" ]]; then

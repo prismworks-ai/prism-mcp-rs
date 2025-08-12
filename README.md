@@ -23,6 +23,8 @@ Production-ready Rust implementation of the Model Context Protocol (MCP), provid
 
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
+> 📊 For live CI/CD status and all badges, visit our [GitHub repository](https://github.com/prismworks-ai/prism-mcp-rs)
+
 ## Why Choose Prism MCP SDK
 
 ### Distinctive Features

@@ -180,7 +180,7 @@ fi
 
 print_info "Checking GitHub Pages status..."
 if command -v gh &> /dev/null; then
-    PAGES_URL=$(gh api repos/prismworks-ai/mcp-protocol-sdk/pages --jq '.html_url' 2>/dev/null || echo "")
+    PAGES_URL=$(gh api repos/prismworks-ai/prism-mcp-rs/pages --jq '.html_url' 2>/dev/null || echo "")
     if [ -n "$PAGES_URL" ]; then
         print_status "GitHub Pages enabled: $PAGES_URL"
     else

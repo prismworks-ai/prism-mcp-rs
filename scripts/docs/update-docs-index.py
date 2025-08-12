@@ -71,7 +71,7 @@ make docs-sync   # Sync with source code
 
 ---
 
-*For the latest updates, visit [GitHub](https://github.com/prismworks-ai/mcp-protocol-sdk) or [crates.io](https://crates.io/crates/mcp-protocol-sdk).*
+*For the latest updates, visit [GitHub](https://github.com/prismworks-ai/prism-mcp-rs) or [crates.io](https://crates.io/crates/prism-mcp-rs).*
 """
     
     with open('docs/README.md', 'w') as f:

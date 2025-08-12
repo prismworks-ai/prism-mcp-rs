@@ -45,13 +45,13 @@ echo "========================"
 
 # Extract badge URLs from README
 declare -A badges
-badges[CI]="https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/ci.yml/badge.svg"
-badges[Security]="https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/security.yml/badge.svg"
-badges[Dependencies]="https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/dependencies.yml/badge.svg"
-badges[Documentation]="https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/docs.yml/badge.svg"
-badges[Benchmarks]="https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/benchmarks.yml/badge.svg"
-badges[Release]="https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/release.yml/badge.svg"
-badges[Codecov]="https://codecov.io/gh/prismworks-ai/mcp-protocol-sdk/branch/main/graph/badge.svg"
+badges[CI]="https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg"
+badges[Security]="https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg"
+badges[Dependencies]="https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/dependencies.yml/badge.svg"
+badges[Documentation]="https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/docs.yml/badge.svg"
+badges[Benchmarks]="https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml/badge.svg"
+badges[Release]="https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/release.yml/badge.svg"
+badges[Codecov]="https://codecov.io/gh/prismworks-ai/prism-mcp-rs/branch/main/graph/badge.svg"
 
 for badge_name in "${!badges[@]}"; do
     url="${badges[$badge_name]}"
@@ -112,4 +112,4 @@ echo -e "${YELLOW}# Push any change to trigger CI (if needed):${NC}"
 echo "git commit --allow-empty -m 'trigger: refresh workflow badges' && git push"
 
 echo -e "\n${GREEN}[x] Badge Fix Analysis Complete!${NC}"
-echo -e "${BLUE}Check workflow status at: https://github.com/prismworks-ai/mcp-protocol-sdk/actions${NC}"
+echo -e "${BLUE}Check workflow status at: https://github.com/prismworks-ai/prism-mcp-rs/actions${NC}"

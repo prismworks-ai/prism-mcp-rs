@@ -9,13 +9,13 @@ echo "🔄 Refreshing GitHub Action badges..."
 
 # Array of workflow badge URLs to refresh
 BADGE_URLS=(
-    "https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/ci.yml/badge.svg"
-    "https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/security.yml/badge.svg"
-    "https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/dependencies.yml/badge.svg"
-    "https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/docs.yml/badge.svg"
-    "https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/benchmarks.yml/badge.svg"
-    "https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/release.yml/badge.svg"
-    "https://codecov.io/gh/prismworks-ai/mcp-protocol-sdk/branch/main/graph/badge.svg"
+    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg"
+    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg"
+    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/dependencies.yml/badge.svg"
+    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/docs.yml/badge.svg"
+    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml/badge.svg"
+    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/release.yml/badge.svg"
+    "https://codecov.io/gh/prismworks-ai/prism-mcp-rs/branch/main/graph/badge.svg"
 )
 
 echo "📊 Testing badge URLs..."
@@ -49,9 +49,9 @@ echo "5. Browser cache may show old badge status - try hard refresh (Ctrl+F5)"
 
 echo ""
 echo "🔗 Quick Links:"
-echo "- Actions: https://github.com/prismworks-ai/mcp-protocol-sdk/actions"
-echo "- CodeCov: https://codecov.io/gh/prismworks-ai/mcp-protocol-sdk"
-echo "- Repository: https://github.com/prismworks-ai/mcp-protocol-sdk"
+echo "- Actions: https://github.com/prismworks-ai/prism-mcp-rs/actions"
+echo "- CodeCov: https://codecov.io/gh/prismworks-ai/prism-mcp-rs"
+echo "- Repository: https://github.com/prismworks-ai/prism-mcp-rs"
 
 echo ""
 echo "[x] Badge refresh complete!"

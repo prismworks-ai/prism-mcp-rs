@@ -11,7 +11,7 @@ from pathlib import Path
 import urllib.parse
 
 # Configuration
-REPO_URL = "https://github.com/prismworks-ai/mcp-protocol-sdk"
+REPO_URL = "https://github.com/prismworks-ai/prism-mcp-rs"
 DOCS_DIR = Path("docs")
 MANUAL_DOCS = [
     "README.md",

@@ -30,13 +30,13 @@ echo "-------------------"
 
 # Test badge URLs
 BADGES=(
-    "CI:https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/ci.yml/badge.svg"
-    "Security:https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/security.yml/badge.svg"
-    "Dependencies:https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/dependencies.yml/badge.svg"
-    "Docs:https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/docs.yml/badge.svg"
-    "Benchmarks:https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/benchmarks.yml/badge.svg"
-    "Release:https://github.com/prismworks-ai/mcp-protocol-sdk/actions/workflows/release.yml/badge.svg"
-    "Codecov:https://codecov.io/gh/prismworks-ai/mcp-protocol-sdk/branch/main/graph/badge.svg"
+    "CI:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg"
+    "Security:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg"
+    "Dependencies:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/dependencies.yml/badge.svg"
+    "Docs:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/docs.yml/badge.svg"
+    "Benchmarks:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml/badge.svg"
+    "Release:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/release.yml/badge.svg"
+    "Codecov:https://codecov.io/gh/prismworks-ai/prism-mcp-rs/branch/main/graph/badge.svg"
 )
 
 for badge in "${BADGES[@]}"; do

@@ -14,7 +14,7 @@ import urllib.parse
 import re
 
 # Configuration
-REPO_URL = "https://github.com/prismworks-ai/mcp-protocol-sdk"
+REPO_URL = "https://github.com/prismworks-ai/prism-mcp-rs"
 DOCS_DIR = Path("docs")
 GENERATED_MARKER_FILE = Path(".local/docs-metadata.json")
 

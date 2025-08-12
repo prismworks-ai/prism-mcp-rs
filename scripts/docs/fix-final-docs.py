@@ -117,7 +117,7 @@ Choose the right transport for your use case. See the [Transport Guide](./transp
 
 - [API Documentation](https://docs.rs/mcp-protocol-sdk)
 - [Examples](../examples/)
-- [GitHub Repository](https://github.com/prismworks-ai/mcp-protocol-sdk)
+- [GitHub Repository](https://github.com/prismworks-ai/prism-mcp-rs)
 """
     
     with open('docs/getting-started.md', 'w') as f:

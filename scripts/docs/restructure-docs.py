@@ -569,7 +569,7 @@ Common issues and solutions:
 
 ## Support
 
-- [GitHub Issues](https://github.com/prismworks-ai/mcp-protocol-sdk/issues)
+- [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
 - [Documentation](https://docs.rs/mcp-protocol-sdk)
 - [Security Reports](./SECURITY.md)
 """

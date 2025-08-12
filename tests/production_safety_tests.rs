@@ -36,17 +36,17 @@ async fn test_critical_uri_safety_no_panics() {
     ];
 
     for uri in dangerous_uris {
-        println!("  Testing dangerous URI: '{}'", uri);
+        println!("  Testing dangerous URI: '{uri}'");
 
         // These should NEVER panic - they should return proper errors
         match normalize_uri(uri) {
-            Ok(normalized) => println!("    [x] Normalized to: {}", normalized),
-            Err(e) => println!("    [x] Properly returned error: {}", e),
+            Ok(normalized) => println!("    [x] Normalized to: {normalized}"),
+            Err(e) => println!("    [x] Properly returned error: {e}"),
         }
 
         match validate_uri(uri) {
             Ok(_) => println!("    [x] URI validated successfully"),
-            Err(e) => println!("    [x] URI validation properly failed: {}", e),
+            Err(e) => println!("    [x] URI validation properly failed: {e}"),
         }
 
         match parse_uri_with_params(uri) {
@@ -57,7 +57,7 @@ async fn test_critical_uri_safety_no_panics() {
                     params.len()
                 )
             }
-            Err(e) => println!("    [x] Parse properly failed: {}", e),
+            Err(e) => println!("    [x] Parse properly failed: {e}"),
         }
     }
 
@@ -81,12 +81,12 @@ async fn test_json_rpc_malformed_input_safety() {
     ];
 
     for malformed_json in malformed_requests {
-        println!("  Testing malformed JSON: {}", malformed_json);
+        println!("  Testing malformed JSON: {malformed_json}");
 
         // Try to parse as JsonRpcRequest - should not panic
         match serde_json::from_str::<JsonRpcRequest>(malformed_json) {
-            Ok(req) => println!("    Warning:  Unexpectedly parsed: {:?}", req),
-            Err(e) => println!("    [x] Properly failed to parse: {}", e),
+            Ok(req) => println!("    Warning:  Unexpectedly parsed: {req:?}"),
+            Err(e) => println!("    [x] Properly failed to parse: {e}"),
         }
     }
 
@@ -119,10 +119,10 @@ async fn test_extreme_message_sizes() {
             // Try to deserialize it back
             match serde_json::from_str::<JsonRpcRequest>(&serialized) {
                 Ok(_) => println!("    [x] Large message deserialized successfully"),
-                Err(e) => println!("    Warning:  Large message failed to deserialize: {}", e),
+                Err(e) => println!("    Warning:  Large message failed to deserialize: {e}"),
             }
         }
-        Err(e) => println!("    Warning:  Large message failed to serialize: {}", e),
+        Err(e) => println!("    Warning:  Large message failed to serialize: {e}"),
     }
 
     println!("[x] Extreme message size test completed");
@@ -150,7 +150,7 @@ async fn test_concurrent_server_operations_safety() {
                 0 => {
                     // Add tools
                     let _ = server_guard
-                        .add_simple_tool(&format!("tool-{}", i), "Concurrent test tool", |_args| {
+                        .add_simple_tool(&format!("tool-{i}"), "Concurrent test tool", |_args| {
                             Ok(vec![ContentBlock::text("concurrent response")])
                         })
                         .await;
@@ -176,7 +176,7 @@ async fn test_concurrent_server_operations_safety() {
     // Wait for all operations to complete
     for handle in handles {
         if let Err(e) = handle.await {
-            println!("    Warning:  Concurrent operation failed: {}", e);
+            println!("    Warning:  Concurrent operation failed: {e}");
         }
     }
 
@@ -198,14 +198,14 @@ async fn test_error_propagation_safety() {
     ];
 
     for error in test_errors {
-        println!("  Testing error: {}", error);
+        println!("  Testing error: {error}");
 
         // Check error can be safely serialized/displayed
-        let error_str = format!("{}", error);
-        let error_debug = format!("{:?}", error);
+        let error_str = format!("{error}");
+        let error_debug = format!("{error:?}");
 
-        println!("    [x] Error string: {}", error_str);
-        println!("    [x] Error debug: {}", error_debug);
+        println!("    [x] Error string: {error_str}");
+        println!("    [x] Error debug: {error_debug}");
 
         // Check error categorization works
         let category = match error {
@@ -218,7 +218,7 @@ async fn test_error_propagation_safety() {
             _ => "other",
         };
 
-        println!("    [x] Error category: {}", category);
+        println!("    [x] Error category: {category}");
     }
 
     println!("[x] Error propagation safety test completed");
@@ -240,7 +240,7 @@ async fn test_unicode_handling_safety() {
     ];
 
     for test_case in unicode_test_cases {
-        println!("  Testing Unicode: {:?}", test_case);
+        println!("  Testing Unicode: {test_case:?}");
 
         let request = JsonRpcRequest {
             jsonrpc: "2.0".to_string(),
@@ -260,10 +260,10 @@ async fn test_unicode_handling_safety() {
                 // Try to deserialize back
                 match serde_json::from_str::<JsonRpcRequest>(&serialized) {
                     Ok(_) => println!("    [x] Unicode round-trip successful"),
-                    Err(e) => println!("    Warning:  Unicode round-trip failed: {}", e),
+                    Err(e) => println!("    Warning:  Unicode round-trip failed: {e}"),
                 }
             }
-            Err(e) => println!("    Warning:  Unicode serialization failed: {}", e),
+            Err(e) => println!("    Warning:  Unicode serialization failed: {e}"),
         }
     }
 

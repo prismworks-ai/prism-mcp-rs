@@ -1,0 +1,178 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Validate version and prepare release
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+      
+      - name: Validate Cargo.toml version
+        run: |
+          CARGO_VERSION=$(grep "^version" Cargo.toml | head -1 | cut -d'"' -f2)
+          if [[ "$CARGO_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
+            echo "Error: Cargo.toml version ($CARGO_VERSION) doesn't match release version (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: Release v${{ steps.version.outputs.version }}
+          draft: true
+          prerelease: false
+          body: |
+            ## Changes in v${{ steps.version.outputs.version }}
+            
+            ### Features
+            - 
+            
+            ### Bug Fixes
+            - 
+            
+            ### Documentation
+            - 
+            
+            ### Breaking Changes
+            - 
+            
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+  # Build release artifacts
+  build:
+    name: Build Release
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: prism-mcp-rs-linux-amd64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: prism-mcp-rs-linux-arm64
+            use_cross: true
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: prism-mcp-rs-macos-amd64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: prism-mcp-rs-macos-arm64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: prism-mcp-rs-windows-amd64.exe
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      
+      - name: Install cross
+        if: matrix.use_cross
+        run: cargo install cross
+      
+      - name: Build release binary
+        run: |
+          if [[ "${{ matrix.use_cross }}" == "true" ]]; then
+            cross build --release --target ${{ matrix.target }} --all-features
+          else
+            cargo build --release --target ${{ matrix.target }} --all-features
+          fi
+        shell: bash
+      
+      - name: Package binary
+        run: |
+          cd target/${{ matrix.target }}/release
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            7z a ../../../${{ matrix.artifact_name }}.zip prism-mcp-rs.exe
+          else
+            tar czf ../../../${{ matrix.artifact_name }}.tar.gz prism-mcp-rs
+          fi
+          cd ../../../
+        shell: bash
+      
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.prepare.outputs.upload_url }}
+          asset_path: ./${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.zip' || '.tar.gz' }}
+          asset_name: ${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.zip' || '.tar.gz' }}
+          asset_content_type: ${{ matrix.os == 'windows-latest' && 'application/zip' || 'application/gzip' }}
+
+  # Publish to crates.io
+  publish:
+    name: Publish to crates.io
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Login to crates.io
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
+      
+      - name: Publish to crates.io
+        run: cargo publish --all-features
+        continue-on-error: true
+
+  # Generate and publish documentation
+  docs:
+    name: Publish Documentation
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Generate documentation
+        run: cargo doc --all-features --no-deps
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc
+          cname: docs.prismworks.ai

@@ -29,7 +29,7 @@ impl CodeChallengeMethod {
     }
 
     /// Parse from string
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse(s: &str) -> Option<Self> {
         match s {
             "plain" => Some(Self::Plain),
             "S256" => Some(Self::S256),
@@ -77,9 +77,9 @@ impl PkceParams {
         let _length = rng.gen_range(43..=128);
 
         // Use URL-safe base64 alphabet which matches the unreserved characters
-        let mut bytes = vec![0u8; 32];
-        for i in 0..32 {
-            bytes[i] = rng.r#gen::<u8>();
+        let mut bytes = [0u8; 32];
+        for byte in &mut bytes {
+            *byte = rng.r#gen::<u8>();
         }
 
         // Convert to URL-safe base64 without padding
@@ -174,8 +174,7 @@ pub fn select_challenge_method(
         Ok(CodeChallengeMethod::Plain)
     } else {
         Err(McpError::Auth(format!(
-            "No supported PKCE methods. Server supports: {:?}",
-            methods
+            "No supported PKCE methods. Server supports: {methods:?}"
         )))
     }
 }

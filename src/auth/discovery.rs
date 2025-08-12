@@ -46,7 +46,7 @@ impl DiscoveryClient {
             .get(&metadata_url)
             .send()
             .await
-            .map_err(|e| McpError::Auth(format!("Failed to fetch resource metadata: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Failed to fetch resource metadata: {e}")))?;
 
         if !response.status().is_success() {
             return Err(McpError::Auth(format!(
@@ -58,7 +58,7 @@ impl DiscoveryClient {
         let metadata: ProtectedResourceMetadata = response
             .json()
             .await
-            .map_err(|e| McpError::Auth(format!("Invalid resource metadata: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid resource metadata: {e}")))?;
 
         // Validate metadata
         if metadata.authorization_servers.is_empty() {
@@ -90,7 +90,7 @@ impl DiscoveryClient {
         issuer_url: &str,
     ) -> McpResult<AuthorizationServerMetadata> {
         let issuer = Url::parse(issuer_url)
-            .map_err(|e| McpError::Auth(format!("Invalid issuer URL: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid issuer URL: {e}")))?;
 
         // Build discovery URLs based on issuer format
         let discovery_urls = self.build_discovery_urls(&issuer)?;
@@ -122,12 +122,12 @@ impl DiscoveryClient {
     /// Build Protected Resource Metadata URL
     fn build_resource_metadata_url(&self, resource_url: &str) -> McpResult<String> {
         let base = Url::parse(resource_url)
-            .map_err(|e| McpError::Auth(format!("Invalid resource URL: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid resource URL: {e}")))?;
 
         // RFC 9728: /.well-known/oauth-protected-resource
         let metadata_url = base
             .join("/.well-known/oauth-protected-resource")
-            .map_err(|e| McpError::Auth(format!("Failed to build metadata URL: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Failed to build metadata URL: {e}")))?;
 
         Ok(metadata_url.to_string())
     }
@@ -149,7 +149,7 @@ impl DiscoveryClient {
                 "{}://{}/{}/.well-known/oauth-authorization-server/{}",
                 issuer.scheme(),
                 issuer.host_str().unwrap_or(""),
-                issuer.port().map(|p| format!(":{}", p)).unwrap_or_default(),
+                issuer.port().map(|p| format!(":{p}")).unwrap_or_default(),
                 path_component
             );
             urls.push(oauth_url);
@@ -159,7 +159,7 @@ impl DiscoveryClient {
                 "{}://{}/{}/.well-known/openid-configuration/{}",
                 issuer.scheme(),
                 issuer.host_str().unwrap_or(""),
-                issuer.port().map(|p| format!(":{}", p)).unwrap_or_default(),
+                issuer.port().map(|p| format!(":{p}")).unwrap_or_default(),
                 path_component
             );
             urls.push(oidc_insert_url);
@@ -201,7 +201,7 @@ impl DiscoveryClient {
             .get(url)
             .send()
             .await
-            .map_err(|e| McpError::Auth(format!("Failed to fetch metadata: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Failed to fetch metadata: {e}")))?;
 
         if !response.status().is_success() {
             return Err(McpError::Auth(format!(
@@ -215,15 +215,14 @@ impl DiscoveryClient {
         let json: serde_json::Value = response
             .json()
             .await
-            .map_err(|e| McpError::Auth(format!("Invalid metadata JSON: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid metadata JSON: {e}")))?;
 
         // Convert OpenID metadata to OAuth metadata if needed
         if let Ok(oidc_metadata) = serde_json::from_value::<OpenIDProviderMetadata>(json.clone()) {
             Ok(self.convert_oidc_to_oauth(oidc_metadata))
         } else {
-            serde_json::from_value::<AuthorizationServerMetadata>(json).map_err(|e| {
-                McpError::Auth(format!("Invalid authorization server metadata: {}", e))
-            })
+            serde_json::from_value::<AuthorizationServerMetadata>(json)
+                .map_err(|e| McpError::Auth(format!("Invalid authorization server metadata: {e}")))
         }
     }
 

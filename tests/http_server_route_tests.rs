@@ -10,31 +10,17 @@
 
 use axum::{
     Json, Router,
-    body::Body,
     extract::State,
-    http::{HeaderMap, Method, StatusCode},
-    response::{Sse, sse::Event},
+    http::StatusCode,
+    response::sse::Event,
     routing::{get, post},
 };
-use prism_mcp_rs::{
-    core::error::{McpError, McpResult},
-    protocol::types::{
-        JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
-        error_codes,
-    },
-    transport::{
-        http::HttpServerTransport,
-        traits::{ServerTransport, TransportConfig},
-    },
+use prism_mcp_rs::protocol::types::{
+    JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse, error_codes,
 };
 use serde_json::{Value, json};
-use std::{collections::HashMap, sync::Arc, time::Duration};
-use tokio::{
-    sync::{Mutex, RwLock, broadcast, mpsc},
-    time::timeout,
-};
-use tower::ServiceBuilder;
-use tower_http::cors::{Any, CorsLayer};
+use std::{sync::Arc, time::Duration};
+use tokio::sync::{RwLock, broadcast};
 
 #[cfg(feature = "http")]
 mod http_server_route_tests {
@@ -224,11 +210,7 @@ mod http_server_route_tests {
             };
 
             let serialized = serde_json::to_string(&notification);
-            assert!(
-                serialized.is_ok(),
-                "Notification {} should serialize",
-                method
-            );
+            assert!(serialized.is_ok(), "Notification {method} should serialize");
         }
     }
 
@@ -299,8 +281,6 @@ mod http_server_route_tests {
     #[cfg(all(feature = "tokio-stream", feature = "futures"))]
     #[tokio::test]
     async fn test_sse_stream_processing() {
-        use futures::stream::Stream;
-        use std::convert::Infallible;
         use tokio_stream::{StreamExt, wrappers::BroadcastStream};
 
         let (notification_sender, receiver) = broadcast::channel(1000);
@@ -524,7 +504,7 @@ mod http_server_route_tests {
             let error_response = JsonRpcError::error(
                 json!("test_id"),
                 error_code,
-                format!("Test error with code {}", error_code),
+                format!("Test error with code {error_code}"),
                 Some(json!({"additional": "data"})),
             );
 
@@ -601,14 +581,14 @@ mod http_server_route_tests {
             let request = JsonRpcRequest {
                 jsonrpc: "2.0".to_string(),
                 id: expected_id.clone(),
-                method: format!("test_method_{}", i),
+                method: format!("test_method_{i}"),
                 params: None,
             };
 
             let response_rx = handler(request);
             let response = response_rx.await;
 
-            assert!(response.is_ok(), "Handler {} should succeed", i);
+            assert!(response.is_ok(), "Handler {i} should succeed");
             let response = response.unwrap();
             assert_eq!(response.id, expected_id);
             assert_eq!(response.result, expected_result);
@@ -646,7 +626,7 @@ mod http_server_route_tests {
                 let request = JsonRpcRequest {
                     jsonrpc: "2.0".to_string(),
                     id: json!(i),
-                    method: format!("concurrent_method_{}", i),
+                    method: format!("concurrent_method_{i}"),
                     params: None,
                 };
 
@@ -660,7 +640,7 @@ mod http_server_route_tests {
         // Wait for all to complete
         for (i, handle) in handles.into_iter().enumerate() {
             let result = handle.await.unwrap();
-            assert!(result.is_ok(), "Concurrent request {} should succeed", i);
+            assert!(result.is_ok(), "Concurrent request {i} should succeed");
 
             let response = result.unwrap();
             assert_eq!(response.id, json!(i));

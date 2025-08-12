@@ -138,6 +138,12 @@ pub struct StandardPluginBuilder<T: ToolPlugin + Default + 'static> {
     _phantom: std::marker::PhantomData<T>,
 }
 
+impl<T: ToolPlugin + Default + 'static> Default for StandardPluginBuilder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: ToolPlugin + Default + 'static> StandardPluginBuilder<T> {
     /// Create a new builder
     pub fn new() -> Self {

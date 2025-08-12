@@ -2,6 +2,18 @@
 // !
 // ! This example demonstrates how to create an MCP client that connects to
 // ! an MCP server over WebSocket for real-time bidirectional communication.
+// !
+// ! ## Required Features
+// ! This example requires the following features to be enabled:
+// ! ```toml
+// ! [dependencies]
+// ! prism-mcp-rs = { version = "*", features = ["websocket-client"] }
+// ! ```
+// !
+// ! ## Running this Example
+// ! ```bash
+// ! cargo run --example websocket_client --features "websocket-client"
+// ! ```
 
 use serde_json::json;
 use std::collections::HashMap;

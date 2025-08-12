@@ -171,14 +171,14 @@ impl PluginLoader {
 
         for search_path in &self.search_paths {
             for ext in &extensions {
-                let path = search_path.join(format!("{}.{}", name, ext));
+                let path = search_path.join(format!("{name}.{ext}"));
                 if path.exists() {
                     return Some(path);
                 }
 
                 // Also try with lib prefix on Unix
                 if !cfg!(windows) {
-                    let path = search_path.join(format!("lib{}.{}", name, ext));
+                    let path = search_path.join(format!("lib{name}.{ext}"));
                     if path.exists() {
                         return Some(path);
                     }

@@ -2,6 +2,18 @@
 // !
 // ! This example demonstrates how to create an MCP server that communicates
 // ! over HTTP with Server-Sent Events for real-time notifications.
+// !
+// ! ## Required Features
+// ! This example requires the following features to be enabled:
+// ! ```toml
+// ! [dependencies]
+// ! prism-mcp-rs = { version = "*", features = ["http-server"] }
+// ! ```
+// !
+// ! ## Running this Example
+// ! ```bash
+// ! cargo run --example http_server --features "http-server"
+// ! ```
 
 use async_trait::async_trait;
 use serde_json::{Value, json};
@@ -59,8 +71,7 @@ impl ToolHandler for HttpCalculatorHandler {
             _ => {
                 return Ok(ToolResult {
                     content: vec![Content::text(format!(
-                        "Error: Unknown operation '{}'",
-                        operation
+                        "Error: Unknown operation '{operation}'"
                     ))],
                     is_error: Some(true),
                     structured_content: None,
@@ -70,10 +81,7 @@ impl ToolHandler for HttpCalculatorHandler {
         };
 
         Ok(ToolResult {
-            content: vec![Content::text(format!(
-                "{} {} {} = {}",
-                a, operation, b, result
-            ))],
+            content: vec![Content::text(format!("{a} {operation} {b} = {result}"))],
             is_error: None,
             structured_content: None,
             meta: None,

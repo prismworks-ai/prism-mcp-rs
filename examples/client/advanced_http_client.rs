@@ -11,7 +11,6 @@
 // !
 // ! Run with: cargo run --example complete_http_client --features http
 
-use futures;
 use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::transport::{HttpClientTransport, TransportConfig};
 use serde_json::json;
@@ -58,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start demo server
     let server_task = tokio::spawn(async {
         if let Err(e) = demo_server().await {
-            eprintln!("Demo server error: {}", e);
+            eprintln!("Demo server error: {e}");
         }
     });
 

@@ -41,7 +41,7 @@ mod boundary_condition_tests {
                     |args| {
                         let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
 
-                        Ok(vec![ContentBlock::text(&format!(
+                        Ok(vec![ContentBlock::text(format!(
                             "Received: '{}' (length: {})",
                             text,
                             text.len()
@@ -78,9 +78,7 @@ mod boundary_condition_tests {
             // Should handle all cases without crashing
             assert!(
                 result.is_ok(),
-                "Failed to handle empty string case {}: {:?}",
-                i,
-                test_case
+                "Failed to handle empty string case {i}: {test_case:?}"
             );
         }
     }
@@ -99,7 +97,7 @@ mod boundary_condition_tests {
                 .add_simple_tool("unicode-tool", "Tool for testing unicode", |args| {
                     let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
 
-                    Ok(vec![ContentBlock::text(&format!(
+                    Ok(vec![ContentBlock::text(format!(
                         "Unicode text: {} (chars: {})",
                         text,
                         text.chars().count()
@@ -139,9 +137,7 @@ mod boundary_condition_tests {
             // Should handle all unicode correctly
             assert!(
                 result.is_ok(),
-                "Failed to handle unicode text {}: {}",
-                i,
-                unicode_text
+                "Failed to handle unicode text {i}: {unicode_text}"
             );
         }
     }
@@ -160,7 +156,7 @@ mod boundary_condition_tests {
                 .add_simple_tool("numeric-tool", "Tool for testing numeric values", |args| {
                     let number = args.get("number").and_then(|v| v.as_f64()).unwrap_or(0.0);
 
-                    Ok(vec![ContentBlock::text(&format!(
+                    Ok(vec![ContentBlock::text(format!(
                         "Number: {} (type: {})",
                         number,
                         if number.fract() == 0.0 {
@@ -176,12 +172,12 @@ mod boundary_condition_tests {
 
         // Test boundary numeric values
         let numeric_tests = vec![
-            json!(0),                       // Zero
-            json!(-0),                      // Negative zero
-            json!(i64::MAX),                // Max i64
-            json!(i64::MIN),                // Min i64
-            json!(1.7976931348623157e+308), // Near max float
-            json!(2.2250738585072014e-308), // Near min positive float
+            json!(0),                           // Zero
+            json!(-0),                          // Negative zero
+            json!(i64::MAX),                    // Max i64
+            json!(i64::MIN),                    // Min i64
+            json!(1.797_693_134_862_315_7e308), // Near max float
+            json!(2.2250738585072014e-308),     // Near min positive float
         ];
 
         for (i, numeric_value) in numeric_tests.iter().enumerate() {
@@ -203,9 +199,7 @@ mod boundary_condition_tests {
             // Should handle all numeric values without crashing
             assert!(
                 result.is_ok(),
-                "Failed to handle numeric value {}: {:?}",
-                i,
-                numeric_value
+                "Failed to handle numeric value {i}: {numeric_value:?}"
             );
         }
     }
@@ -237,9 +231,8 @@ mod boundary_condition_tests {
                     }
 
                     let depth = count_depth(data);
-                    Ok(vec![ContentBlock::text(&format!(
-                        "Nested structure depth: {}",
-                        depth
+                    Ok(vec![ContentBlock::text(format!(
+                        "Nested structure depth: {depth}"
                     ))])
                 })
                 .await
@@ -282,11 +275,7 @@ mod boundary_condition_tests {
             let result = server_guard.handle_request(request).await;
 
             // Should handle moderate nesting successfully
-            assert!(
-                result.is_ok(),
-                "Failed to handle nested structure: {}",
-                name
-            );
+            assert!(result.is_ok(), "Failed to handle nested structure: {name}");
         }
     }
 }
@@ -355,7 +344,7 @@ mod error_recovery_tests {
             let result = server_guard.handle_request(request).await;
 
             if *should_succeed {
-                assert!(result.is_ok(), "Expected success for {}", tool_name);
+                assert!(result.is_ok(), "Expected success for {tool_name}");
                 success_count += 1;
             } else {
                 // For failures, we expect either an error or a smooth error response
@@ -510,7 +499,7 @@ mod error_recovery_tests {
             let result = server_guard.handle_request(request).await;
 
             if *should_succeed {
-                assert!(result.is_ok(), "Cleanup scenario {} should succeed", i);
+                assert!(result.is_ok(), "Cleanup scenario {i} should succeed");
             } else {
                 // Should fail smoothly without resource leaks
                 // The important thing is that the server continues to function
@@ -546,7 +535,7 @@ mod malformed_input_tests {
                     if request.jsonrpc != "2.0" || request.method.is_empty() {
                         // This is expected for malformed requests
                     } else {
-                        println!("Unexpectedly parsed malformed JSON {}: {:?}", i, request);
+                        println!("Unexpectedly parsed malformed JSON {i}: {request:?}");
                     }
                 }
                 Err(_) => {
@@ -625,9 +614,8 @@ mod malformed_input_tests {
                             .unwrap_or("unknown");
                         let count = args.get("count").and_then(|v| v.as_u64()).unwrap_or(0);
 
-                        Ok(vec![ContentBlock::text(&format!(
-                            "Processed: {} (count: {})",
-                            name, count
+                        Ok(vec![ContentBlock::text(format!(
+                            "Processed: {name} (count: {count})"
                         ))])
                     },
                 )
@@ -701,9 +689,8 @@ mod network_failure_tests {
                             std::thread::sleep(Duration::from_millis(delay_ms));
                         }
 
-                        Ok(vec![ContentBlock::text(&format!(
-                            "Response after {}ms delay",
-                            delay_ms
+                        Ok(vec![ContentBlock::text(format!(
+                            "Response after {delay_ms}ms delay"
                         ))])
                     },
                 )
@@ -793,9 +780,8 @@ mod network_failure_tests {
                         // Simulate some processing time
                         std::thread::sleep(Duration::from_millis(10));
 
-                        Ok(vec![ContentBlock::text(&format!(
-                            "Completed operation {}",
-                            operation_id
+                        Ok(vec![ContentBlock::text(format!(
+                            "Completed operation {operation_id}"
                         ))])
                     },
                 )
@@ -836,17 +822,15 @@ mod network_failure_tests {
         for result in results {
             match result {
                 Ok(Ok(_)) => success_count += 1,
-                Ok(Err(e)) => println!("Request failed: {}", e),
-                Err(e) => println!("Task failed: {}", e),
+                Ok(Err(e)) => println!("Request failed: {e}"),
+                Err(e) => println!("Task failed: {e}"),
             }
         }
 
         // Most requests should succeed despite concurrency
         assert!(
             success_count >= (num_concurrent * 8) / 10,
-            "Too many failures: {}/{}",
-            success_count,
-            num_concurrent
+            "Too many failures: {success_count}/{num_concurrent}"
         );
     }
 }

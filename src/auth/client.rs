@@ -152,20 +152,19 @@ impl AuthorizationClient {
             .json(&request)
             .send()
             .await
-            .map_err(|e| McpError::Auth(format!("Registration request failed: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Registration request failed: {e}")))?;
 
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_default();
             return Err(McpError::Auth(format!(
-                "Client registration failed: {}",
-                error_text
+                "Client registration failed: {error_text}"
             )));
         }
 
         let registration: ClientRegistrationResponse = response
             .json()
             .await
-            .map_err(|e| McpError::Auth(format!("Invalid registration response: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid registration response: {e}")))?;
 
         // Store registration
         {
@@ -304,7 +303,7 @@ impl AuthorizationClient {
 pub fn add_auth_header(headers: &mut reqwest::header::HeaderMap, token: &str) {
     use reqwest::header::{AUTHORIZATION, HeaderValue};
 
-    let value = format!("Bearer {}", token);
+    let value = format!("Bearer {token}");
     if let Ok(header_value) = HeaderValue::from_str(&value) {
         headers.insert(AUTHORIZATION, header_value);
     }
@@ -312,11 +311,7 @@ pub fn add_auth_header(headers: &mut reqwest::header::HeaderMap, token: &str) {
 
 /// Extract bearer token from Authorization header
 pub fn extract_bearer_token(auth_header: &str) -> Option<String> {
-    if auth_header.starts_with("Bearer ") {
-        Some(auth_header[7..].to_string())
-    } else {
-        None
-    }
+    auth_header.strip_prefix("Bearer ").map(|s| s.to_string())
 }
 
 #[cfg(test)]

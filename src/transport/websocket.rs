@@ -662,8 +662,10 @@ mod tests {
 
     #[test]
     fn test_websocket_server_with_config() {
-        let mut config = TransportConfig::default();
-        config.max_message_size = Some(64 * 1024);
+        let config = TransportConfig {
+            max_message_size: Some(64 * 1024),
+            ..Default::default()
+        };
 
         let transport = WebSocketServerTransport::with_config("0.0.0.0:9090", config);
         assert_eq!(transport.bind_addr, "0.0.0.0:9090");

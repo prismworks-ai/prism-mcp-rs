@@ -82,7 +82,7 @@ impl ToolHandler for DataGeneratorTool {
 
         Ok(ToolResult {
             content: vec![ContentBlock::text(
-                &serde_json::to_string_pretty(&content).unwrap_or_default(),
+                serde_json::to_string_pretty(&content).unwrap_or_default(),
             )],
             is_error: Some(false),
             structured_content: None,
@@ -131,9 +131,8 @@ impl ToolHandler for NotificationTool {
         .collect();
 
         Ok(ToolResult {
-            content: vec![ContentBlock::text(&format!(
-                "Notification processed: {}",
-                message
+            content: vec![ContentBlock::text(format!(
+                "Notification processed: {message}"
             ))],
             is_error: Some(false),
             structured_content: None,

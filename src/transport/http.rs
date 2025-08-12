@@ -331,7 +331,7 @@ impl Transport for HttpClientTransport {
                 pending.remove(&request_id);
             });
 
-            let error = McpError::connection(format!("Request serialization failed: {}", e));
+            let error = McpError::connection(format!("Request serialization failed: {e}"));
 
             // Log parse error
             let error_clone = error.clone();
@@ -730,8 +730,10 @@ mod tests {
 
     #[test]
     fn test_http_server_with_config() {
-        let mut config = TransportConfig::default();
-        config.compression = true;
+        let config = TransportConfig {
+            compression: true,
+            ..Default::default()
+        };
 
         let transport = HttpServerTransport::with_config("0.0.0.0:8080", config);
         assert_eq!(transport.bind_addr, "0.0.0.0:8080");
@@ -910,8 +912,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_http_server_with_custom_config() {
-        let mut config = TransportConfig::default();
-        config.compression = true;
+        let mut config = TransportConfig {
+            compression: true,
+            ..Default::default()
+        };
         config
             .headers
             .insert("Server".to_string(), "MCP-Test/1.0".to_string());
@@ -928,10 +932,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_http_client_with_custom_config() {
-        let mut config = TransportConfig::default();
-        config.read_timeout_ms = Some(5000);
-        config.connect_timeout_ms = Some(2000);
-        config.write_timeout_ms = Some(3000);
+        let mut config = TransportConfig {
+            read_timeout_ms: Some(5000),
+            connect_timeout_ms: Some(2000),
+            write_timeout_ms: Some(3000),
+            ..Default::default()
+        };
         config
             .headers
             .insert("X-Custom-Header".to_string(), "test-value".to_string());
@@ -1009,11 +1015,13 @@ mod tests {
         assert!(default_config.headers.is_empty());
 
         // Test config with all options
-        let mut full_config = TransportConfig::default();
-        full_config.read_timeout_ms = Some(10000);
-        full_config.write_timeout_ms = Some(5000);
-        full_config.connect_timeout_ms = Some(3000);
-        full_config.compression = true;
+        let mut full_config = TransportConfig {
+            read_timeout_ms: Some(10000),
+            write_timeout_ms: Some(5000),
+            connect_timeout_ms: Some(3000),
+            compression: true,
+            ..Default::default()
+        };
         full_config
             .headers
             .insert("Test-Header".to_string(), "test-value".to_string());

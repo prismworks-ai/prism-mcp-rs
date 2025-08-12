@@ -1,281 +1,286 @@
-# Contributing to MCP Protocol SDK
+# Contributing to Prism MCP SDK
 
-<div align="center">
+## Overview
 
-# Join Us in Building the Industry Standard
+Thank you for your interest in contributing to the Prism MCP SDK. This document provides guidelines and procedures for contributing to the project.
 
-**Thank you for your interest in contributing to the MCP Protocol SDK!**
+## Project Vision
 
-We're building the de facto industry standard for developing MCP clients and servers in Rust. 
-Your contributions help us achieve and maintain the highest standards of quality.
+The Prism MCP SDK aims to be the standard Rust implementation for the Model Context Protocol, providing:
+- Production-ready components with enterprise reliability
+- Complete protocol compliance with the MCP specification
+- High-performance implementation leveraging Rust's capabilities
+- Comprehensive documentation and examples
 
-[![GitHub stars](https://img.shields.io/github/stars/prismworks-ai/prism-mcp-rs?style=social)](https://github.com/prismworks-ai/prism-mcp-rs)
-[![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
-[![Discord](https://img.shields.io/discord/YOUR_DISCORD_ID?label=Discord&logo=discord)](https://discord.gg/YOUR_INVITE)
+## Project Standards
 
-</div>
+### Code Quality Metrics
+- Test coverage: 65% minimum (80% target for new code)
+- Zero unsafe code policy
+- Full transport support (STDIO, HTTP, WebSocket, HTTP/2)
+- Complete error handling and recovery mechanisms
+- Production-tested implementations
 
-# Why Contribute?
+## Contribution Areas
 
-# Project Vision
-The MCP Protocol SDK aims to be the standard Rust implementation for the Model Context Protocol, providing:
-- **Production-ready** components with production-ready reliability
-- **100% protocol compliance** with the MCP specification
-- **high-quality performance** leveraging Rust's strengths
-- **complete documentation** that sets the standard
+### Documentation
 
-# ** Our Accomplishments
-- **65%+ test coverage** with complete test suite
-- **Zero unsafe code** for maximum safety
-- **Full transport support** (STDIO, HTTP, WebSocket, HTTP/2)
-- **Enterprise features** (auth, monitoring, error handling)
-- **Active production use** in real-world applications
+Documentation improvements are valuable contributions:
+- Correct typos or unclear explanations
+- Add practical examples and use cases
+- Improve API documentation clarity
+- Contribute translations
 
-# * What You'll Gain
-- **Recognition** as a contributor to a foundational Rust library
-- **Experience** with production-grade Rust development
-- **Knowledge** of the Model Context Protocol ecosystem
-- **Community** with passionate developers building the future
+### Bug Reports
 
-# Ways to Contribute
-
-# Note: Documentation
-Help us maintain the highest documentation standards:
-- Fix typos or unclear explanations (use our 2-click reporting!)
-- Add examples and use cases
-- Improve API documentation
-- Translate documentation
-
-# Bug: Bug Reports
-Found a bug? We want to know:
-1. Check if it's already reported in [Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
+When reporting bugs:
+1. Check existing [Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
 2. Create a new issue with:
- - Clear description
- - Reproduction steps
- - Expected vs actual behavior
- - System information
+   - Clear problem description
+   - Steps to reproduce
+   - Expected versus actual behavior
+   - System specifications and versions
 
-# Feature Development
-Want to add a feature?
-1. Check our [roadmap](https://github.com/prismworks-ai/prism-mcp-rs/projects)
-2. Discuss in an issue first
-3. Follow our coding standards
-4. Submit a PR with tests
+### Feature Development
 
-# Test: Testing
-Help us reach 100% coverage:
-- Write unit tests
-- Add integration tests
-- Create test fixtures
-- Test on different platforms
+For new features:
+1. Review the [project roadmap](https://github.com/prismworks-ai/prism-mcp-rs/projects)
+2. Discuss the feature in an issue before implementation
+3. Follow coding standards outlined below
+4. Submit a pull request with comprehensive tests
 
-# Note: Ideas & Feedback
-Your input shapes the project:
-- Suggest improvements
-- Share use cases
-- Review PRs
-- Participate in discussions
+### Testing
 
-# Getting Started
+Test contributions help ensure reliability:
+- Write unit tests for new functionality
+- Add integration tests for complex scenarios
+- Create test fixtures for edge cases
+- Verify cross-platform compatibility
 
-# Prerequisites
+### Design and Architecture
+
+Architectural contributions:
+- Propose improvements through issues
+- Share use cases and requirements
+- Review pull requests
+- Participate in design discussions
+
+## Development Environment
+
+### Prerequisites
+
 ```bash
-# Rust toolchain
+# Install Rust toolchain
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup update stable
 
-# Development tools
+# Install development tools
 cargo install cargo-watch cargo-edit cargo-audit
 
-# For documentation
+# For documentation generation
 pip3 install --user -r scripts/requirements.txt
 ```
 
-# Setup
+### Initial Setup
+
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/prismworks-ai/prism-mcp-rs.git
 cd prism-mcp-rs
 
-# Set up development environment./scripts/dev/setup-dev.sh
+# Configure development environment
+./scripts/dev/setup-dev.sh
 
-# Run tests to verify setup
+# Verify installation
 cargo test
 ```
 
-# Development Workflow
+### Development Workflow
+
 ```bash
-# Before starting work
-make dev-setup # One-time setup
+# Initial setup (once)
+make dev-setup
 
 # During development
-make quick # Quick checks
-cargo watch -x test # Auto-run tests
+make quick         # Quick validation
+cargo watch -x test  # Continuous testing
 
 # Before committing
-make commit-ready # Format, lint, test
+make commit-ready  # Format, lint, test
 
 # Before pushing
-make push-ready # Full CI checks
+make push-ready    # Complete CI validation
 ```
 
-# Coding Standards
+## Coding Standards
 
-# Rust Guidelines
-- Follow standard Rust naming conventions
-- Use `rustfmt` for formatting
-- Pass `clippy` lints
-- Document public APIs
-- Write tests for new code
+### Rust Guidelines
 
-# Code Quality Standards
-- **Test Coverage**: Aim for 80%+ on new code
-- **Documentation**: All public items must be documented
-- **Examples**: Add examples for complex features
-- **Error Handling**: Use proper error types
-- **Performance**: Profile and benchmark critical paths
+- Follow Rust naming conventions (RFC 430)
+- Use `rustfmt` for consistent formatting
+- Pass all `clippy` lints without warnings
+- Document all public APIs with examples
+- Write tests for all new functionality
 
-# Commit Messages
-Follow conventional commits:
+### Quality Requirements
+
+| Aspect | Requirement |
+|--------|-------------|
+| Test Coverage | 80% for new code, 65% overall |
+| Documentation | All public items documented |
+| Examples | Provided for complex features |
+| Error Handling | Explicit error types with context |
+| Performance | Benchmarked for critical paths |
+
+### Commit Message Format
+
+Follow conventional commits specification:
+
 ```
 type(scope): description
 
 [optional body]
 
-[optional footer(s)]
+[optional footer]
 ```
 
 Types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`
 
 Example:
 ```
-feat(transport): add HTTP/2 server push support
+feat(transport): implement HTTP/2 server push
 
-Implements server push capability for HTTP/2 transport
-with automatic resource detection and priority handling.
+Adds server push capability for HTTP/2 transport with automatic
+resource detection and priority handling.
 
 Closes #123
 ```
 
-# Pull Request Process
+## Pull Request Process
 
-1. **Fork & Branch**
- ```bash
- git checkout -b feature/your-feature
- ```
+### 1. Preparation
 
-2. **Develop**
- - Write code following our standards
- - Add tests (aim for 80%+ coverage)
- - Update documentation
- - Run `make push-ready`
-
-3. **Submit PR**
- - Fill out the PR template
- - Link related issues
- - Ensure CI passes
- - Request review
-
-4. **Review Process**
- - Address feedback promptly
- - Keep PR focused and small
- - Update branch with main if needed
-
-5. **Merge**
- - Squash commits if requested
- - Celebrate your contribution! ## Testing
-
-# Running Tests
 ```bash
-# All tests
+git checkout -b feature/your-feature-name
+```
+
+### 2. Development
+
+- Implement changes following coding standards
+- Add tests achieving 80% coverage for new code
+- Update relevant documentation
+- Run `make push-ready` to validate
+
+### 3. Submission
+
+- Complete the pull request template
+- Link related issues
+- Ensure CI checks pass
+- Request review from maintainers
+
+### 4. Review Process
+
+- Address feedback constructively
+- Keep pull requests focused and atomic
+- Update branch with main if needed
+- Maintain clean commit history
+
+### 5. Merge
+
+- Squash commits if requested
+- Ensure final CI validation passes
+
+## Testing Guidelines
+
+### Running Tests
+
+```bash
+# Complete test suite
 cargo test
 
-# Specific module
+# Specific module tests
 cargo test transport::
 
 # With all features
 cargo test --all-features
 
-# Integration tests./scripts/ci/integration_test.sh
+# Integration tests
+./scripts/ci/integration_test.sh
 ```
 
-# Writing Tests
+### Writing Tests
+
 ```rust
 #[cfg(test)]
 mod tests {
- use super::*;
+    use super::*;
 
- #[test]
- fn test_feature() {
- // Arrange
- let input = prepare_test_data();
- 
- // Act
- let result = function_under_test(input);
- 
- // Assert
- assert_eq!(result, expected_value);
- }
+    #[test]
+    fn test_functionality() {
+        // Arrange
+        let input = prepare_test_data();
+        
+        // Act
+        let result = function_under_test(input);
+        
+        // Assert
+        assert_eq!(result, expected_value);
+    }
 
- #[tokio::test]
- async fn test_async_feature() {
- // Test async code
- }
+    #[tokio::test]
+    async fn test_async_functionality() {
+        // Async test implementation
+    }
 }
 ```
 
-# Documentation
+## Documentation Standards
 
-# Writing Documentation
+### API Documentation
+
 - Use `///` for public item documentation
-- Include examples with ` ```rust` blocks
-- Add `# Examples` sections
-- Keep it clear and concise
+- Include code examples in documentation
+- Add `# Examples` sections where appropriate
+- Maintain clarity and conciseness
 
-# Generating Documentation
+### Documentation Generation
+
 ```bash
-# Generate with improved headers
+# Generate documentation
 make docs
 
 # View locally
 make docs-open
 
-# Check quality
+# Validate documentation
 make docs-check
 ```
 
-# Community
+## Community Guidelines
 
-# Code of Conduct
-We follow the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct).
-Be kind, respectful, and constructive.
+### Code of Conduct
 
-# Getting Help
-## [Documentation](https://docs.rs/prism-mcp-rs)
-- Chat: [Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
-- Bug: [Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
-- Email: Email: mcp-sdk@prismworks.ai
+This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). 
+All interactions should be respectful, constructive, and professional.
 
-# Recognition
-All contributors are recognized in:
-- [Contributors](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
+### Communication Channels
+
+- **Documentation**: [docs.rs/prism-mcp-rs](https://docs.rs/prism-mcp-rs)
+- **Discussions**: [GitHub Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
+- **Issues**: [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
+- **Email**: mcp-sdk@prismworks.ai
+
+### Recognition
+
+Contributors are recognized in:
+- [Contributors Graph](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
 - Release notes
 - Project documentation
 
-# License
+## License Agreement
 
-By contributing, you agree that your contributions will be licensed under the same license as the project (MIT).
+By contributing to this project, you agree that your contributions will be licensed under the MIT License, consistent with the project's licensing.
 
 ---
 
-<div align="center">
-
-**Thank you for helping us build the future of MCP in Rust!** Rust
-
-Every contribution, no matter how small, makes a difference.
-
-[Start Contributing](https://github.com/prismworks-ai/prism-mcp-rs/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) |
-[Join Discussion](https://github.com/prismworks-ai/prism-mcp-rs/discussions) |
-[View Roadmap](https://github.com/prismworks-ai/prism-mcp-rs/projects)
-
-</div>
+For questions or clarifications about the contribution process, please open a discussion or contact the maintainers directly.

@@ -6,6 +6,18 @@
 // ! - Chunked transfer encoding
 // ! - Performance monitoring
 // ! - Automatic optimization
+// !
+// ! ## Required Features
+// ! This example requires the following features to be enabled:
+// ! ```toml
+// ! [dependencies]
+// ! prism-mcp-rs = { version = "*", features = ["streaming-http", "tracing-subscriber", "chrono"] }
+// ! ```
+// !
+// ! ## Running this Example
+// ! ```bash
+// ! cargo run --example streaming_http_showcase --features "streaming-http tracing-subscriber chrono"
+// ! ```
 
 use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::transport::{CompressionType, StreamingConfig};
@@ -52,7 +64,7 @@ async fn demo_default_streaming() -> McpResult<()> {
 
     #[cfg(feature = "streaming-http")]
     {
-        let mut client = McpClient::new("streaming-demo".to_string(), "1.0.0".to_string());
+        let client = McpClient::new("streaming-demo".to_string(), "1.0.0".to_string());
 
         println!("- Default Configuration:");
         let config = StreamingConfig::default();
@@ -89,7 +101,7 @@ async fn demo_memory_improved() -> McpResult<()> {
 
     #[cfg(feature = "streaming-http")]
     {
-        let mut client = McpClient::new("memory-demo".to_string(), "1.0.0".to_string());
+        let client = McpClient::new("memory-demo".to_string(), "1.0.0".to_string());
 
         println!("- Memory-improved Configuration:");
         let config = StreamingConfig::memory_improved();
@@ -139,7 +151,7 @@ async fn demo_performance_improved() -> McpResult<()> {
 
     #[cfg(feature = "streaming-http")]
     {
-        let mut client = McpClient::new("perf-demo".to_string(), "1.0.0".to_string());
+        let client = McpClient::new("perf-demo".to_string(), "1.0.0".to_string());
 
         println!("- Performance-improved Configuration:");
         let config = StreamingConfig::performance_improved();
@@ -397,8 +409,8 @@ async fn demo_compression_showcase() -> McpResult<()> {
             let data_bytes = data.as_bytes();
             let original_size = data_bytes.len();
 
-            println!("\n {}:", description);
-            println!("   Original size: {} bytes", original_size);
+            println!("\n {description}:");
+            println!("   Original size: {original_size} bytes");
 
             // Test different compression algorithms
             let gzip_compressor = StreamingCompressor::new(CompressionType::Gzip);
@@ -494,7 +506,7 @@ fn create_test_payload(
         }
         "json" => {
             // Create nested JSON structure
-            let mut nested = serde_json::json!({"level": 1});
+            let nested = serde_json::json!({"level": 1});
             let json_str = serde_json::to_string(&nested).unwrap();
             let target_size = size_bytes / json_str.len() + 1;
 
@@ -549,5 +561,4 @@ async fn simulate_request_with_timing(payload_size: usize, transport_type: &str)
     start.elapsed()
 }
 
-use chrono;
 use std::time::Duration;

@@ -31,6 +31,12 @@ MCP protocol types and messages.
 Core utilities, error handling, and helper types.
 - [Local Docs](../target/doc/prism_mcp_rs/core/index.html)
 
+### Plugin
+Plugin system for dynamic component loading.
+- [Local Docs](../target/doc/prism_mcp_rs/plugin/index.html)
+- Component Types: Tools, Resources, Prompts, Completions
+- Dynamic loading and hot reload support
+
 ### Prelude
 Commonly used types and traits for convenient imports.
 - [Local Docs](../target/doc/prism_mcp_rs/prelude/index.html)

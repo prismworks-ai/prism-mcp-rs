@@ -9,6 +9,7 @@ use crate::core::tool::Tool;
 use crate::core::tool_metadata::{
     CategoryFilter, DeprecationSeverity, ImprovedToolMetadata, ToolBehaviorHints,
 };
+#[cfg(feature = "chrono")]
 use chrono::Utc;
 use std::collections::HashMap;
 use std::time::Duration;

@@ -1,158 +1,101 @@
 # Client Examples
 
-This directory contains examples demonstrating how to build MCP clients using the SDK.
+This directory contains examples demonstrating how to build MCP clients using different transport mechanisms.
 
-# Examples
+## Available Examples
 
-# Basic Client
-- **File**: `basic_client.rs`
-- **Features**: `stdio`
-- **Description**: Simple MCP client using stdio transport
+### HTTP Client (`http_client.rs`)
+Basic HTTP client with Server-Sent Events for notifications.
 
-**Key Code Pattern:**
-```rust
-use mcp_protocol_sdk::{
- client::{McpClient, ClientSession},
- transport::stdio::StdioClientTransport,
-};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
- let client = McpClient::new("demo-client".to_string(), "1.0.0".to_string());
- let session = ClientSession::new(client);
- 
- let transport = StdioClientTransport::new("./server-command".to_string()).await?;
- let init_result = session.connect(transport).await?;
- 
- println!("Connected to: {} v{}", 
- init_result.server_info.name, 
- init_result.server_info.version
- );
- 
- // Use client...
- Ok(())
-}
-```
-
-# HTTP Client
-- **File**: `http_client.rs`
-- **Features**: `http`
-- **Description**: MCP client using HTTP transport
-
-**Key Code Pattern:**
-```rust
-use mcp_protocol_sdk::{
- client::{McpClient, ClientSession},
- transport::http::HttpClientTransport,
-};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
- let client = McpClient::new("http-client".to_string(), "1.0.0".to_string());
- let session = ClientSession::new(client);
- 
- let transport = HttpClientTransport::new("http://localhost:3000/mcp".to_string()).await?;
- let init_result = session.connect(transport).await?;
- 
- let client = session.client();
- let client_guard = client.lock().await;
- 
- // List available tools
- let tools = client_guard.list_tools().await?;
- println!("Available tools: {:?}", tools.tools.len());
- 
- Ok(())
-}
-```
-
-# complete HTTP Client
-- **File**: `complete_http_client.rs`
-- **Features**: `http`, `tracing-subscriber`, `chrono`, `fastrand`
-- **Description**: complete HTTP client with full feature set including retry logic and health checks
-
-# WebSocket Client
-- **File**: `websocket_client.rs`
-- **Features**: `websocket`
-- **Description**: MCP client using WebSocket transport
-
-**Key Code Pattern:**
-```rust
-use mcp_protocol_sdk::{
- client::{McpClient, ClientSession},
- transport::websocket::WebSocketClientTransport,
-};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
- let client = McpClient::new("ws-client".to_string(), "1.0.0".to_string());
- let session = ClientSession::new(client);
- 
- let transport = WebSocketClientTransport::new("ws://localhost:8080").await?;
- let init_result = session.connect(transport).await?;
- 
- // Real-time communication ready
- Ok(())
-}
-```
-
-# Conservative HTTP Demo
-- **File**: `conservative_http_demo.rs`
-- **Features**: `http`, `tracing-subscriber`
-- **Description**: Conservative HTTP client implementation with production-ready patterns
-
-# Running Examples
+**Required Features:** `http-client`
 
 ```bash
-# Run basic client example
-cargo run --example basic_client --features stdio
-
-# Run HTTP client example
-cargo run --example http_client --features http
-
-# Run complete HTTP client example
-cargo run --example complete_http_client --features "http,tracing-subscriber,chrono,fastrand"
-
-# Run WebSocket client example
-cargo run --example websocket_client --features websocket
-
-# Run conservative HTTP demo
-cargo run --example conservative_http_demo --features "http,tracing-subscriber"
+cargo run --example http_client --features "http-client"
 ```
 
-# Common Client Patterns
+**Key Features:**
+- HTTP POST for requests
+- Server-Sent Events for real-time notifications
+- Automatic reconnection
+- Request/response pattern
 
-# Tool Calling
-```rust
-let client = session.client();
-let client_guard = client.lock().await;
+### Advanced HTTP Client (`advanced_http_client.rs`)
+HTTP client with streaming capabilities and advanced features.
 
-let mut args = HashMap::new();
-args.insert("message".to_string(), json!("Hello World"));
+**Required Features:** `http-client`
 
-let result = client_guard.call_tool("echo".to_string(), Some(args)).await?;
-println!("Tool result: {:?}", result);
+```bash
+cargo run --example advanced_http_client --features "http-client"
 ```
 
-# Resource Access
-```rust
-// List available resources
-let resources = client_guard.list_resources(None).await?;
-for resource in &resources.resources {
- println!("Resource: {} ({})", resource.name, resource.uri);
-}
+**Key Features:**
+- Streaming response handling
+- Compression support
+- Progress tracking
+- Large payload optimization
 
-// Read a specific resource
-let content = client_guard.read_resource("file://example.txt".to_string()).await?;
-println!("Resource content: {:?}", content);
+### Conservative HTTP Demo (`conservative_http_demo.rs`)
+Memory-efficient HTTP client implementation.
+
+**Required Features:** `http-client`
+
+```bash
+cargo run --example conservative_http_demo --features "http-client"
 ```
 
-# Prompt Handling
-```rust
-// List available prompts
-let prompts = client_guard.list_prompts(None).await?;
-for prompt in &prompts.prompts {
- println!("Prompt: {} - {}", prompt.name, prompt.description.as_deref().unwrap_or("No description"));
-}
+**Key Features:**
+- Minimal memory footprint
+- Streaming processing
+- Efficient resource management
+- Suitable for constrained environments
+
+### WebSocket Client (`websocket_client.rs`)
+Real-time bidirectional WebSocket client.
+
+**Required Features:** `websocket-client`
+
+```bash
+cargo run --example websocket_client --features "websocket-client"
 ```
 
-For more details on building MCP clients, see the [Implementation Guide](../../docs/implementation-guide.md) and [Getting Started Guide](../../docs/getting-started.md).
+**Key Features:**
+- Full-duplex communication
+- Lowest latency (<5ms)
+- Automatic reconnection with backoff
+- Real-time event handling
+
+## Transport Comparison
+
+| Transport | Latency | Use Case | Required Feature |
+|-----------|---------|----------|------------------|
+| HTTP | 10-50ms | Web apps, mobile | `http-client` |
+| WebSocket | <5ms | Real-time apps | `websocket-client` |
+| Streaming HTTP | 10-30ms | Large payloads | `streaming-http` |
+
+## Common Patterns
+
+All client examples demonstrate:
+1. Connection establishment
+2. Request/response handling
+3. Error recovery
+4. Resource cleanup
+5. Notification handling
+
+## Quick Start
+
+1. Choose a transport based on your needs
+2. Enable the required feature in Cargo.toml
+3. Run the example
+4. Adapt the code to your application
+
+## Testing Against a Server
+
+To test these clients, you need a corresponding MCP server:
+
+```bash
+# Terminal 1: Start a server
+cargo run --example http_server --features "http-server"
+
+# Terminal 2: Run the client
+cargo run --example http_client --features "http-client"
+```

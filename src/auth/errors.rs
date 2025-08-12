@@ -60,16 +60,16 @@ pub enum AuthError {
 impl fmt::Display for AuthError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::NoAuthServer(msg) => write!(f, "No authorization server: {}", msg),
+            Self::NoAuthServer(msg) => write!(f, "No authorization server: {msg}"),
             Self::PkceNotSupported => write!(
                 f,
                 "Authorization server does not support PKCE (required for MCP)"
             ),
-            Self::InvalidToken(msg) => write!(f, "Invalid token: {}", msg),
+            Self::InvalidToken(msg) => write!(f, "Invalid token: {msg}"),
             Self::TokenExpired => write!(f, "Access token has expired"),
-            Self::InsufficientScope(scope) => write!(f, "Insufficient scope: {}", scope),
-            Self::RegistrationFailed(msg) => write!(f, "Client registration failed: {}", msg),
-            Self::DiscoveryFailed(msg) => write!(f, "Discovery failed: {}", msg),
+            Self::InsufficientScope(scope) => write!(f, "Insufficient scope: {scope}"),
+            Self::RegistrationFailed(msg) => write!(f, "Client registration failed: {msg}"),
+            Self::DiscoveryFailed(msg) => write!(f, "Discovery failed: {msg}"),
             Self::AuthorizationDenied => write!(f, "Authorization denied by user"),
             Self::InvalidAuthorizationCode => write!(f, "Invalid or expired authorization code"),
             Self::InvalidRefreshToken => write!(f, "Invalid or expired refresh token"),
@@ -78,19 +78,19 @@ impl fmt::Display for AuthError {
                 description,
                 uri,
             } => {
-                write!(f, "OAuth error: {}", error)?;
+                write!(f, "OAuth error: {error}")?;
                 if let Some(desc) = description {
-                    write!(f, " - {}", desc)?;
+                    write!(f, " - {desc}")?;
                 }
                 if let Some(uri) = uri {
-                    write!(f, " (see: {})", uri)?;
+                    write!(f, " (see: {uri})")?;
                 }
                 Ok(())
             }
-            Self::HttpError(msg) => write!(f, "HTTP error: {}", msg),
-            Self::ConfigError(msg) => write!(f, "Configuration error: {}", msg),
+            Self::HttpError(msg) => write!(f, "HTTP error: {msg}"),
+            Self::ConfigError(msg) => write!(f, "Configuration error: {msg}"),
             Self::StateMismatch => write!(f, "State parameter mismatch (possible CSRF attack)"),
-            Self::InvalidResource(msg) => write!(f, "Invalid resource indicator: {}", msg),
+            Self::InvalidResource(msg) => write!(f, "Invalid resource indicator: {msg}"),
         }
     }
 }

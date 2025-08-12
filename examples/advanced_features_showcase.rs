@@ -711,10 +711,10 @@ async fn demo_streaming_http_transport() -> McpResult<()> {
         println!("```rust");
         println!("// Memory-constrained environment");
         println!("let init = client.connect_with_streaming_http_memory_improved(url).await?;");
-        println!("");
+        println!();
         println!("// High-performance scenario");
         println!("let init = client.connect_with_streaming_http_performance_improved(url).await?;");
-        println!("");
+        println!();
         println!("// Custom configuration");
         println!("let config = StreamingConfig {{");
         println!("    compression_type: CompressionType::Brotli,");

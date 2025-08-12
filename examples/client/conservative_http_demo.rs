@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start a demo server in the background (would normally be a separate process)
     let server_task = tokio::spawn(async {
         if let Err(e) = demo_server().await {
-            eprintln!("Demo server error: {}", e);
+            eprintln!("Demo server error: {e}");
         }
     });
 

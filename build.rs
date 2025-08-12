@@ -8,7 +8,10 @@ fn main() {
     println!("cargo:rerun-if-changed=src/");
     println!("cargo:rerun-if-changed=Cargo.toml");
     println!("cargo:rerun-if-changed=README.md");
-    
+
     // Only print version information during build
-    println!("cargo:rustc-env=PRISM_MCP_RS_VERSION={}", env!("CARGO_PKG_VERSION"));
+    println!(
+        "cargo:rustc-env=PRISM_MCP_RS_VERSION={}",
+        env!("CARGO_PKG_VERSION")
+    );
 }

@@ -55,7 +55,7 @@ async fn test_discovery_filter_client() {
         .unwrap();
 
     // All methods should be client-to-server
-    for (_category, methods) in &result.methods {
+    for methods in result.methods.values() {
         for method in methods {
             assert_eq!(method.direction, MethodDirection::ClientToServer);
         }
@@ -83,7 +83,7 @@ async fn test_discovery_filter_server() {
         .unwrap();
 
     // All methods should be server-to-client
-    for (_category, methods) in &result.methods {
+    for methods in result.methods.values() {
         for method in methods {
             assert_eq!(method.direction, MethodDirection::ServerToClient);
         }
@@ -120,7 +120,7 @@ async fn test_discovery_filter_notifications() {
         .unwrap();
 
     // All methods should be notifications
-    for (_category, methods) in &result.methods {
+    for methods in result.methods.values() {
         for method in methods {
             assert_eq!(method.method_type, MethodType::Notification);
             assert!(method.name.contains("notifications/"));
@@ -148,7 +148,7 @@ async fn test_discovery_filter_category() {
         .unwrap();
 
     // All methods should be tool-related
-    for (_category, methods) in &result.methods {
+    for methods in result.methods.values() {
         for method in methods {
             assert!(
                 method.name.starts_with("tools/")

@@ -179,6 +179,24 @@ fn test_schema_types() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 // =============================================================================
+// Main function (for compilation test)
+// =============================================================================
+
+fn main() {
+    println!("All README examples compile successfully!");
+
+    // Run basic tests
+    test_server_creation().expect("Server creation test failed");
+    test_tool_builder().expect("ToolBuilder test failed");
+    test_schema_types().expect("Schema types test failed");
+
+    #[cfg(feature = "http")]
+    test_client_config().expect("Client config test failed");
+
+    println!("[x] All README examples are working!");
+}
+
+// =============================================================================
 // Test Runner
 // =============================================================================
 
@@ -231,22 +249,4 @@ mod tests {
             panic!("Expected text content");
         }
     }
-}
-
-// =============================================================================
-// Main function (for compilation test)
-// =============================================================================
-
-fn main() {
-    println!("All README examples compile successfully!");
-
-    // Run basic tests
-    test_server_creation().expect("Server creation test failed");
-    test_tool_builder().expect("ToolBuilder test failed");
-    test_schema_types().expect("Schema types test failed");
-
-    #[cfg(feature = "http")]
-    test_client_config().expect("Client config test failed");
-
-    println!("[x] All README examples are working!");
 }

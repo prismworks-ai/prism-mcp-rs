@@ -249,7 +249,7 @@ mod tests {
             McpError::Http(_) | McpError::Connection(_) => {
                 // Expected - no server running
             }
-            other => panic!("Unexpected error type: {:?}", other),
+            other => panic!("Unexpected error type: {other:?}"),
         }
     }
 
@@ -283,7 +283,7 @@ mod tests {
             McpError::Http(_) | McpError::Connection(_) => {
                 // Expected - no server running
             }
-            other => panic!("Unexpected error type: {:?}", other),
+            other => panic!("Unexpected error type: {other:?}"),
         }
     }
 
@@ -315,7 +315,7 @@ mod tests {
             McpError::Http(_) | McpError::Connection(_) => {
                 // Expected - no server running
             }
-            other => panic!("Unexpected error type: {:?}", other),
+            other => panic!("Unexpected error type: {other:?}"),
         }
     }
 
@@ -482,7 +482,7 @@ mod tests {
             McpError::Http(_) | McpError::Connection(_) => {
                 // Expected - connection failed and retries exhausted
             }
-            other => panic!("Unexpected error type: {:?}", other),
+            other => panic!("Unexpected error type: {other:?}"),
         }
     }
 

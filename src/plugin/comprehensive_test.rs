@@ -382,4 +382,298 @@ mod tests {
         let result = manager.load_plugin(config).await;
         assert!(result.is_err());
     }
+
+    // ==================== Additional Coverage Tests ====================
+
+    #[test]
+    fn test_plugin_loader_search_paths() {
+        let mut loader = PluginLoader::new();
+        loader.add_search_path("/custom/path1");
+        loader.add_search_path("./relative/path");
+        loader.add_search_path("~/home/plugins");
+        // Method should complete without panic
+    }
+
+    #[test]
+    fn test_plugin_loader_find_platform_specific() {
+        let loader = PluginLoader::new();
+        // Test finding plugins with platform-specific extensions
+        let result = loader.find_plugin("test_plugin");
+        assert!(result.is_none()); // Won't find in test environment
+
+        // Test with lib prefix on Unix
+        let result = loader.find_plugin("libtest");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_plugin_loader_get_methods() {
+        let loader = PluginLoader::new();
+
+        // Test get_plugin
+        let result = loader.get_plugin("nonexistent");
+        assert!(result.is_none());
+
+        // Test get_plugin_by_path
+        let result = loader.get_plugin_by_path("/path/to/plugin.so");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_plugin_config_builder_chain() {
+        let config = PluginConfig::simple("test")
+            .with_path("/path/to/plugin.so")
+            .with_config(json!({"key": "value"}))
+            .with_auto_reload();
+
+        assert_eq!(config.name, "test");
+        assert_eq!(config.path, Some("/path/to/plugin.so".to_string()));
+        assert!(config.auto_reload);
+        assert_eq!(config.config, Some(json!({"key": "value"})));
+    }
+
+    #[test]
+    fn test_plugin_settings_defaults() {
+        use crate::plugin::config::{IsolationLevel, PluginSettings};
+
+        let settings = PluginSettings {
+            plugin_dirs: vec![],
+            auto_load: true,
+            hot_reload: false,
+            isolation: IsolationLevel::None,
+            load_timeout: 30,
+        };
+
+        assert!(settings.auto_load);
+        assert!(!settings.hot_reload);
+        assert_eq!(settings.load_timeout, 30);
+    }
+
+    #[test]
+    fn test_plugin_manifest_fields() {
+        use crate::plugin::config::*;
+
+        let manifest = PluginManifest {
+            plugin: PluginInfo {
+                id: "test".to_string(),
+                name: "Test Plugin".to_string(),
+                version: "1.0.0".to_string(),
+                author: Some("Author".to_string()),
+                description: Some("Description".to_string()),
+                homepage: Some("https://example.com".to_string()),
+                repository: Some("https://github.com/example/plugin".to_string()),
+                license: Some("MIT".to_string()),
+                keywords: vec!["test".to_string()],
+                mcp_version: "1.0.0".to_string(),
+            },
+            dependencies: vec![Dependency {
+                plugin: "dep1".to_string(),
+                version: "^1.0.0".to_string(),
+                optional: false,
+            }],
+            tool: ToolDefinition {
+                name: "test_tool".to_string(),
+                description: "Test tool".to_string(),
+                input_schema: json!({}),
+                output_schema: Some(json!({})),
+                examples: vec![ToolExample {
+                    name: "Example 1".to_string(),
+                    description: Some("Test example".to_string()),
+                    input: json!({}),
+                    output: Some(json!({})),
+                }],
+            },
+            build: Some(BuildInfo {
+                command: "cargo build".to_string(),
+                directory: Some("./src".to_string()),
+                output: "plugin.so".to_string(),
+            }),
+            install: Some(InstallInfo {
+                pre_install: Some("setup.sh".to_string()),
+                post_install: Some("configure.sh".to_string()),
+                system_deps: vec!["libssl-dev".to_string()],
+            }),
+        };
+
+        assert_eq!(manifest.plugin.id, "test");
+        assert_eq!(manifest.dependencies.len(), 1);
+        assert!(manifest.build.is_some());
+        assert!(manifest.install.is_some());
+    }
+
+    #[test]
+    fn test_isolation_level_variants() {
+        use crate::plugin::config::IsolationLevel;
+
+        let none = IsolationLevel::None;
+        let thread = IsolationLevel::Thread;
+        let process = IsolationLevel::Process;
+        let container = IsolationLevel::Container;
+
+        assert!(matches!(none, IsolationLevel::None));
+        assert!(matches!(thread, IsolationLevel::Thread));
+        assert!(matches!(process, IsolationLevel::Process));
+        assert!(matches!(container, IsolationLevel::Container));
+    }
+
+    #[tokio::test]
+    async fn test_plugin_config_set_save_load() {
+        use crate::plugin::config::PluginConfigSet;
+
+        let config_set = PluginConfigSet {
+            plugins: vec![
+                PluginConfig::simple("plugin1").with_path("/path1"),
+                PluginConfig::simple("plugin2").with_auto_reload(),
+            ],
+            settings: None,
+        };
+
+        // Test to_file
+        let temp_file = std::env::temp_dir().join("test_config_set.yaml");
+        let result = config_set.to_file(&temp_file).await;
+        assert!(result.is_ok());
+
+        // Test from_file
+        let loaded = PluginConfigSet::from_file(&temp_file).await;
+        assert!(loaded.is_ok());
+        let loaded_set = loaded.unwrap();
+        assert_eq!(loaded_set.plugins.len(), 2);
+
+        // Clean up
+        let _ = tokio::fs::remove_file(&temp_file).await;
+    }
+
+    #[tokio::test]
+    async fn test_plugin_manifest_save_load() {
+        use crate::plugin::config::*;
+
+        let manifest = PluginManifest {
+            plugin: PluginInfo {
+                id: "test".to_string(),
+                name: "Test".to_string(),
+                version: "1.0.0".to_string(),
+                author: None,
+                description: None,
+                homepage: None,
+                repository: None,
+                license: None,
+                keywords: vec![],
+                mcp_version: "1.0.0".to_string(),
+            },
+            dependencies: vec![],
+            tool: ToolDefinition {
+                name: "test_tool".to_string(),
+                description: "Test".to_string(),
+                input_schema: json!({}),
+                output_schema: None,
+                examples: vec![],
+            },
+            build: None,
+            install: None,
+        };
+
+        // Test to_file
+        let temp_file = std::env::temp_dir().join("test_manifest.yaml");
+        let result = manifest.to_file(&temp_file).await;
+        assert!(result.is_ok());
+
+        // Test from_file
+        let loaded = PluginManifest::from_file(&temp_file).await;
+        assert!(loaded.is_ok());
+        let loaded_manifest = loaded.unwrap();
+        assert_eq!(loaded_manifest.plugin.id, "test");
+
+        // Clean up
+        let _ = tokio::fs::remove_file(&temp_file).await;
+    }
+
+    #[test]
+    fn test_registry_stats_calculation() {
+        let registry = ToolRegistry::new();
+        let stats = registry.stats();
+
+        assert_eq!(stats.total_plugins, 0);
+        assert_eq!(stats.total_tools, 0);
+        assert!(stats.tools_per_plugin.is_empty());
+
+        // Clone stats to verify it works
+        let cloned = stats.clone();
+        assert_eq!(cloned.total_plugins, stats.total_plugins);
+    }
+
+    #[test]
+    fn test_plugin_types_metadata() {
+        use crate::plugin::types::*;
+
+        let metadata = PluginMetadata {
+            author: Some("Test Author".to_string()),
+            license: Some("MIT".to_string()),
+            homepage: Some("https://example.com".to_string()),
+            repository: Some("https://github.com/example".to_string()),
+            keywords: vec!["test".to_string(), "plugin".to_string()],
+            categories: vec!["utility".to_string()],
+        };
+
+        assert_eq!(metadata.author, Some("Test Author".to_string()));
+        assert_eq!(metadata.keywords.len(), 2);
+        assert_eq!(metadata.categories.len(), 1);
+    }
+
+    #[test]
+    fn test_plugin_types_capabilities() {
+        use crate::plugin::types::PluginCapabilities;
+
+        let mut caps = PluginCapabilities::default();
+        assert!(!caps.provides_tools);
+        assert!(!caps.provides_resources);
+        assert!(!caps.provides_prompts);
+        assert!(!caps.supports_hot_reload);
+
+        caps.provides_tools = true;
+        caps.supports_hot_reload = true;
+        assert!(caps.provides_tools);
+        assert!(caps.supports_hot_reload);
+    }
+
+    #[test]
+    fn test_plugin_types_info() {
+        use crate::plugin::types::*;
+        use std::path::PathBuf;
+
+        let info = PluginInfo {
+            name: "test".to_string(),
+            version: "1.0.0".to_string(),
+            path: PathBuf::from("/path/to/plugin"),
+            enabled: true,
+            capabilities: PluginCapabilities::default(),
+            metadata: PluginMetadata::default(),
+        };
+
+        assert_eq!(info.name, "test");
+        assert_eq!(info.version, "1.0.0");
+        assert!(info.enabled);
+    }
+
+    #[test]
+    fn test_plugin_types_errors() {
+        use crate::plugin::types::PluginError;
+
+        let err = PluginError::LoadFailed("failed".to_string());
+        assert!(err.to_string().contains("Failed to load"));
+
+        let err = PluginError::InitializationFailed("init failed".to_string());
+        assert!(err.to_string().contains("initialization failed"));
+
+        let err = PluginError::IncompatibleVersion("1.0.0".to_string());
+        assert!(err.to_string().contains("Incompatible"));
+
+        let err = PluginError::SymbolNotFound("symbol".to_string());
+        assert!(err.to_string().contains("Symbol not found"));
+
+        let err = PluginError::ConfigurationError("config error".to_string());
+        assert!(err.to_string().contains("Configuration error"));
+
+        let err = PluginError::Other("other".to_string());
+        assert!(err.to_string().contains("Other error"));
+    }
 }

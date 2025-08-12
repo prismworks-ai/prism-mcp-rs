@@ -15,6 +15,9 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, info};
 
+/// Type alias for event handlers to reduce complexity
+type EventHandlers = Vec<Box<dyn Fn(PluginEvent) + Send + Sync>>;
+
 /// Plugin manager for MCP servers
 pub struct PluginManager {
     /// Plugin loader
@@ -27,7 +30,7 @@ pub struct PluginManager {
     configs: Arc<RwLock<HashMap<String, PluginConfig>>>,
 
     /// Event handlers
-    event_handlers: Arc<RwLock<Vec<Box<dyn Fn(PluginEvent) + Send + Sync>>>>,
+    event_handlers: Arc<RwLock<EventHandlers>>,
 
     /// Enabled plugins
     enabled: Arc<RwLock<HashMap<String, bool>>>,
@@ -236,8 +239,7 @@ impl PluginManager {
         // Check if enabled
         if !self.is_enabled(&plugin_id).await {
             return Err(McpError::Protocol(format!(
-                "Plugin {} is disabled",
-                plugin_id
+                "Plugin {plugin_id} is disabled"
             )));
         }
 
@@ -297,7 +299,7 @@ impl PluginManager {
             .map_err(|e| McpError::Io(e.to_string()))?;
 
         let configs: Vec<PluginConfig> = serde_yaml::from_str(&content)
-            .map_err(|e| McpError::Protocol(format!("Invalid plugin config: {}", e)))?;
+            .map_err(|e| McpError::Protocol(format!("Invalid plugin config: {e}")))?;
 
         for config in configs {
             if config.enabled {

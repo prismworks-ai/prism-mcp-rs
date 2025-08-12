@@ -10,19 +10,18 @@
 
 use axum::http::HeaderMap;
 use prism_mcp_rs::{
-    core::error::{McpError, McpResult},
+    core::error::McpError,
     protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse},
     transport::{
-        ConnectionState,
         http::{HttpClientTransport, HttpServerTransport},
         traits::{ServerTransport, Transport, TransportConfig},
     },
 };
 use reqwest::Client;
-use serde_json::{Value, json};
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use serde_json::json;
+use std::{collections::HashMap, time::Duration};
 use tokio::{
-    sync::{Mutex, broadcast, mpsc},
+    sync::{broadcast, mpsc},
     time::timeout,
 };
 
@@ -124,7 +123,7 @@ mod http_sse_streaming_tests {
         // Should get disconnected error when trying to receive
         match notification_receiver.try_recv() {
             Err(mpsc::error::TryRecvError::Disconnected) => {} // Expected
-            other => panic!("Expected disconnected error, got: {:?}", other),
+            other => panic!("Expected disconnected error, got: {other:?}"),
         }
     }
 
@@ -157,7 +156,7 @@ mod http_sse_streaming_tests {
     #[tokio::test]
     async fn test_http_client_request_id_mismatch() {
         // Test response ID validation
-        let mut transport = HttpClientTransport::new("http://localhost:3000", None)
+        let transport = HttpClientTransport::new("http://localhost:3000", None)
             .await
             .unwrap();
 
@@ -205,7 +204,7 @@ mod http_sse_streaming_tests {
         match result.unwrap_err() {
             McpError::Http(_) => {}       // Expected for connection failures
             McpError::Connection(_) => {} // Also acceptable for connection failures
-            other => panic!("Expected Http or Connection error, got: {:?}", other),
+            other => panic!("Expected Http or Connection error, got: {other:?}"),
         }
     }
 
@@ -241,7 +240,7 @@ mod http_sse_streaming_tests {
             Ok(Some(_)) => panic!("Should not receive notification without SSE"),
             Ok(None) => {} // Expected
             Err(McpError::Http(msg)) if msg.contains("channel disconnected") => {} // Also acceptable
-            Err(e) => panic!("Unexpected error: {:?}", e),
+            Err(e) => panic!("Unexpected error: {e:?}"),
         }
 
         // Test sending notification (will fail without server)
@@ -307,26 +306,19 @@ mod http_sse_streaming_tests {
             let start_result = transport.start().await;
             assert!(
                 start_result.is_ok(),
-                "Start should succeed in cycle {}",
-                cycle
+                "Start should succeed in cycle {cycle}"
             );
             assert!(
                 transport.is_running(),
-                "Should be running after start in cycle {}",
-                cycle
+                "Should be running after start in cycle {cycle}"
             );
 
             // Stop
             let stop_result = transport.stop().await;
-            assert!(
-                stop_result.is_ok(),
-                "Stop should succeed in cycle {}",
-                cycle
-            );
+            assert!(stop_result.is_ok(), "Stop should succeed in cycle {cycle}");
             assert!(
                 !transport.is_running(),
-                "Should not be running after stop in cycle {}",
-                cycle
+                "Should not be running after stop in cycle {cycle}"
             );
         }
     }
@@ -351,7 +343,7 @@ mod http_sse_streaming_tests {
 
         for (i, notification) in notifications.into_iter().enumerate() {
             let result = transport.send_notification(notification).await;
-            assert!(result.is_ok(), "Notification {} should succeed", i);
+            assert!(result.is_ok(), "Notification {i} should succeed");
         }
     }
 
@@ -385,15 +377,13 @@ mod http_sse_streaming_tests {
 
             assert!(
                 client_result.is_ok(),
-                "Client should handle timeout config {}",
-                i
+                "Client should handle timeout config {i}"
             );
 
             let server = HttpServerTransport::with_config("127.0.0.1:0", config);
             assert!(
                 !server.is_running(),
-                "Server should handle timeout config {}",
-                i
+                "Server should handle timeout config {i}"
             );
         }
     }
@@ -534,8 +524,7 @@ mod http_sse_streaming_tests {
             // Should either timeout or fail quickly
             assert!(
                 result.is_err() || result.unwrap().is_err(),
-                "Should fail for invalid URL: {}",
-                url
+                "Should fail for invalid URL: {url}"
             );
         }
     }
@@ -642,7 +631,7 @@ mod http_sse_streaming_tests {
             let info = transport.server_info();
 
             assert!(info.contains("HTTP server transport"));
-            assert!(info.contains(&format!("bind: {}", addr)));
+            assert!(info.contains(&format!("bind: {addr}")));
         }
     }
 }

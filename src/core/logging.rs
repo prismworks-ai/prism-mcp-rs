@@ -447,6 +447,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "tracing-subscriber")]
     fn test_operation_span_creation() {
         // Initialize a tracing subscriber for testing
         let _subscriber = tracing_subscriber::fmt()

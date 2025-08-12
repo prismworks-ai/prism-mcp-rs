@@ -660,7 +660,7 @@ impl ContentAnalyzer {
         }
 
         // Null bytes are a strong indicator of binary content
-        if content.iter().any(|&b| b == 0) {
+        if content.contains(&0) {
             // But if it's mostly nulls, it's probably test data
             let null_count = content.iter().filter(|&&b| b == 0).count();
             if (null_count as f64 / content.len() as f64) > 0.9 {
@@ -1520,6 +1520,12 @@ pub struct AdaptiveBuffer {
     optimal_size: usize,
 }
 
+impl Default for AdaptiveBuffer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AdaptiveBuffer {
     pub fn new() -> Self {
         let buffer = Vec::with_capacity(16384); // Pre-allocate 16KB
@@ -1555,8 +1561,8 @@ impl AdaptiveBuffer {
 
     pub fn read(&mut self, size: usize) -> Vec<u8> {
         let read_size = size.min(self.buffer.len());
-        let result = self.buffer.drain(..read_size).collect();
-        result
+
+        self.buffer.drain(..read_size).collect()
     }
 
     pub fn clear(&mut self) {
@@ -1573,6 +1579,12 @@ pub struct FlowControlMetrics {
     requests_pending: usize,
     last_activity: std::time::Instant,
     rtt_estimate: Duration,
+}
+
+impl Default for FlowControlMetrics {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl FlowControlMetrics {
@@ -1806,7 +1818,7 @@ mod tests {
         let mut buffer = AdaptiveBuffer::new();
         buffer.write(b"test data");
 
-        assert!(buffer.len() > 0);
+        assert!(!buffer.is_empty());
         buffer.clear();
         assert_eq!(buffer.len(), 0);
     }
@@ -2008,7 +2020,7 @@ mod tests {
         for i in 0..10 {
             let analyzer_clone = analyzer.clone();
             let handle = tokio::spawn(async move {
-                let data = format!("test data {}", i);
+                let data = format!("test data {i}");
                 analyzer_clone.should_stream(data.as_bytes())
             });
             handles.push(handle);

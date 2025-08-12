@@ -374,20 +374,20 @@ impl AuthChallenge {
         let mut params = Vec::new();
 
         if let Some(realm) = &self.realm {
-            params.push(format!(r#"realm="{}""#, realm));
+            params.push(format!(r#"realm="{realm}""#));
         }
         if let Some(error) = &self.error {
-            params.push(format!(r#"error="{}""#, error));
+            params.push(format!(r#"error="{error}""#));
         }
         if let Some(desc) = &self.error_description {
-            params.push(format!(r#"error_description="{}""#, desc));
+            params.push(format!(r#"error_description="{desc}""#));
         }
         if let Some(metadata) = &self.resource_metadata {
-            params.push(format!(r#"resource_metadata="{}""#, metadata));
+            params.push(format!(r#"resource_metadata="{metadata}""#));
         }
 
         for (key, value) in &self.additional {
-            params.push(format!(r#"{}="{}""#, key, value));
+            params.push(format!(r#"{key}="{value}""#));
         }
 
         if !params.is_empty() {

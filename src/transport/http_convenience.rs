@@ -107,21 +107,12 @@ impl Default for RetryConfig {
 }
 
 /// Retry policy for automatic retries
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RetryPolicy {
     /// Default retry configuration
     pub default: RetryConfig,
     /// Method-specific retry configurations
     pub method_specific: HashMap<String, RetryConfig>,
-}
-
-impl Default for RetryPolicy {
-    fn default() -> Self {
-        Self {
-            default: RetryConfig::default(),
-            method_specific: HashMap::new(),
-        }
-    }
 }
 
 /// Transport metrics for observability
@@ -170,6 +161,7 @@ pub struct ErrorMetrics {
 // ============================================================================
 
 /// Extended functionality for HttpClientTransport
+#[allow(dead_code)]
 pub struct HttpClientTransportExtensions {
     /// Connection statistics
     stats: Arc<Mutex<ConnectionStats>>,
@@ -663,10 +655,10 @@ mod tests {
     fn test_http_endpoints() {
         let base_url = "http://localhost:3000";
         let endpoints = HttpEndpoints {
-            mcp: format!("{}/mcp", base_url),
-            notify: format!("{}/mcp/notify", base_url),
+            mcp: format!("{base_url}/mcp"),
+            notify: format!("{base_url}/mcp/notify"),
             events: Some("http://localhost:3000/events".to_string()),
-            health: format!("{}/health", base_url),
+            health: format!("{base_url}/health"),
         };
 
         assert_eq!(endpoints.mcp, "http://localhost:3000/mcp");

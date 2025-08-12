@@ -3,9 +3,20 @@
 // ! This example compares the performance of different MCP transport implementations,
 // ! demonstrating the HTTP transport performance characteristics.
 // !
-// ! Run with: cargo run --example transport_benchmark --all-features
+// ! ## Required Features
+// ! This example requires the following features to be enabled:
+// ! ```toml
+// ! [dependencies]
+// ! prism-mcp-rs = { version = "*", features = ["http-client", "websocket-client", "streaming-http"] }
+// ! ```
+// !
+// ! ## Running this Example
+// ! ```bash
+// ! cargo run --example transport_benchmark --features "http-client websocket-client streaming-http"
+// ! # Or with all features:
+// ! cargo run --example transport_benchmark --all-features
+// ! ```
 
-use futures;
 use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::transport::{HttpClientTransport, TransportConfig};
 use reqwest::Client;
@@ -33,14 +44,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start demo server
     let server_task = tokio::spawn(async {
         if let Err(e) = demo_benchmark_server().await {
-            eprintln!("Demo server error: {}", e);
+            eprintln!("Demo server error: {e}");
         }
     });
 
     // Give server time to start
     sleep(Duration::from_millis(1000)).await;
 
-    let server_url = format!("http://localhost:{}", SERVER_PORT);
+    let server_url = format!("http://localhost:{SERVER_PORT}");
 
     // Benchmark 1: HTTP Transport (Fast config)
     info!("\n📊 Benchmarking HTTP Transport (Fast Config)...");

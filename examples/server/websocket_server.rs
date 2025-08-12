@@ -2,6 +2,18 @@
 // !
 // ! This example demonstrates how to create an MCP server that communicates
 // ! over WebSocket connections for real-time bidirectional communication.
+// !
+// ! ## Required Features
+// ! This example requires the following features to be enabled:
+// ! ```toml
+// ! [dependencies]
+// ! prism-mcp-rs = { version = "*", features = ["websocket-server"] }
+// ! ```
+// !
+// ! ## Running this Example
+// ! ```bash
+// ! cargo run --example websocket_server --features "websocket-server"
+// ! ```
 
 use async_trait::async_trait;
 use serde_json::{Value, json};
@@ -62,11 +74,11 @@ impl ToolHandler for WebSocketEchoHandler {
         }
 
         if add_connection_info {
-            response = format!("{} (via WebSocket)", response);
+            response = format!("{response} (via WebSocket)");
         }
 
         if broadcast {
-            response = format!("🔊 BROADCAST: {}", response);
+            response = format!("🔊 BROADCAST: {response}");
         }
 
         Ok(ToolResult {
@@ -101,8 +113,7 @@ impl ToolHandler for WebSocketChatHandler {
 
         Ok(ToolResult {
             content: vec![Content::text(format!(
-                "Chat: [{}] {}: {}",
-                room, username, message
+                "Chat: [{room}] {username}: {message}"
             ))],
             is_error: None,
             structured_content: None,

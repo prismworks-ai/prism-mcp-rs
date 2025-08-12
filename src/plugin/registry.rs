@@ -110,7 +110,7 @@ impl ToolRegistry {
         let plugin = self
             .plugins
             .get(plugin_id)
-            .ok_or_else(|| McpError::Protocol(format!("Plugin {} not found", plugin_id)))?;
+            .ok_or_else(|| McpError::Protocol(format!("Plugin {plugin_id} not found")))?;
 
         // Execute the tool
         let plugin_lock = plugin.read().await;

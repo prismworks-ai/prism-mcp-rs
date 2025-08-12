@@ -124,7 +124,7 @@ impl TokenManager {
             .form(&params)
             .send()
             .await
-            .map_err(|e| McpError::Auth(format!("Failed to refresh token: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Failed to refresh token: {e}")))?;
 
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_default();
@@ -137,15 +137,14 @@ impl TokenManager {
                 .into());
             }
             return Err(McpError::Auth(format!(
-                "Token refresh failed: {}",
-                error_text
+                "Token refresh failed: {error_text}"
             )));
         }
 
         let token_response: TokenResponse = response
             .json()
             .await
-            .map_err(|e| McpError::Auth(format!("Invalid token response: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid token response: {e}")))?;
 
         // Update stored tokens
         self.set_tokens(token_response.clone()).await?;
@@ -226,7 +225,7 @@ impl TokenManager {
             .form(&params)
             .send()
             .await
-            .map_err(|e| McpError::Auth(format!("Failed to exchange code: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Failed to exchange code: {e}")))?;
 
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_default();
@@ -239,15 +238,14 @@ impl TokenManager {
                 .into());
             }
             return Err(McpError::Auth(format!(
-                "Code exchange failed: {}",
-                error_text
+                "Code exchange failed: {error_text}"
             )));
         }
 
         let token_response: TokenResponse = response
             .json()
             .await
-            .map_err(|e| McpError::Auth(format!("Invalid token response: {}", e)))?;
+            .map_err(|e| McpError::Auth(format!("Invalid token response: {e}")))?;
 
         // Store tokens
         self.set_tokens(token_response.clone()).await?;
@@ -291,7 +289,7 @@ pub fn build_authorization_url(
     scopes: &[String],
 ) -> McpResult<String> {
     let mut url = Url::parse(auth_endpoint)
-        .map_err(|e| McpError::Auth(format!("Invalid authorization endpoint: {}", e)))?;
+        .map_err(|e| McpError::Auth(format!("Invalid authorization endpoint: {e}")))?;
 
     url.query_pairs_mut()
         .append_pair("response_type", "code")
@@ -313,7 +311,7 @@ pub fn build_authorization_url(
 /// Parse authorization callback URL
 pub fn parse_callback_url(callback_url: &str) -> McpResult<CallbackParams> {
     let url = Url::parse(callback_url)
-        .map_err(|e| McpError::Auth(format!("Invalid callback URL: {}", e)))?;
+        .map_err(|e| McpError::Auth(format!("Invalid callback URL: {e}")))?;
 
     let params: Vec<(String, String)> = url
         .query_pairs()

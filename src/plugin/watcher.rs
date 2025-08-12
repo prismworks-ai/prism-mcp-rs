@@ -58,7 +58,7 @@ impl PluginWatcher {
                 }
             }
         })
-        .map_err(|e| PluginError::LoadFailed(format!("Failed to create watcher: {}", e)))?;
+        .map_err(|e| PluginError::LoadFailed(format!("Failed to create watcher: {e}")))?;
 
         // Spawn event handler task
         let _handle = tokio::spawn(async move {
@@ -85,7 +85,7 @@ impl PluginWatcher {
         if let Some(ref mut watcher) = self.watcher {
             watcher
                 .watch(path, RecursiveMode::NonRecursive)
-                .map_err(|e| PluginError::LoadFailed(format!("Failed to watch path: {}", e)))?;
+                .map_err(|e| PluginError::LoadFailed(format!("Failed to watch path: {e}")))?;
 
             self.watched_paths
                 .write()
@@ -104,7 +104,7 @@ impl PluginWatcher {
         if let Some(ref mut watcher) = self.watcher {
             watcher
                 .unwatch(path)
-                .map_err(|e| PluginError::LoadFailed(format!("Failed to unwatch path: {}", e)))?;
+                .map_err(|e| PluginError::LoadFailed(format!("Failed to unwatch path: {e}")))?;
 
             self.watched_paths.write().await.remove(path);
 
@@ -120,9 +120,7 @@ impl PluginWatcher {
         if let Some(ref mut watcher) = self.watcher {
             watcher
                 .watch(path, RecursiveMode::NonRecursive)
-                .map_err(|e| {
-                    PluginError::LoadFailed(format!("Failed to watch directory: {}", e))
-                })?;
+                .map_err(|e| PluginError::LoadFailed(format!("Failed to watch directory: {e}")))?;
 
             info!("Watching plugin directory: {:?}", path);
             Ok(())

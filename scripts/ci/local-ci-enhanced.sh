@@ -149,6 +149,212 @@ install_tools() {
     print_success "All required tools installed"
 }
 
+# Multi-Rust version testing function
+test_multi_rust() {
+    print_header "🦀 Multi-Rust Version Testing"
+    
+    local rust_versions=("stable" "beta" "nightly")
+    local tested_versions=0
+    local failed_versions=()
+    
+    for version in "${rust_versions[@]}"; do
+        if rustup toolchain list | grep -q "$version"; then
+            print_step "Testing with Rust $version"
+            
+            if cargo +"$version" test --all-features --verbose; then
+                print_success "Tests passed on Rust $version"
+                ((tested_versions++))
+            else
+                track_error "Tests failed on Rust $version"
+                failed_versions+=("$version")
+            fi
+        else
+            print_warning "Rust $version not installed - GitHub Actions will test this"
+            print_status "Install with: rustup toolchain install $version"
+        fi
+    done
+    
+    if [[ $tested_versions -eq 0 ]]; then
+        print_warning "No Rust versions tested! GitHub Actions tests on stable, beta, and nightly"
+    elif [[ ${#failed_versions[@]} -gt 0 ]]; then
+        print_error "Tests failed on Rust versions: ${failed_versions[*]}"
+    else
+        print_success "All available Rust versions tested successfully ($tested_versions/${#rust_versions[@]})"
+    fi
+}
+
+# Multi-OS testing check
+test_multi_os() {
+    print_header "🖥️ Multi-OS Testing Check"
+    
+    case "$OSTYPE" in
+        linux*)   CURRENT_OS="linux" ;;
+        darwin*)  CURRENT_OS="macos" ;;
+        msys*)    CURRENT_OS="windows" ;;
+        cygwin*)  CURRENT_OS="windows" ;;
+        *)        CURRENT_OS="unknown" ;;
+    esac
+    
+    print_status "Current OS: $CURRENT_OS"
+    print_warning "GitHub Actions tests on: Ubuntu (linux), macOS (darwin), Windows (msys)"
+    
+    if [[ "$CURRENT_OS" != "linux" ]]; then
+        print_warning "Not testing on Linux - GitHub Actions will test ubuntu-latest"
+    fi
+    if [[ "$CURRENT_OS" != "macos" ]]; then
+        print_warning "Not testing on macOS - GitHub Actions will test macos-latest"
+    fi
+    if [[ "$CURRENT_OS" != "windows" ]]; then
+        print_warning "Not testing on Windows - GitHub Actions will test windows-latest"
+    fi
+    
+    print_status "Consider using Docker or VMs for cross-platform testing locally"
+}
+
+# Minimal dependencies test
+test_minimal() {
+    print_header "📦 Minimal Dependencies Testing"
+    
+    print_step "Testing with no default features (library only)"
+    cargo test --no-default-features --lib || track_error "Library tests failed with no features"
+    
+    print_step "Testing with only core feature"
+    cargo test --no-default-features --features core || track_error "Core-only tests failed"
+    
+    print_step "Building with minimal features"
+    cargo build --no-default-features || track_error "Minimal build failed"
+    
+    print_success "Minimal dependency tests completed"
+}
+
+# Binary size analysis
+analyze_binary_size() {
+    print_header "📏 Binary Size Analysis"
+    
+    print_step "Building release binaries"
+    cargo build --release --all-features
+    
+    if [[ -d "target/release" ]]; then
+        echo ""
+        echo "Binary sizes:"
+        echo "============="
+        find target/release -maxdepth 1 -type f -executable ! -name "*.d" ! -name "*.rlib" -exec ls -lh {} \; 2>/dev/null | awk '{print $9 ": " $5}'
+        
+        # Use cargo-bloat if available
+        if command -v cargo-bloat &> /dev/null; then
+            print_step "Detailed size analysis with cargo-bloat"
+            cargo bloat --release --all-features -n 10 || true
+        else
+            print_warning "cargo-bloat not installed - install with: cargo install cargo-bloat"
+        fi
+    fi
+}
+
+# Compile time metrics
+measure_compile_time() {
+    print_header "⏱️ Compile Time Metrics"
+    
+    print_step "Clean build timing"
+    cargo clean
+    
+    echo "Debug build (all features):"
+    time cargo build --all-features 2>&1 | tail -n 1
+    
+    echo "Release build (all features):"
+    time cargo build --release --all-features 2>&1 | tail -n 1
+    
+    echo "Incremental rebuild (touch src/lib.rs):"
+    touch src/lib.rs
+    time cargo build --all-features 2>&1 | tail -n 1
+}
+
+# SARIF report generation
+generate_sarif() {
+    print_header "🔒 SARIF Security Report Generation"
+    
+    mkdir -p reports
+    
+    print_step "Generating SARIF report for GitHub Security tab"
+    
+    cargo audit --json 2>/dev/null | python3 -c "
+import sys, json
+try:
+    audit_data = json.load(sys.stdin)
+    vulnerabilities = audit_data.get('vulnerabilities', {}).get('list', [])
+    
+    results = []
+    for vuln in vulnerabilities:
+        advisory = vuln.get('advisory', {})
+        package = vuln.get('package', {})
+        
+        result = {
+            'ruleId': advisory.get('id', 'UNKNOWN'),
+            'level': 'error' if advisory.get('severity', '').lower() in ['critical', 'high'] else 'warning',
+            'message': {
+                'text': advisory.get('title', 'Security vulnerability detected')
+            },
+            'locations': [{
+                'physicalLocation': {
+                    'artifactLocation': {
+                        'uri': 'Cargo.toml'
+                    },
+                    'region': {
+                        'startLine': 1
+                    }
+                }
+            }]
+        }
+        results.append(result)
+    
+    sarif = {
+        'version': '2.1.0',
+        'runs': [{
+            'tool': {
+                'driver': {
+                    'name': 'cargo-audit',
+                    'version': '0.18.0'
+                }
+            },
+            'results': results
+        }]
+    }
+    
+    with open('reports/audit.sarif', 'w') as f:
+        json.dump(sarif, f, indent=2)
+    
+    print(f'SARIF report generated with {len(results)} findings')
+except Exception as e:
+    print(f'Error generating SARIF: {e}')
+" || print_warning "SARIF generation failed"
+    
+    if [[ -f "reports/audit.sarif" ]]; then
+        print_success "SARIF report saved to reports/audit.sarif"
+    fi
+}
+
+# Enhanced dependency tree analysis
+analyze_dependency_tree() {
+    print_header "🌳 Dependency Tree Analysis"
+    
+    mkdir -p reports
+    
+    print_step "Checking for duplicate dependencies"
+    cargo tree --duplicates > reports/duplicates.txt
+    
+    if [[ -s "reports/duplicates.txt" ]]; then
+        print_warning "Duplicate dependencies found - see reports/duplicates.txt"
+    else
+        print_success "No duplicate dependencies"
+    fi
+    
+    print_step "Generating full dependency tree"
+    cargo tree --all-features > reports/dependency-tree.txt
+    
+    print_step "Analyzing dependency depth"
+    cargo tree --all-features --depth 1 | wc -l | xargs -I {} echo "Direct dependencies: {}"
+    cargo tree --all-features | wc -l | xargs -I {} echo "Total dependencies: {}"
+}
+
 # Fix action - auto-fix issues
 if [[ "$ACTION" == "fix" ]]; then
     print_header "🔧 Auto-fixing Issues"
@@ -161,57 +367,6 @@ if [[ "$ACTION" == "fix" ]]; then
     
     print_step "Updating dependencies..."
 
-# Reports action - generate coverage and benchmark reports
-if [[ "$ACTION" == "reports" ]]; then
-    print_header "📊 Generating Reports"
-    
-    # Ensure reports directory exists
-    mkdir -p reports
-    
-    # Install required tools
-    install_tools
-    
-    # Coverage report
-    print_step "Generating coverage report..."
-    if [[ -x "scripts/ci/generate-coverage-report.sh" ]]; then
-        ./scripts/ci/generate-coverage-report.sh
-        print_success "Coverage report saved to reports/coverage-report.md"
-        
-        # Show summary
-        if [[ -f "reports/coverage-report.md" ]]; then
-            COVERAGE_PCT=$(grep -E "^\| \*\*Overall\*\*" reports/coverage-report.md | awk '{print $3}' | sed 's/%//' || echo "N/A")
-            echo "Coverage: ${COVERAGE_PCT}%"
-        fi
-    else
-        print_error "Coverage report script not found!"
-    fi
-    
-    # Benchmark report
-    print_step "Generating benchmark report..."
-    if [[ -x "scripts/ci/run-benchmarks.sh" ]]; then
-        # Check if benchmarks can be built
-        if cargo build --benches --features bench 2>/dev/null; then
-            ./scripts/ci/run-benchmarks.sh
-            print_success "Benchmark report saved to reports/benchmark-report.md"
-        else
-            print_warning "Cannot build benchmarks - check feature flags"
-        fi
-    else
-        print_error "Benchmark report script not found!"
-    fi
-    
-    # Summary
-    print_header "📈 Reports Generated"
-    echo "Reports available in:"
-    [[ -f "reports/coverage-report.md" ]] && echo "  • reports/coverage-report.md"
-    [[ -f "reports/benchmark-report.md" ]] && echo "  • reports/benchmark-report.md"
-    [[ -d ".local/reports" ]] && echo "  • .local/reports/ (HTML coverage)"
-    echo ""
-    echo "View reports with:"
-    echo "  cat reports/coverage-report.md"
-    echo "  cat reports/benchmark-report.md"
-    exit 0
-fi
     cargo update
     
     print_success "Auto-fix complete! Review changes before committing."
@@ -261,6 +416,9 @@ except:
     pass
 " || true
     
+    # Generate SARIF report
+    generate_sarif
+    
     if [[ ${#ERRORS[@]} -eq 0 ]]; then
         print_success "Security scan completed - No critical issues found!"
     else
@@ -297,6 +455,17 @@ fi
 
 # Standard checks (mirrors CI workflow)
 print_header "📋 Standard CI Checks"
+
+# OS and Multi-version checks
+test_multi_os
+if [[ "$SKIP_SLOW" != "true" ]]; then
+    test_multi_rust
+else
+    print_warning "Skipping multi-Rust testing (use --full for complete testing)"
+fi
+
+# Minimal dependencies test
+test_minimal
 
 # 1. Format Check
 print_step "Format Check (mirrors 'format' job)"
@@ -421,13 +590,23 @@ fi
 if [[ "$ACTION" == "full" ]]; then
     print_header "🔬 Full CI Matrix Testing"
     
-    # Test on different Rust versions if available
-    for version in stable beta nightly; do
-        if rustup toolchain list | grep -q "$version"; then
-            print_step "Testing with Rust $version"
-            rustup run "$version" cargo test --all-features || track_error "Tests failed on Rust $version"
-        fi
-    done
+    # Multi-OS check
+    test_multi_os
+    
+    # Test on different Rust versions
+    test_multi_rust
+    
+    # Minimal dependencies
+    test_minimal
+    
+    # Binary size analysis
+    analyze_binary_size
+    
+    # Compile time metrics
+    measure_compile_time
+    
+    # Dependency tree analysis
+    analyze_dependency_tree
     
     # Coverage report
     print_step "Generating coverage report..."

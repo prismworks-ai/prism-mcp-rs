@@ -1,12 +1,12 @@
 //! Server performance benchmarks
-//! 
+//!
 //! Measures request handling, routing efficiency,
 //! and concurrent request processing.
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse, JsonRpcError, ErrorObject};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use prism_mcp_rs::protocol::{ErrorObject, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
 use std::collections::HashMap;
 
@@ -27,11 +27,14 @@ fn benchmark_server_creation(c: &mut Criterion) {
             let config = HashMap::from([
                 ("name".to_string(), json!("benchmark-server")),
                 ("version".to_string(), json!("1.0.0")),
-                ("capabilities".to_string(), json!({
-                    "tools": {"listChanged": true},
-                    "resources": {"subscribe": true},
-                    "prompts": {"listChanged": true}
-                })),
+                (
+                    "capabilities".to_string(),
+                    json!({
+                        "tools": {"listChanged": true},
+                        "resources": {"subscribe": true},
+                        "prompts": {"listChanged": true}
+                    }),
+                ),
             ]);
             black_box(config);
         });
@@ -40,7 +43,7 @@ fn benchmark_server_creation(c: &mut Criterion) {
 
 fn benchmark_request_routing(c: &mut Criterion) {
     let mut group = c.benchmark_group("request_routing");
-    
+
     // Simple request routing
     let simple_request = JsonRpcRequest {
         jsonrpc: "2.0".to_string(),
@@ -51,7 +54,7 @@ fn benchmark_request_routing(c: &mut Criterion) {
         })),
         id: json!(1),
     };
-    
+
     group.bench_function("route_simple", |b| {
         b.iter(|| {
             // Simulate routing logic
@@ -64,7 +67,7 @@ fn benchmark_request_routing(c: &mut Criterion) {
             }
         });
     });
-    
+
     // Complex nested routing
     let complex_request = JsonRpcRequest {
         jsonrpc: "2.0".to_string(),
@@ -78,7 +81,7 @@ fn benchmark_request_routing(c: &mut Criterion) {
         })),
         id: json!(2),
     };
-    
+
     group.bench_function("route_complex", |b| {
         b.iter(|| {
             let method = black_box(&complex_request.method);
@@ -98,13 +101,13 @@ fn benchmark_request_routing(c: &mut Criterion) {
             }
         });
     });
-    
+
     group.finish();
 }
 
 fn benchmark_response_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("response_generation");
-    
+
     // Success response
     group.bench_function("generate_success", |b| {
         b.iter(|| {
@@ -119,7 +122,7 @@ fn benchmark_response_generation(c: &mut Criterion) {
             let _json = serde_json::to_string(&response).unwrap();
         });
     });
-    
+
     // Error response
     group.bench_function("generate_error", |b| {
         b.iter(|| {
@@ -137,21 +140,25 @@ fn benchmark_response_generation(c: &mut Criterion) {
             let _json = serde_json::to_string(&response).unwrap();
         });
     });
-    
+
     // Large response with tool results
-    let tool_results: Vec<_> = (0..20).map(|i| json!({
-        "tool_id": format!("tool_{}", i),
-        "name": format!("Tool {}", i),
-        "description": format!("Description for tool {}", i),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "input": {"type": "string"},
-                "options": {"type": "object"}
-            }
-        }
-    })).collect();
-    
+    let tool_results: Vec<_> = (0..20)
+        .map(|i| {
+            json!({
+                "tool_id": format!("tool_{}", i),
+                "name": format!("Tool {}", i),
+                "description": format!("Description for tool {}", i),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "input": {"type": "string"},
+                        "options": {"type": "object"}
+                    }
+                }
+            })
+        })
+        .collect();
+
     group.bench_function("generate_large", |b| {
         b.iter(|| {
             let response = JsonRpcResponse {
@@ -165,21 +172,23 @@ fn benchmark_response_generation(c: &mut Criterion) {
             let _json = serde_json::to_string(&response).unwrap();
         });
     });
-    
+
     group.finish();
 }
 
 fn benchmark_concurrent_handling(c: &mut Criterion) {
     let mut group = c.benchmark_group("concurrent_handling");
-    
+
     // Simulate concurrent request processing
-    let requests: Vec<JsonRpcRequest> = (0..100).map(|i| JsonRpcRequest {
-        jsonrpc: "2.0".to_string(),
-        method: "echo".to_string(),
-        params: Some(json!({"message": format!("test_{}", i)})),
-        id: json!(i),
-    }).collect();
-    
+    let requests: Vec<JsonRpcRequest> = (0..100)
+        .map(|i| JsonRpcRequest {
+            jsonrpc: "2.0".to_string(),
+            method: "echo".to_string(),
+            params: Some(json!({"message": format!("test_{}", i)})),
+            id: json!(i),
+        })
+        .collect();
+
     group.bench_function("process_100_sequential", |b| {
         b.iter(|| {
             for request in black_box(&requests) {
@@ -190,28 +199,31 @@ fn benchmark_concurrent_handling(c: &mut Criterion) {
             }
         });
     });
-    
+
     group.bench_function("process_100_parallel_sim", |b| {
         b.iter(|| {
             // Simulate parallel processing with chunks
             let chunk_size = 10;
             for chunk in black_box(&requests).chunks(chunk_size) {
                 // Process chunk in "parallel"
-                let _results: Vec<_> = chunk.iter().map(|req| {
-                    json!({
-                        "echo": req.params.as_ref().unwrap()["message"].as_str()
+                let _results: Vec<_> = chunk
+                    .iter()
+                    .map(|req| {
+                        json!({
+                            "echo": req.params.as_ref().unwrap()["message"].as_str()
+                        })
                     })
-                }).collect();
+                    .collect();
             }
         });
     });
-    
+
     group.finish();
 }
 
 fn benchmark_middleware_chain(c: &mut Criterion) {
     let mut group = c.benchmark_group("middleware");
-    
+
     // Simulate middleware chain processing
     group.bench_function("chain_3_middlewares", |b| {
         b.iter(|| {
@@ -220,20 +232,20 @@ fn benchmark_middleware_chain(c: &mut Criterion) {
                 "timestamp": "2024-01-01T00:00:00Z",
                 "data": {}
             });
-            
+
             // Middleware 1: Authentication
             context["auth"] = json!({"user": "test", "validated": true});
-            
+
             // Middleware 2: Logging
             context["log"] = json!({"level": "info", "message": "Processing request"});
-            
+
             // Middleware 3: Rate limiting
             context["rate_limit"] = json!({"remaining": 99, "reset": 3600});
-            
+
             black_box(context);
         });
     });
-    
+
     group.bench_function("chain_5_middlewares", |b| {
         b.iter(|| {
             let mut context = json!({
@@ -241,26 +253,26 @@ fn benchmark_middleware_chain(c: &mut Criterion) {
                 "timestamp": "2024-01-01T00:00:00Z",
                 "data": {}
             });
-            
+
             // Middleware 1: Authentication
             context["auth"] = json!({"user": "test", "validated": true});
-            
+
             // Middleware 2: Logging
             context["log"] = json!({"level": "info", "message": "Processing request"});
-            
-            // Middleware 3: Rate limiting  
+
+            // Middleware 3: Rate limiting
             context["rate_limit"] = json!({"remaining": 99, "reset": 3600});
-            
+
             // Middleware 4: Validation
             context["validation"] = json!({"schema": "v1", "valid": true});
-            
+
             // Middleware 5: Metrics
             context["metrics"] = json!({"latency_ms": 5, "cpu_usage": 0.15});
-            
+
             black_box(context);
         });
     });
-    
+
     group.finish();
 }
 

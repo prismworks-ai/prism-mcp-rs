@@ -1,11 +1,11 @@
 //! Client performance benchmarks
-//! 
+//!
 //! Measures transport layer performance, serialization speed,
 //! and request/response handling efficiency.
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use prism_mcp_rs::client::McpClientBuilder;
 use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
@@ -32,7 +32,7 @@ fn benchmark_client_creation(c: &mut Criterion) {
 
 fn benchmark_request_serialization(c: &mut Criterion) {
     let mut group = c.benchmark_group("request_serialization");
-    
+
     // Small request
     let small_request = JsonRpcRequest {
         jsonrpc: "2.0".to_string(),
@@ -40,15 +40,17 @@ fn benchmark_request_serialization(c: &mut Criterion) {
         params: Some(json!({"key": "value"})),
         id: json!(1),
     };
-    
+
     group.bench_with_input(
         BenchmarkId::new("small", "50_bytes"),
         &small_request,
-        |b, req| b.iter(|| {
-            let _json = serde_json::to_string(black_box(req)).unwrap();
-        })
+        |b, req| {
+            b.iter(|| {
+                let _json = serde_json::to_string(black_box(req)).unwrap();
+            })
+        },
     );
-    
+
     // Medium request with nested data
     let medium_request = JsonRpcRequest {
         jsonrpc: "2.0".to_string(),
@@ -71,26 +73,32 @@ fn benchmark_request_serialization(c: &mut Criterion) {
         })),
         id: json!(42),
     };
-    
+
     group.bench_with_input(
         BenchmarkId::new("medium", "500_bytes"),
         &medium_request,
-        |b, req| b.iter(|| {
-            let _json = serde_json::to_string(black_box(req)).unwrap();
-        })
+        |b, req| {
+            b.iter(|| {
+                let _json = serde_json::to_string(black_box(req)).unwrap();
+            })
+        },
     );
-    
+
     // Large request with array data
-    let large_data: Vec<_> = (0..100).map(|i| json!({
-        "id": i,
-        "name": format!("item_{}", i),
-        "value": i * 2,
-        "metadata": {
-            "created": "2024-01-01T00:00:00Z",
-            "modified": "2024-01-01T00:00:00Z"
-        }
-    })).collect();
-    
+    let large_data: Vec<_> = (0..100)
+        .map(|i| {
+            json!({
+                "id": i,
+                "name": format!("item_{}", i),
+                "value": i * 2,
+                "metadata": {
+                    "created": "2024-01-01T00:00:00Z",
+                    "modified": "2024-01-01T00:00:00Z"
+                }
+            })
+        })
+        .collect();
+
     let large_request = JsonRpcRequest {
         jsonrpc: "2.0".to_string(),
         method: "batch/process".to_string(),
@@ -103,36 +111,40 @@ fn benchmark_request_serialization(c: &mut Criterion) {
         })),
         id: json!("batch-123"),
     };
-    
+
     group.bench_with_input(
         BenchmarkId::new("large", "10KB"),
         &large_request,
-        |b, req| b.iter(|| {
-            let _json = serde_json::to_string(black_box(req)).unwrap();
-        })
+        |b, req| {
+            b.iter(|| {
+                let _json = serde_json::to_string(black_box(req)).unwrap();
+            })
+        },
     );
-    
+
     group.finish();
 }
 
 fn benchmark_response_deserialization(c: &mut Criterion) {
     let mut group = c.benchmark_group("response_deserialization");
-    
+
     // Small response
     let small_response = r#"{
         "jsonrpc": "2.0",
         "result": {"status": "ok"},
         "id": 1
     }"#;
-    
+
     group.bench_with_input(
         BenchmarkId::new("small", "50_bytes"),
         &small_response,
-        |b, resp| b.iter(|| {
-            let _parsed: JsonRpcResponse = serde_json::from_str(black_box(resp)).unwrap();
-        })
+        |b, resp| {
+            b.iter(|| {
+                let _parsed: JsonRpcResponse = serde_json::from_str(black_box(resp)).unwrap();
+            })
+        },
     );
-    
+
     // Medium response
     let medium_response = r#"{
         "jsonrpc": "2.0",
@@ -150,17 +162,20 @@ fn benchmark_response_deserialization(c: &mut Criterion) {
         },
         "id": "req-456"
     }"#;
-    
+
     group.bench_with_input(
         BenchmarkId::new("medium", "500_bytes"),
         &medium_response,
-        |b, resp| b.iter(|| {
-            let _parsed: JsonRpcResponse = serde_json::from_str(black_box(resp)).unwrap();
-        })
+        |b, resp| {
+            b.iter(|| {
+                let _parsed: JsonRpcResponse = serde_json::from_str(black_box(resp)).unwrap();
+            })
+        },
     );
-    
+
     // Large response with structured data
-    let large_response = format!(r#"{{
+    let large_response = format!(
+        r#"{{
         "jsonrpc": "2.0",
         "result": {{
             "data": [{}],
@@ -168,60 +183,71 @@ fn benchmark_response_deserialization(c: &mut Criterion) {
             "request_id": "req-789"
         }},
         "id": 123
-    }}"#, 
-        (0..50).map(|i| format!(r#"{{"id": {}, "value": "item_{}"}},"#, i, i))
-            .collect::<Vec<_>>().join(",")
+    }}"#,
+        (0..50)
+            .map(|i| format!(r#"{{"id": {}, "value": "item_{}"}},"#, i, i))
+            .collect::<Vec<_>>()
+            .join(",")
     );
-    
+
     group.bench_with_input(
         BenchmarkId::new("large", "5KB"),
         &large_response,
-        |b, resp| b.iter(|| {
-            let _parsed: JsonRpcResponse = serde_json::from_str(black_box(resp)).unwrap();
-        })
+        |b, resp| {
+            b.iter(|| {
+                let _parsed: JsonRpcResponse = serde_json::from_str(black_box(resp)).unwrap();
+            })
+        },
     );
-    
+
     group.finish();
 }
 
 fn benchmark_batch_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("batch_operations");
-    
+
     // Benchmark creating batch requests
-    let requests: Vec<JsonRpcRequest> = (0..10).map(|i| JsonRpcRequest {
-        jsonrpc: "2.0".to_string(),
-        method: format!("method_{}", i),
-        params: Some(json!({"index": i})),
-        id: json!(i),
-    }).collect();
-    
+    let requests: Vec<JsonRpcRequest> = (0..10)
+        .map(|i| JsonRpcRequest {
+            jsonrpc: "2.0".to_string(),
+            method: format!("method_{}", i),
+            params: Some(json!({"index": i})),
+            id: json!(i),
+        })
+        .collect();
+
     group.bench_function("create_batch_10", |b| {
         b.iter(|| {
             let _batch = black_box(&requests).clone();
         });
     });
-    
+
     // Benchmark serializing batch
     group.bench_function("serialize_batch_10", |b| {
         b.iter(|| {
             let _json = serde_json::to_string(black_box(&requests)).unwrap();
         });
     });
-    
+
     // Benchmark processing batch responses
-    let responses: Vec<String> = (0..10).map(|i| 
-        format!(r#"{{"jsonrpc":"2.0","result":{{"value":{}}},"id":{}}}"#, i, i)
-    ).collect();
-    
+    let responses: Vec<String> = (0..10)
+        .map(|i| {
+            format!(
+                r#"{{"jsonrpc":"2.0","result":{{"value":{}}},"id":{}}}"#,
+                i, i
+            )
+        })
+        .collect();
+
     let batch_response = format!("[{}]", responses.join(","));
-    
+
     group.bench_function("deserialize_batch_10", |b| {
         b.iter(|| {
-            let _parsed: Vec<JsonRpcResponse> = 
+            let _parsed: Vec<JsonRpcResponse> =
                 serde_json::from_str(black_box(&batch_response)).unwrap();
         });
     });
-    
+
     group.finish();
 }
 

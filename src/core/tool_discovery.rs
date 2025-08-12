@@ -234,6 +234,8 @@ impl ToolRegistry {
     /// Clean up deprecated tools based on policy
     pub fn cleanup_deprecated_tools(&mut self, policy: &DeprecationCleanupPolicy) -> Vec<String> {
         let mut removed_tools = Vec::new();
+        
+        #[cfg(feature = "chrono")]
         let current_time = Utc::now();
 
         let tools_to_remove: Vec<String> = self
@@ -250,19 +252,27 @@ impl ToolRegistry {
                         return true;
                     }
 
-                    // Check time-based removal
-                    if let Some(removal_date) = deprecation.removal_date {
-                        if current_time >= removal_date {
-                            return true;
+                    #[cfg(feature = "chrono")]
+                    {
+                        // Check time-based removal
+                        if let Some(removal_date) = deprecation.removal_date {
+                            if current_time >= removal_date {
+                                return true;
+                            }
+                        }
+
+                        // Check age-based removal
+                        if let Some(deprecated_date) = deprecation.deprecated_date {
+                            let age = current_time.signed_duration_since(deprecated_date);
+                            if age.num_days() > policy.max_deprecated_days as i64 {
+                                return true;
+                            }
                         }
                     }
-
-                    // Check age-based removal
-                    if let Some(deprecated_date) = deprecation.deprecated_date {
-                        let age = current_time.signed_duration_since(deprecated_date);
-                        if age.num_days() > policy.max_deprecated_days as i64 {
-                            return true;
-                        }
+                    #[cfg(not(feature = "chrono"))]
+                    {
+                        // Without chrono, we can't check time-based removal
+                        let _ = policy; // Suppress unused warning
                     }
                 }
                 false

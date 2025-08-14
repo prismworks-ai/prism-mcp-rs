@@ -24,7 +24,13 @@ pub mod validation;
 pub use batch::*;
 pub use discovery::*;
 pub use messages::*;
-pub use metadata::*;
+
+// Re-export metadata module types explicitly to avoid conflicts with types module
+// These types (Implementation, ServerInfo, ClientInfo) are the canonical versions
+pub use metadata::{
+    ClientInfo, Implementation, MetadataBuilder, ProtocolCapabilities, ServerInfo,
+};
+
 pub use missing_types::*;
 // Re-export roots_types items except those that conflict with messages
 pub use roots_types::{
@@ -33,7 +39,27 @@ pub use roots_types::{
     // Explicitly exclude Root and ListRootsResult which are already in messages
 };
 pub use schema_introspection::*;
-pub use types::*;
+
+// Re-export all types module items EXCEPT Implementation, ServerInfo, and ClientInfo
+// which are already exported from metadata module to avoid ambiguity
+pub use types::{
+    AnnotationAudience, Annotations, AudioContent, BaseMetadata, CallToolResult,
+    ClientCapabilities, CompletionsCapability, Content, ContentBlock, CreateMessageResult,
+    Cursor, DangerLevel, ElicitationAction, ElicitationCapability, ElicitationSchema,
+    EmbeddedResource, ErrorObject, GetPromptResult, ImageContent, JsonRpcBatchRequest,
+    JsonRpcBatchResponse, JsonRpcError, JsonRpcId, JsonRpcMessage, JsonRpcNotification,
+    JsonRpcRequest, JsonRpcRequestOrNotification, JsonRpcResponse, JsonRpcResponseOrError,
+    LoggingCapability, LoggingLevel, ModelHint, ModelPreferences, Notification,
+    NotificationParams, PaginatedRequest, PaginatedResult, PrimitiveSchemaDefinition,
+    ProgressToken, Prompt, PromptArgument, PromptInfo, PromptMessage, PromptResult,
+    PromptsCapability, Request, RequestId, RequestMeta, RequestParams, Resource,
+    ResourceContents, ResourceInfo, ResourceLink, ResourceTemplate, ResourcesCapability,
+    Role, RootsCapability, SamplingCapability, SamplingContent, SamplingMessage,
+    ServerCapabilities, StopReason, TextContent, Tool, ToolAnnotations, ToolInfo,
+    ToolInputSchema, ToolOutputSchema, ToolResult, ToolsCapability, error_codes,
+    JSONRPC_VERSION, LATEST_PROTOCOL_VERSION, PROTOCOL_VERSION,
+};
+
 pub use validation::*;
 
 // Re-export method constants for convenience
@@ -44,10 +70,6 @@ pub use methods::{
     RESOURCES_UNSUBSCRIBE, RESOURCES_UPDATED, ROOTS_LIST, ROOTS_LIST_CHANGED, RPC_DISCOVER,
     SAMPLING_CREATE_MESSAGE, TOOLS_CALL, TOOLS_LIST, TOOLS_LIST_CHANGED,
 };
-
-// Re-export 2025-06-18 specific constants and error codes
-pub use types::error_codes;
-pub use types::{JSONRPC_VERSION, LATEST_PROTOCOL_VERSION};
 
 // Legacy constant for compatibility
 pub const MCP_PROTOCOL_VERSION: &str = LATEST_PROTOCOL_VERSION;

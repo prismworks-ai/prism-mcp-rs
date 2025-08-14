@@ -407,8 +407,9 @@ make reports              # Both coverage and benchmarks
 make report-coverage      # Coverage only
 make report-bench         # Benchmarks only
 
-# Or use CI scripts
-./scripts/ci/local-ci-enhanced.sh --reports
+# Or use Act to run GitHub Actions locally
+act -j coverage    # Run coverage job from CI workflow
+act push          # Run full CI pipeline
 ```
 
 # Run integration tests

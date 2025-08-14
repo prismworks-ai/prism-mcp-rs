@@ -315,14 +315,16 @@ The `GITHUB_TOKEN` used for committing reports is automatically provided by GitH
 ### Running reports locally
 
 ```bash
-# Generate both coverage and benchmark reports
-./scripts/ci/local-ci-enhanced.sh --reports
+# Use Act to run GitHub Actions locally
+make local-ci     # Run sequential CI pipeline (recommended for local)
+make full         # Run full parallel CI pipeline
 
-# Run full CI with reports
-./scripts/ci/local-ci-enhanced.sh --full
+# Or use Act directly for specific jobs
+act -j coverage   # Run coverage job from CI workflow
 
-# Quick coverage report only
-./scripts/ci/simple-coverage.sh
+# Or if you have Rust tools installed locally
+make coverage     # Generate coverage report
+make bench        # Run benchmarks
 ```
 
 Reports will be saved in the `reports/` directory.

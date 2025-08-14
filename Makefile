@@ -7,13 +7,20 @@
 # For detailed documentation about the build system and development workflow,
 # see DEVELOPMENT.md in the project root.
 #
-# Quick usage:
+# ACT FOR LOCAL CI:
+#   Run GitHub Actions locally without pushing:
+#   act push         - Run full CI pipeline
+#   act -j test      - Run test job
+#   act -j clippy    - Run clippy job
+#   act -l           - List all available workflows
+#
+# Quick usage (requires local Rust installation):
 #   make quick       - Run quick validation before committing
 #   make check       - Run standard CI checks before pushing
-#   make full        - Run complete CI pipeline
+#   make full        - Run complete CI pipeline (uses Act)
 #   make help        - Show all available targets
 
-.PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean install-tools setup-hooks
+.PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean setup-hooks
 
 # Default target
 help: ## Show this help message
@@ -41,13 +48,23 @@ check: ## Run standard CI checks (mirrors GitHub Actions)
 	@cargo check --all-features
 	@$(MAKE) test-all
 	@$(MAKE) examples
+
+# Run local CI with Act (sequential execution)
+local-ci: ## Run sequential CI locally with Act (won't run on GitHub)
+	@echo "🚀 Running local sequential CI with Act..."
+	@if ! command -v act &> /dev/null; then \
+		echo "❌ Act is not installed. Run 'make install-act' first."; \
+		exit 1; \
+	fi
+	@act -W .github/workflows/ci-local.yml push
 	@$(MAKE) docs
 	@echo "✅ Standard CI checks complete!"
 
 # Full CI pipeline
-full: ## Run full CI pipeline including all matrix combinations
-	@echo "🚀 Running full CI pipeline..."
-	@./scripts/ci/local-ci.sh --full
+full: ## Run full CI pipeline using Act (GitHub Actions locally)
+	@echo "🚀 Running full CI pipeline with Act..."
+	@echo "💡 This runs your actual GitHub Actions workflows locally"
+	@act push
 
 # Formatting
 fmt: ## Check code formatting
@@ -148,23 +165,14 @@ coverage: ## Generate code coverage report
 	@cargo llvm-cov report
 	@echo "Coverage report generated in .local/reports/ directory"
 
-# Reports (NEW)
-reports: ## Generate coverage and benchmark reports in markdown format
-	@echo "📊 Generating coverage and benchmark reports..."
-	@./scripts/ci/local-ci-enhanced.sh --reports
-
-report-coverage: ## Generate markdown coverage report
-	@echo "📊 Generating coverage report..."
-	@chmod +x scripts/ci/generate-coverage-report.sh scripts/ci/simple-coverage.sh
-	@./scripts/ci/generate-coverage-report.sh || ./scripts/ci/simple-coverage.sh
-	@echo "Coverage report saved to reports/coverage-report.md"
-
-report-bench: ## Generate markdown benchmark report
-	@echo "⚡ Generating benchmark report..."
-	@chmod +x scripts/ci/run-benchmarks.sh
-	@cargo build --benches --features bench
-	@./scripts/ci/run-benchmarks.sh
-	@echo "Benchmark report saved to reports/benchmark-report.md"
+# Reports
+reports: ## Generate coverage and benchmark reports
+	@echo "📊 Generating reports using Act:"
+	@echo "   act -j coverage    # Coverage report"
+	@echo "   act -j benchmark   # Benchmark report"
+	@echo "Or with local tools:"
+	@echo "   make coverage      # Coverage with cargo-llvm-cov"
+	@echo "   make bench         # Benchmarks with cargo bench"
 
 
 coverage-open: ## Generate and open coverage report
@@ -187,17 +195,18 @@ clean: ## Clean build artifacts
 	@rm -rf .local/reports/*.html .local/reports/*.xml
 	@rm -f *.profraw
 
-# Tool installation
-install-tools: ## Install required development tools
-	@echo "🔧 Installing development tools..."
-	@cargo install cargo-audit || echo "cargo-audit already installed"
-	@cargo install cargo-llvm-cov || echo "cargo-llvm-cov already installed"
-	@rustup component add llvm-tools-preview || echo "llvm-tools-preview already installed"
-	@cargo install cargo-tree || echo "cargo-tree already installed"
-	@cargo install cargo-license || echo "cargo-license already installed"
-	@cargo install cargo-deny || echo "cargo-deny already installed"
-	@rustup component add rustfmt clippy
-
+# Tool installation (Act is the primary tool needed)
+install-act: ## Install Act for local CI
+	@echo "📦 Installing Act..."
+	@if ! command -v act &> /dev/null; then \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			brew install act; \
+		else \
+			curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash; \
+		fi; \
+	else \
+		echo "✅ Act is already installed: $$(act --version)"; \
+	fi
 # Git hooks
 setup-hooks: ## Set up Git hooks for automatic CI
 	@echo "🪝 Setting up Git hooks..."
@@ -212,8 +221,9 @@ remove-hooks: ## Remove Git hooks
 	@echo "✅ Pre-push hook removed"
 
 # Development workflow commands
-dev-setup: install-tools setup-hooks ## Complete development environment setup
+dev-setup: setup-hooks ## Complete development environment setup
 	@echo "🚀 Development environment setup complete!"
+	@echo "   💡 Make sure Act is installed: brew install act (macOS)"
 
 commit-ready: quick ## Check if code is ready to commit
 	@echo "✅ Code is ready to commit!"
@@ -221,30 +231,18 @@ commit-ready: quick ## Check if code is ready to commit
 push-ready: check ## Check if code is ready to push
 	@echo "✅ Code is ready to push!"
 
-# CI simulation
-ci-local: ## Run exact same checks as GitHub Actions
-	@echo "🚀 Running local CI (mirrors GitHub Actions)..."
-	@./scripts/ci/local-ci.sh
+# CI simulation with Act
+ci-local: ## Run CI locally with Act
+	@echo "🚀 Running CI locally with Act..."
+	@act push
 
-ci-quick: ## Quick CI check
-	@echo "🚀 Running quick CI check..."
-	@./scripts/ci/local-ci.sh --quick
+ci-quick: ## Quick CI check with Act
+	@echo "🚀 Running quick CI check with Act..."
+	@act -j test
 
-ci-full: ## Full CI pipeline with all matrix combinations
-	@echo "🚀 Running full CI pipeline..."
-	@./scripts/ci/local-ci.sh --full
-
-# Release preparation
-release-check: ## Comprehensive check before release
-	@echo "🚀 Running release preparation checks..."
-	@$(MAKE) clean
-	@$(MAKE) full
-	@$(MAKE) security
-	@$(MAKE) coverage
-	@echo "✅ Release checks complete!"
-
-# Help for common workflows
-workflow-help: ## Show common development workflows
+ci-full: ## Full CI pipeline with Act
+	@echo "🚀 Running full CI pipeline with Act..."
+	@act push --matrix os:ubuntu-latest
 	@echo "Common Development Workflows:"
 	@echo ""
 	@echo "📝 Before committing:"
@@ -266,10 +264,17 @@ workflow-help: ## Show common development workflows
 	@echo "📚 Documentation:"
 	@echo "   make docs-open      # Generate and open docs"
 	@echo ""
+	@echo "🐳 Act for Local CI (GitHub Actions locally!):"
+	@echo "   act -l              # List available workflows"
+	@echo "   act -j test         # Run test job"
+	@echo "   act -j clippy       # Run clippy job"
+	@echo "   act push            # Run full CI pipeline"
+	@echo "   act -v push         # Verbose output for debugging"
+	@echo ""
 	@echo "🔒 Security:"
 	@echo "   make security       # Security audit"
 	@echo "   make deps           # Dependency analysis"
 	@echo ""
 	@echo "🎯 Full validation:"
-	@echo "   make ci-local       # Mirror GitHub Actions"
-	@echo "   make release-check  # Pre-release validation"
+	@echo "   make check          # Standard CI checks"
+	@echo "   make full           # Complete CI with Act"

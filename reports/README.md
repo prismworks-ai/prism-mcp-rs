@@ -33,11 +33,15 @@ Reports are generated automatically by GitHub Actions:
 To generate reports locally:
 
 ```bash
-# Coverage report
-./scripts/ci/generate-coverage-report.sh
+# Coverage report (using Act)
+act -j coverage
 
-# Benchmark report
-./scripts/ci/run-benchmarks.sh
+# Benchmark report (if available in workflows)
+act -j bench
+
+# Or with local Rust tools
+make coverage
+make bench
 ```
 
 ## Report Format

@@ -1,0 +1,206 @@
+name: CI-Local
+
+# Local-only CI workflow for Act
+# Automatically exits if running on GitHub Actions
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  CARGO_BUILD_FLAGS: --all-features
+
+jobs:
+  # Check environment and exit if on GitHub
+  check-environment:
+    name: Environment Check
+    runs-on: ubuntu-latest
+    outputs:
+      is_act: ${{ steps.check.outputs.is_act }}
+    steps:
+      - name: Check environment
+        id: check
+        run: |
+          if [[ "${{ env.ACT }}" == "true" ]]; then
+            echo "🚀 Running in Act environment - proceeding with local CI"
+            echo "is_act=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️  This workflow is for local Act testing only."
+            echo "✅ Skipping execution on GitHub Actions."
+            echo "📝 Use ci.yml for GitHub Actions CI."
+            echo "is_act=false" >> $GITHUB_OUTPUT
+          fi
+
+  # All jobs below only run in Act environment
+  # They run sequentially via 'needs' dependencies
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    needs: check-environment
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    needs: [check-environment, fmt]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      
+      - name: Run clippy
+        run: cargo clippy --all-features -- -D warnings
+
+  check:
+    name: Package Check
+    runs-on: ubuntu-latest
+    needs: [check-environment, clippy]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Check package
+        run: cargo package --list --allow-dirty
+      
+      - name: Verify build
+        run: cargo check --all-features
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: [check-environment, check]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Run tests
+        run: cargo test --verbose --all-features --all
+      
+      - name: Test with stdio feature only
+        run: cargo test --verbose --features stdio
+
+  minimal:
+    name: Minimal Dependencies
+    runs-on: ubuntu-latest
+    needs: [check-environment, test]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Test no features
+        run: cargo test --verbose --no-default-features --lib
+      
+      - name: Check minimal build
+        run: cargo check --no-default-features
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    needs: [check-environment, minimal]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build docs
+        run: cargo doc --no-deps --all-features
+      
+      - name: Check doc links
+        run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
+  examples:
+    name: Examples
+    runs-on: ubuntu-latest
+    needs: [check-environment, docs]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Check examples
+        run: |
+          for example in examples/*.rs; do
+            if [ -f "$example" ]; then
+              name=$(basename "$example" .rs)
+              echo "Checking example: $name"
+              cargo check --example "$name" --all-features
+            fi
+          done
+      
+      - name: Build examples
+        run: cargo build --examples --all-features
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: [check-environment, examples]
+    if: needs.check-environment.outputs.is_act == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      
+      - name: Security audit
+        run: cargo audit
+
+  # Final summary job
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [check-environment, fmt, clippy, check, test, minimal, docs, examples, security]
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "🎉 Local CI Pipeline Complete!"
+          echo "=========================="
+          echo "Results:"
+          echo "- Format: ${{ needs.fmt.result }}"
+          echo "- Clippy: ${{ needs.clippy.result }}"
+          echo "- Check: ${{ needs.check.result }}"
+          echo "- Tests: ${{ needs.test.result }}"
+          echo "- Minimal: ${{ needs.minimal.result }}"
+          echo "- Docs: ${{ needs.docs.result }}"
+          echo "- Examples: ${{ needs.examples.result }}"
+          echo "- Security: ${{ needs.security.result }}"

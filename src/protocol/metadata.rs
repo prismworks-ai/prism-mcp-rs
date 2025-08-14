@@ -1,425 +1,434 @@
-// ! improved Metadata Support for MCP Protocol (2025-06-18)
-// !
-// ! Module provides complete metadata handling for requests and responses,
-// ! including progress token support and extensible metadata fields.
-
-use crate::protocol::types::ProgressToken;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::collections::HashMap;
+use std::fmt;
 
-// ============================================================================
-// Request Metadata
-// ============================================================================
-
-/// improved request metadata with progress token support
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct RequestMetadata {
-    /// Progress token for out-of-band progress notifications
-    #[serde(rename = "progressToken", skip_serializing_if = "Option::is_none")]
-    pub progress_token: Option<ProgressToken>,
-
-    /// Additional custom metadata fields
+/// Protocol capabilities metadata
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ProtocolCapabilities {
     #[serde(flatten)]
-    pub custom: HashMap<String, serde_json::Value>,
+    pub fields: HashMap<String, Value>,
 }
 
-impl RequestMetadata {
-    /// Create new empty metadata
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Create metadata with progress token
-    pub fn with_progress_token<T: Into<ProgressToken>>(token: T) -> Self {
-        Self {
-            progress_token: Some(token.into()),
-            custom: HashMap::new(),
-        }
-    }
-
-    /// Add progress token to metadata
-    pub fn set_progress_token<T: Into<ProgressToken>>(mut self, token: T) -> Self {
-        self.progress_token = Some(token.into());
-        self
-    }
-
-    /// Add custom metadata field
-    pub fn add_custom<K: Into<String>, V: Serialize>(
-        mut self,
-        key: K,
-        value: V,
-    ) -> Result<Self, serde_json::Error> {
-        self.custom.insert(key.into(), serde_json::to_value(value)?);
-        Ok(self)
-    }
-
-    /// Check if metadata has any fields
-    pub fn is_empty(&self) -> bool {
-        self.progress_token.is_none() && self.custom.is_empty()
-    }
-
-    /// Convert to Option<HashMap> for compatibility
-    pub fn to_hashmap(&self) -> Option<HashMap<String, serde_json::Value>> {
-        if self.is_empty() {
-            None
-        } else {
-            let mut map = self.custom.clone();
-            if let Some(ref token) = self.progress_token {
-                map.insert("progressToken".to_string(), token.clone());
-            }
-            Some(map)
-        }
-    }
-
-    /// Create from Option<HashMap> for compatibility
-    pub fn from_hashmap(map: Option<HashMap<String, serde_json::Value>>) -> Self {
-        match map {
-            None => Self::default(),
-            Some(mut map) => {
-                let progress_token = map.remove("progressToken");
-                Self {
-                    progress_token,
-                    custom: map,
-                }
-            }
-        }
-    }
-}
-
-// ============================================================================
-// Response Metadata
-// ============================================================================
-
-/// improved response metadata
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
-pub struct ResponseMetadata {
-    /// Processing time in milliseconds
-    #[serde(rename = "processingTime", skip_serializing_if = "Option::is_none")]
-    pub processing_time: Option<u64>,
-
-    /// Server timestamp (ISO 8601)
-    #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<String>,
-
-    /// Request ID for correlation
-    #[serde(rename = "requestId", skip_serializing_if = "Option::is_none")]
-    pub request_id: Option<String>,
-
-    /// Additional custom metadata fields
-    #[serde(flatten)]
-    pub custom: HashMap<String, serde_json::Value>,
-}
-
-impl ResponseMetadata {
-    /// Create new empty metadata
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Create metadata with processing time
-    pub fn with_processing_time(time_ms: u64) -> Self {
-        Self {
-            processing_time: Some(time_ms),
-            ..Default::default()
-        }
-    }
-
-    /// Set timestamp
-    pub fn set_timestamp<S: Into<String>>(mut self, timestamp: S) -> Self {
-        self.timestamp = Some(timestamp.into());
-        self
-    }
-
-    /// Set request ID for correlation
-    pub fn set_request_id<S: Into<String>>(mut self, id: S) -> Self {
-        self.request_id = Some(id.into());
-        self
-    }
-
-    /// Add custom metadata field
-    pub fn add_custom<K: Into<String>, V: Serialize>(
-        mut self,
-        key: K,
-        value: V,
-    ) -> Result<Self, serde_json::Error> {
-        self.custom.insert(key.into(), serde_json::to_value(value)?);
-        Ok(self)
-    }
-
-    /// Check if metadata has any fields
-    pub fn is_empty(&self) -> bool {
-        self.processing_time.is_none()
-            && self.timestamp.is_none()
-            && self.request_id.is_none()
-            && self.custom.is_empty()
-    }
-
-    /// Convert to Option<HashMap> for compatibility
-    pub fn to_hashmap(&self) -> Option<HashMap<String, serde_json::Value>> {
-        if self.is_empty() {
-            None
-        } else {
-            let mut map = self.custom.clone();
-            if let Some(time) = self.processing_time {
-                map.insert("processingTime".to_string(), serde_json::json!(time));
-            }
-            if let Some(ref ts) = self.timestamp {
-                map.insert("timestamp".to_string(), serde_json::json!(ts));
-            }
-            if let Some(ref id) = self.request_id {
-                map.insert("requestId".to_string(), serde_json::json!(id));
-            }
-            Some(map)
-        }
-    }
-
-    /// Create from Option<HashMap> for compatibility
-    pub fn from_hashmap(map: Option<HashMap<String, serde_json::Value>>) -> Self {
-        match map {
-            None => Self::default(),
-            Some(mut map) => {
-                let processing_time = map.remove("processingTime").and_then(|v| v.as_u64());
-                let timestamp = map
-                    .remove("timestamp")
-                    .and_then(|v| v.as_str().map(String::from));
-                let request_id = map
-                    .remove("requestId")
-                    .and_then(|v| v.as_str().map(String::from));
-
-                Self {
-                    processing_time,
-                    timestamp,
-                    request_id,
-                    custom: map,
-                }
-            }
-        }
-    }
-}
-
-// ============================================================================
-// Metadata Builder
-// ============================================================================
-
-/// Builder for creating complex metadata
-pub struct MetadataBuilder {
-    request: RequestMetadata,
-    response: ResponseMetadata,
-}
-
-impl MetadataBuilder {
-    /// Create new builder
-    pub fn new() -> Self {
-        Self {
-            request: RequestMetadata::new(),
-            response: ResponseMetadata::new(),
-        }
-    }
-
-    /// Add progress token for request
-    pub fn with_progress_token<T: Into<ProgressToken>>(mut self, token: T) -> Self {
-        self.request.progress_token = Some(token.into());
-        self
-    }
-
-    /// Add processing time for response
-    pub fn with_processing_time(mut self, time_ms: u64) -> Self {
-        self.response.processing_time = Some(time_ms);
-        self
-    }
-
-    /// Add timestamp for response
-    pub fn with_timestamp<S: Into<String>>(mut self, timestamp: S) -> Self {
-        self.response.timestamp = Some(timestamp.into());
-        self
-    }
-
-    /// Add request ID for correlation
-    pub fn with_request_id<S: Into<String>>(mut self, id: S) -> Self {
-        self.response.request_id = Some(id.into());
-        self
-    }
-
-    /// Add custom field to request metadata
-    pub fn add_request_field<K: Into<String>, V: Serialize>(
-        mut self,
-        key: K,
-        value: V,
-    ) -> Result<Self, serde_json::Error> {
-        self.request
-            .custom
-            .insert(key.into(), serde_json::to_value(value)?);
-        Ok(self)
-    }
-
-    /// Add custom field to response metadata
-    pub fn add_response_field<K: Into<String>, V: Serialize>(
-        mut self,
-        key: K,
-        value: V,
-    ) -> Result<Self, serde_json::Error> {
-        self.response
-            .custom
-            .insert(key.into(), serde_json::to_value(value)?);
-        Ok(self)
-    }
-
-    /// Build request metadata
-    pub fn build_request(self) -> RequestMetadata {
-        self.request
-    }
-
-    /// Build response metadata
-    pub fn build_response(self) -> ResponseMetadata {
-        self.response
-    }
-
-    /// Build both request and response metadata
-    pub fn build(self) -> (RequestMetadata, ResponseMetadata) {
-        (self.request, self.response)
-    }
-}
-
-impl Default for MetadataBuilder {
+impl Default for ProtocolCapabilities {
     fn default() -> Self {
         Self::new()
     }
 }
 
-// ============================================================================
-// Traits for Metadata Support
-// ============================================================================
+impl ProtocolCapabilities {
+    /// Create new empty capabilities
+    pub fn new() -> Self {
+        Self {
+            fields: HashMap::new(),
+        }
+    }
 
-/// Trait for types that support request metadata
-pub trait HasRequestMetadata {
-    /// Get request metadata
-    fn metadata(&self) -> Option<&RequestMetadata>;
+    /// Create with initial capabilities
+    pub fn with_fields(fields: HashMap<String, Value>) -> Self {
+        Self { fields }
+    }
 
-    /// Get mutable request metadata
-    fn metadata_mut(&mut self) -> Option<&mut RequestMetadata>;
+    /// Set a capability
+    pub fn set<K: Into<String>, V: Into<Value>>(&mut self, key: K, value: V) {
+        self.fields.insert(key.into(), value.into());
+    }
 
-    /// Set request metadata
-    fn set_metadata(&mut self, metadata: RequestMetadata);
+    /// Get a capability
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        self.fields.get(key)
+    }
 
-    /// Add progress token
-    fn add_progress_token<T: Into<ProgressToken>>(&mut self, token: T) {
-        if let Some(meta) = self.metadata_mut() {
-            meta.progress_token = Some(token.into());
+    /// Check if a capability exists
+    pub fn has(&self, key: &str) -> bool {
+        self.fields.contains_key(key)
+    }
+
+    /// Remove a capability
+    pub fn remove(&mut self, key: &str) -> Option<Value> {
+        self.fields.remove(key)
+    }
+
+    /// Check if empty
+    pub fn is_empty(&self) -> bool {
+        self.fields.is_empty()
+    }
+
+    /// Get fields reference
+    pub fn fields(&self) -> &HashMap<String, Value> {
+        &self.fields
+    }
+
+    /// Convert to `Option<HashMap>` for compatibility
+    pub fn to_hashmap(&self) -> Option<HashMap<String, serde_json::Value>> {
+        if self.is_empty() {
+            None
         } else {
-            self.set_metadata(RequestMetadata::with_progress_token(token));
+            Some(self.fields.clone())
+        }
+    }
+
+    /// Convert to Option for serialization
+    pub fn to_option(self) -> Option<Self> {
+        if self.is_empty() { None } else { Some(self) }
+    }
+
+    /// Create from `Option<HashMap>` for compatibility
+    pub fn from_hashmap(map: Option<HashMap<String, serde_json::Value>>) -> Self {
+        map.map(|fields| Self { fields }).unwrap_or_else(Self::new)
+    }
+}
+
+impl From<HashMap<String, Value>> for ProtocolCapabilities {
+    fn from(fields: HashMap<String, Value>) -> Self {
+        Self { fields }
+    }
+}
+
+impl fmt::Display for ProtocolCapabilities {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            write!(f, "No capabilities")
+        } else {
+            write!(
+                f,
+                "Capabilities: {:?}",
+                self.fields.keys().collect::<Vec<_>>()
+            )
         }
     }
 }
 
-/// Trait for types that support response metadata
-pub trait HasResponseMetadata {
-    /// Get response metadata
-    fn metadata(&self) -> Option<&ResponseMetadata>;
+/// Server information metadata
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ServerInfo {
+    pub name: String,
+    pub version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protocol_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<ProtocolCapabilities>,
+}
 
-    /// Get mutable response metadata
-    fn metadata_mut(&mut self) -> Option<&mut ResponseMetadata>;
+impl ServerInfo {
+    /// Create new server info
+    pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            version: version.into(),
+            protocol_version: None,
+            capabilities: None,
+        }
+    }
 
-    /// Set response metadata
-    fn set_metadata(&mut self, metadata: ResponseMetadata);
+    /// Set protocol version
+    pub fn with_protocol_version(mut self, version: impl Into<String>) -> Self {
+        self.protocol_version = Some(version.into());
+        self
+    }
 
-    /// Add processing time
-    fn add_processing_time(&mut self, time_ms: u64) {
-        if let Some(meta) = self.metadata_mut() {
-            meta.processing_time = Some(time_ms);
-        } else {
-            self.set_metadata(ResponseMetadata::with_processing_time(time_ms));
+    /// Set capabilities
+    pub fn with_capabilities(mut self, capabilities: ProtocolCapabilities) -> Self {
+        self.capabilities = Some(capabilities);
+        self
+    }
+
+    /// Get or create capabilities
+    pub fn capabilities_mut(&mut self) -> &mut ProtocolCapabilities {
+        self.capabilities
+            .get_or_insert_with(ProtocolCapabilities::new)
+    }
+}
+
+impl fmt::Display for ServerInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} v{}", self.name, self.version)?;
+        if let Some(proto) = &self.protocol_version {
+            write!(f, " (protocol: {})", proto)?;
+        }
+        Ok(())
+    }
+}
+
+/// Client information metadata
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ClientInfo {
+    pub name: String,
+    pub version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protocol_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<ProtocolCapabilities>,
+}
+
+impl ClientInfo {
+    /// Create new client info
+    pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            version: version.into(),
+            protocol_version: None,
+            capabilities: None,
+        }
+    }
+
+    /// Convert to `Option<HashMap>` for compatibility
+    pub fn capabilities_to_hashmap(&self) -> Option<HashMap<String, serde_json::Value>> {
+        self.capabilities.as_ref().and_then(|c| c.to_hashmap())
+    }
+
+    /// Set protocol version
+    pub fn with_protocol_version(mut self, version: impl Into<String>) -> Self {
+        self.protocol_version = Some(version.into());
+        self
+    }
+
+    /// Set capabilities
+    pub fn with_capabilities(mut self, capabilities: ProtocolCapabilities) -> Self {
+        self.capabilities = Some(capabilities);
+        self
+    }
+
+    /// Create from `Option<HashMap>` for compatibility
+    pub fn with_capabilities_hashmap(
+        mut self,
+        capabilities: Option<HashMap<String, serde_json::Value>>,
+    ) -> Self {
+        self.capabilities = capabilities.map(|fields| ProtocolCapabilities { fields });
+        self
+    }
+
+    /// Get or create capabilities
+    pub fn capabilities_mut(&mut self) -> &mut ProtocolCapabilities {
+        self.capabilities
+            .get_or_insert_with(ProtocolCapabilities::new)
+    }
+}
+
+impl fmt::Display for ClientInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} v{}", self.name, self.version)?;
+        if let Some(proto) = &self.protocol_version {
+            write!(f, " (protocol: {})", proto)?;
+        }
+        Ok(())
+    }
+}
+
+/// Implementation metadata
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Implementation {
+    pub name: String,
+    pub version: String,
+}
+
+impl Implementation {
+    /// Create new implementation info
+    pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            version: version.into(),
+        }
+    }
+
+    /// Create default implementation info for this library
+    pub fn default_library() -> Self {
+        Self {
+            name: env!("CARGO_PKG_NAME").to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
         }
     }
 }
 
-// ============================================================================
-// Tests
-// ============================================================================
+impl Default for Implementation {
+    fn default() -> Self {
+        Self::default_library()
+    }
+}
+
+impl fmt::Display for Implementation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} v{}", self.name, self.version)
+    }
+}
+
+/// Default protocol version
+pub static DEFAULT_PROTOCOL_VERSION: Lazy<String> = Lazy::new(|| "2024-11-05".to_string());
+
+/// Get default protocol version
+pub fn default_protocol_version() -> String {
+    DEFAULT_PROTOCOL_VERSION.clone()
+}
+
+/// Protocol metadata builder
+pub struct MetadataBuilder {
+    name: String,
+    version: String,
+    protocol_version: Option<String>,
+    capabilities: Option<ProtocolCapabilities>,
+}
+
+impl MetadataBuilder {
+    /// Create new builder
+    pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            version: version.into(),
+            protocol_version: None,
+            capabilities: None,
+        }
+    }
+
+    /// Set protocol version
+    pub fn protocol_version(mut self, version: impl Into<String>) -> Self {
+        self.protocol_version = Some(version.into());
+        self
+    }
+
+    /// Set capabilities
+    pub fn capabilities(mut self, capabilities: ProtocolCapabilities) -> Self {
+        self.capabilities = Some(capabilities);
+        self
+    }
+
+    /// Add capability
+    pub fn capability<K: Into<String>, V: Into<Value>>(mut self, key: K, value: V) -> Self {
+        let caps = self
+            .capabilities
+            .get_or_insert_with(ProtocolCapabilities::new);
+        caps.set(key, value);
+        self
+    }
+
+    /// Build ServerInfo
+    pub fn build_server(self) -> ServerInfo {
+        ServerInfo {
+            name: self.name,
+            version: self.version,
+            protocol_version: self.protocol_version,
+            capabilities: self.capabilities,
+        }
+    }
+
+    /// Build ClientInfo
+    pub fn build_client(self) -> ClientInfo {
+        ClientInfo {
+            name: self.name,
+            version: self.version,
+            protocol_version: self.protocol_version,
+            capabilities: self.capabilities,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
 
     #[test]
-    fn test_request_metadata() {
-        let meta = RequestMetadata::with_progress_token("token-123")
-            .add_custom("source", "test")
-            .unwrap();
+    fn test_protocol_capabilities() {
+        let mut caps = ProtocolCapabilities::new();
+        assert!(caps.is_empty());
 
-        assert_eq!(meta.progress_token, Some(json!("token-123")));
-        assert_eq!(meta.custom.get("source"), Some(&json!("test")));
+        caps.set("feature1", true);
+        caps.set("feature2", "value");
+        caps.set("feature3", 42);
 
-        // Test serialization
-        let json = serde_json::to_value(&meta).unwrap();
-        assert_eq!(json["progressToken"], "token-123");
-        assert_eq!(json["source"], "test");
+        assert!(caps.has("feature1"));
+        assert_eq!(
+            caps.get("feature2"),
+            Some(&Value::String("value".to_string()))
+        );
+        assert_eq!(caps.get("feature3"), Some(&Value::Number(42.into())));
 
-        // Test deserialization
-        let meta2: RequestMetadata = serde_json::from_value(json).unwrap();
-        assert_eq!(meta, meta2);
+        let removed = caps.remove("feature1");
+        assert_eq!(removed, Some(Value::Bool(true)));
+        assert!(!caps.has("feature1"));
     }
 
     #[test]
-    fn test_response_metadata() {
-        let meta = ResponseMetadata::with_processing_time(150)
-            .set_timestamp("2025-01-12T15:00:00Z")
-            .set_request_id("req-123");
+    fn test_server_info() {
+        let server = ServerInfo::new("test-server", "1.0.0").with_protocol_version("2024-11-05");
 
-        assert_eq!(meta.processing_time, Some(150));
-        assert_eq!(meta.timestamp, Some("2025-01-12T15:00:00Z".to_string()));
-        assert_eq!(meta.request_id, Some("req-123".to_string()));
+        assert_eq!(server.name, "test-server");
+        assert_eq!(server.version, "1.0.0");
+        assert_eq!(server.protocol_version, Some("2024-11-05".to_string()));
+        assert_eq!(
+            server.to_string(),
+            "test-server v1.0.0 (protocol: 2024-11-05)"
+        );
+    }
 
-        // Test conversion to HashMap
-        let map = meta.to_hashmap().unwrap();
-        assert_eq!(map.get("processingTime"), Some(&json!(150)));
-        assert_eq!(map.get("timestamp"), Some(&json!("2025-01-12T15:00:00Z")));
-        assert_eq!(map.get("requestId"), Some(&json!("req-123")));
+    #[test]
+    fn test_client_info() {
+        let mut client = ClientInfo::new("test-client", "2.0.0");
+        let caps = client.capabilities_mut();
+        caps.set("feature", true);
+
+        assert_eq!(client.name, "test-client");
+        assert_eq!(client.version, "2.0.0");
+        assert!(client.capabilities.as_ref().unwrap().has("feature"));
+    }
+
+    #[test]
+    fn test_implementation() {
+        let impl_info = Implementation::new("custom-impl", "3.0.0");
+        assert_eq!(impl_info.name, "custom-impl");
+        assert_eq!(impl_info.version, "3.0.0");
+        assert_eq!(impl_info.to_string(), "custom-impl v3.0.0");
+
+        let default_impl = Implementation::default();
+        assert_eq!(default_impl.name, env!("CARGO_PKG_NAME"));
+        assert_eq!(default_impl.version, env!("CARGO_PKG_VERSION"));
     }
 
     #[test]
     fn test_metadata_builder() {
-        let builder = MetadataBuilder::new()
-            .with_progress_token("progress-123")
-            .with_processing_time(200)
-            .with_timestamp("2025-01-12T15:00:00Z")
-            .with_request_id("req-456");
+        let server = MetadataBuilder::new("builder-test", "1.0.0")
+            .protocol_version("2024-11-05")
+            .capability("feature1", true)
+            .capability("feature2", "enabled")
+            .build_server();
 
-        let (req_meta, resp_meta) = builder.build();
-
-        assert_eq!(req_meta.progress_token, Some(json!("progress-123")));
-        assert_eq!(resp_meta.processing_time, Some(200));
-        assert_eq!(
-            resp_meta.timestamp,
-            Some("2025-01-12T15:00:00Z".to_string())
-        );
-        assert_eq!(resp_meta.request_id, Some("req-456".to_string()));
+        assert_eq!(server.name, "builder-test");
+        assert_eq!(server.version, "1.0.0");
+        assert_eq!(server.protocol_version, Some("2024-11-05".to_string()));
+        assert!(server.capabilities.as_ref().unwrap().has("feature1"));
+        assert!(server.capabilities.as_ref().unwrap().has("feature2"));
     }
 
     #[test]
-    fn test_empty_metadata() {
-        let req_meta = RequestMetadata::new();
-        assert!(req_meta.is_empty());
-        assert!(req_meta.to_hashmap().is_none());
+    fn test_capabilities_serialization() {
+        let mut caps = ProtocolCapabilities::new();
+        caps.set("test", true);
 
-        let resp_meta = ResponseMetadata::new();
-        assert!(resp_meta.is_empty());
-        assert!(resp_meta.to_hashmap().is_none());
+        let json = serde_json::to_string(&caps).unwrap();
+        let deserialized: ProtocolCapabilities = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(caps, deserialized);
     }
 
     #[test]
-    fn test_hashmap_conversion() {
+    fn test_empty_capabilities_to_option() {
+        let caps = ProtocolCapabilities::new();
+        assert_eq!(caps.to_option(), None);
+
+        let mut caps = ProtocolCapabilities::new();
+        caps.set("feature", true);
+        assert!(caps.to_option().is_some());
+    }
+
+    #[test]
+    fn test_capabilities_from_hashmap() {
         let mut map = HashMap::new();
-        map.insert("progressToken".to_string(), json!("token-789"));
-        map.insert("custom_field".to_string(), json!("value"));
+        map.insert("key1".to_string(), Value::Bool(true));
+        map.insert("key2".to_string(), Value::String("value".to_string()));
 
-        let req_meta = RequestMetadata::from_hashmap(Some(map));
-        assert_eq!(req_meta.progress_token, Some(json!("token-789")));
-        assert_eq!(req_meta.custom.get("custom_field"), Some(&json!("value")));
+        let caps = ProtocolCapabilities::from_hashmap(Some(map.clone()));
+        assert_eq!(caps.fields, map);
 
-        // Test round-trip
-        let map2 = req_meta.to_hashmap().unwrap();
-        let req_meta2 = RequestMetadata::from_hashmap(Some(map2));
-        assert_eq!(req_meta, req_meta2);
+        let empty_caps = ProtocolCapabilities::from_hashmap(None);
+        assert!(empty_caps.is_empty());
     }
 }

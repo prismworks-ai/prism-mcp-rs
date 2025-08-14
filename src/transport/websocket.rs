@@ -814,12 +814,33 @@ mod tests {
 
     #[tokio::test]
     async fn test_websocket_server_bind_error() {
-        // Try to bind to a privileged port (will fail without sudo)
-        let mut transport = WebSocketServerTransport::new("127.0.0.1:1");
+        use tokio::net::TcpListener;
 
+        // First, bind a TCP listener to a random available port
+        let listener = TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("Should bind to random port");
+        let addr = listener.local_addr().expect("Should have address");
+
+        // Now try to create a WebSocket server on the same port (will fail because it's already in use)
+        let mut transport = WebSocketServerTransport::new(addr.to_string());
         let result = transport.start().await;
 
-        // Should fail due to permission denied or address in use
-        assert!(result.is_err());
+        // Should fail due to address already in use
+        assert!(result.is_err(), "Binding to already-used port should fail");
+
+        // The error message should indicate binding failure
+        if let Err(e) = result {
+            let error_msg = e.to_string();
+            assert!(
+                error_msg.contains("Failed to bind")
+                    || error_msg.contains("Address already in use"),
+                "Error should indicate binding failure: {}",
+                error_msg
+            );
+        }
+
+        // Clean up
+        drop(listener);
     }
 }

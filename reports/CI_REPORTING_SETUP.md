@@ -74,14 +74,10 @@ The workflow has:
 You can test the same reporting locally:
 
 ```bash
-# Generate both reports
-./scripts/ci/local-ci-enhanced.sh --reports
-
-# Run full CI with reports
-./scripts/ci/local-ci-enhanced.sh --full
-
-# Quick coverage only
-./scripts/ci/simple-coverage.sh
+# Use Act to run GitHub Actions locally
+act -j coverage    # Run coverage job from CI workflow
+act push          # Run full CI pipeline
+act -v push       # Verbose output for debugging
 ```
 
 ## 📈 Viewing Reports

@@ -185,7 +185,7 @@ fn benchmark_response_deserialization(c: &mut Criterion) {
         "id": 123
     }}"#,
         (0..50)
-            .map(|i| format!(r#"{{"id": {}, "value": "item_{}"}},"#, i, i))
+            .map(|i| format!(r#"{{"id": {}, "value": "item_{}"}}"#, i, i))
             .collect::<Vec<_>>()
             .join(",")
     );

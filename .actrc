@@ -1,0 +1,43 @@
+# Act Configuration
+# This file configures Act for local GitHub Actions testing
+# Place this file as .actrc in the project root or your home directory
+
+# Use medium-sized Docker images by default (good balance of features vs size)
+--platform ubuntu-latest=catthehacker/ubuntu:act-latest
+--platform ubuntu-22.04=catthehacker/ubuntu:act-22.04
+--platform ubuntu-20.04=catthehacker/ubuntu:act-20.04
+
+# Use local Docker daemon
+--container-daemon-socket -
+
+# Reuse containers between runs for faster execution
+--reuse
+
+# Don't pull images if they already exist locally
+--pull=false
+
+# Set environment variables that indicate we're running in Act
+--env ACT=true
+--env CI=true
+--env GITHUB_ACTIONS=true
+
+# Use local cargo cache to speed up builds
+--env CARGO_HOME=/github/home/.cargo
+--env RUSTUP_HOME=/github/home/.rustup
+
+# Bind mount local cargo cache (optional - speeds up repeated runs)
+# Uncomment the following lines if you want to share your local cargo cache:
+# --bind ${HOME}/.cargo:/github/home/.cargo:rw
+# --bind ${HOME}/.rustup:/github/home/.rustup:rw
+
+# Default workflow and job (can be overridden on command line)
+--workflows .github/workflows/ci-local.yml
+
+# Memory limit for containers (adjust based on your system)
+# --container-options "--memory=4g"
+
+# CPU limit for containers (adjust based on your system)
+# --container-options "--cpus=2"
+
+# Verbose output for debugging (uncomment when needed)
+# --verbose

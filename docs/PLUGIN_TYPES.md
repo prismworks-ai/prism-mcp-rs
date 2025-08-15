@@ -7,8 +7,10 @@ The Prism MCP SDK plugin system supports four distinct component types that plug
 ## Related Documentation
 
 - [Plugin Development Guide](PLUGIN_GUIDE.md) - Complete guide to creating and distributing plugins
-- [API Documentation](https://docs.rs/prism-mcp-rs) - Full API documentation (available after publication)
+- [API Documentation](https://docs.rs/prism-mcp-rs) - Full API documentation (available after publication to crates.io)
 - [Example Plugins](../examples/README.md#plugin-development) - Working examples
+
+> **Note**: Until the crate is published, generate API documentation locally with `cargo doc --open`
 
 ## Component Type Matrix
 

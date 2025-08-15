@@ -6,9 +6,23 @@ The complete API documentation for the Prism MCP SDK is automatically generated 
 
 ## Documentation Links
 
-- **[Online Documentation](https://docs.rs/prism-mcp-rs)** - Official API documentation (available after crate publication)
+> **Note**: The online documentation links will become available after the crate is published to crates.io. Until then, please use the local documentation generation method described below.
+
+- **[Online Documentation](https://docs.rs/prism-mcp-rs)** - Official API documentation (available after crate publication to crates.io)
 - **[Local Documentation](../target/doc/prism_mcp_rs/index.html)** - Generate locally with `cargo doc --open`
 - **[GitHub Repository](https://github.com/prismworks-ai/prism-mcp-rs)** - Source code and examples
+
+### Generating Local Documentation
+
+Since the crate is not yet published, you can generate and view the documentation locally:
+
+```bash
+# Generate documentation
+cargo doc --no-deps --all-features
+
+# Open in browser
+cargo doc --no-deps --all-features --open
+```
 
 ## Core Modules
 

@@ -25,8 +25,10 @@ The Prism MCP SDK provides a plugin architecture that enables developers to crea
 ### Related Documentation
 
 - [Plugin Component Types Reference](PLUGIN_TYPES.md) - Detailed specifications for each component type
-- [API Documentation](https://docs.rs/prism-mcp-rs) - Complete API reference (available after publication)
+- [API Documentation](https://docs.rs/prism-mcp-rs) - Complete API reference (available after publication to crates.io)
 - [Examples](../examples/README.md) - Working plugin examples
+
+> **Note**: For API documentation before crate publication, generate locally with `cargo doc --open`
 
 ## Architecture
 
@@ -592,4 +594,3 @@ For detailed API documentation, refer to:
 
 - [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
 - [Discussion Forum](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
-- Email: sdk-support@prismworks.ai

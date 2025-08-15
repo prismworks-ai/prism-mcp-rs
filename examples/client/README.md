@@ -99,3 +99,29 @@ cargo run --example http_server --features "http-server"
 # Terminal 2: Run the client
 cargo run --example http_client --features "http-client"
 ```
+
+## Expected Output Examples
+
+### HTTP Client
+```
+Connecting to server at http://localhost:3000...
+Initialized session
+Listing available tools...
+Found 3 tools: echo, calculate, get_time
+```
+
+### WebSocket Client
+```
+Establishing WebSocket connection to ws://localhost:8080...
+Connection established
+Received server hello
+Sending tool request...
+Received response: {"result": "Success"}
+```
+
+## Troubleshooting
+
+- **Connection refused**: Ensure server is running first
+- **Timeout errors**: Check network settings and firewall
+- **Feature errors**: Enable correct client feature flags
+- **Port conflicts**: Change port if already in use

@@ -126,19 +126,44 @@ For optimization and benchmarking:
 
 ## Troubleshooting
 
-### Common Issues
+### Common Issues and Solutions
 
 1. **Example fails to compile**
    - Check if required features are enabled (see table above)
    - Use `--all-features` to enable everything
+   - Example fix:
+     ```bash
+     cargo run --example http_server --features "http-server"
+     ```
 
 2. **"Feature not found" error**
    - Ensure you're using the latest version of the SDK
    - Check Cargo.toml for available features
+   - Verify feature name spelling (e.g., `http-server` not `http_server`)
 
 3. **Runtime errors**
    - Some examples require external services (database, etc.)
    - Check example source for setup requirements
+   - Common fixes:
+     - Ensure ports are not in use (8080, 3000, etc.)
+     - Check network connectivity for client examples
+     - Verify database path permissions for database_server
+
+4. **"Connection refused" errors**
+   - Start the server before running client examples
+   - Check if server is listening on the correct port
+   - Example:
+     ```bash
+     # Terminal 1
+     cargo run --example websocket_server --features "websocket-server"
+     # Terminal 2
+     cargo run --example websocket_client --features "websocket-client"
+     ```
+
+5. **Performance issues**
+   - Use release mode for benchmarks: `cargo run --release --example performance_benchmarks`
+   - Close other applications to free resources
+   - Check system resource limits
 
 ## Contributing
 

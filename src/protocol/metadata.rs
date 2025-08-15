@@ -216,42 +216,8 @@ impl fmt::Display for ClientInfo {
     }
 }
 
-/// Implementation metadata
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Implementation {
-    pub name: String,
-    pub version: String,
-}
-
-impl Implementation {
-    /// Create new implementation info
-    pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            version: version.into(),
-        }
-    }
-
-    /// Create default implementation info for this library
-    pub fn default_library() -> Self {
-        Self {
-            name: env!("CARGO_PKG_NAME").to_string(),
-            version: env!("CARGO_PKG_VERSION").to_string(),
-        }
-    }
-}
-
-impl Default for Implementation {
-    fn default() -> Self {
-        Self::default_library()
-    }
-}
-
-impl fmt::Display for Implementation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} v{}", self.name, self.version)
-    }
-}
+// Implementation struct moved to types.rs to avoid duplication
+// Using the standard Implementation from types.rs which includes the title field per 2025-06-18 spec
 
 /// Default protocol version
 pub static DEFAULT_PROTOCOL_VERSION: Lazy<String> = Lazy::new(|| "2024-11-05".to_string());
@@ -325,6 +291,7 @@ impl MetadataBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::protocol::types::Implementation;
 
     #[test]
     fn test_protocol_capabilities() {
@@ -376,11 +343,12 @@ mod tests {
         let impl_info = Implementation::new("custom-impl", "3.0.0");
         assert_eq!(impl_info.name, "custom-impl");
         assert_eq!(impl_info.version, "3.0.0");
-        assert_eq!(impl_info.to_string(), "custom-impl v3.0.0");
+        assert_eq!(impl_info.title, None);
 
-        let default_impl = Implementation::default();
-        assert_eq!(default_impl.name, env!("CARGO_PKG_NAME"));
-        assert_eq!(default_impl.version, env!("CARGO_PKG_VERSION"));
+        let impl_with_title = Implementation::with_title("my-impl", "2.0.0", "My Implementation");
+        assert_eq!(impl_with_title.name, "my-impl");
+        assert_eq!(impl_with_title.version, "2.0.0");
+        assert_eq!(impl_with_title.title, Some("My Implementation".to_string()));
     }
 
     #[test]

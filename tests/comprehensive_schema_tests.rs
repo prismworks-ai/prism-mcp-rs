@@ -689,7 +689,7 @@ mod complete_schema_validation {
     /// Validates error codes against schema
     #[test]
     fn test_error_codes_schema_compliance() {
-        use crate::error_codes::*;
+        use prism_mcp_rs::protocol::types::error_codes::*;
 
         // Test standard JSON-RPC error codes
         assert_eq!(PARSE_ERROR, -32700);
@@ -706,7 +706,7 @@ mod complete_schema_validation {
 
     #[test]
     fn test_method_names_schema_compliance() {
-        use crate::methods::*;
+        use prism_mcp_rs::protocol::methods::*;
 
         assert_eq!(COMPLETION_COMPLETE, "completion/complete");
         assert_eq!(LOGGING_SET_LEVEL, "logging/setLevel");

@@ -164,6 +164,33 @@ For production deployment:
 6. Implement graceful shutdown
 7. Add health check endpoints
 
+## Expected Output Examples
+
+### Enhanced Echo Server
+```
+MCP Echo Server v1.0.0 starting...
+Listening on STDIO transport
+Registered tools: echo, reverse, uppercase
+Registered resources: config://settings, data://info
+Server ready for connections
+```
+
+### HTTP Server
+```
+HTTP MCP Server starting on 127.0.0.1:3000
+SSE endpoint: /events
+MCP endpoint: /mcp
+Health check: /health
+Server ready, press Ctrl+C to stop
+```
+
+## Troubleshooting
+
+- **Port already in use**: Change port or kill existing process
+- **Permission denied**: Check file system permissions for database_server
+- **Feature not enabled**: Add required feature flag to cargo command
+- **Slow performance**: Use release build with `--release` flag
+
 ## Contributing
 
 When adding new server examples:
@@ -172,3 +199,5 @@ When adding new server examples:
 3. Add documentation and comments
 4. Test with corresponding client examples
 5. Update this README
+6. Add expected output examples
+7. Include troubleshooting tips

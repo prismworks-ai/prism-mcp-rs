@@ -25,9 +25,8 @@ pub use batch::*;
 pub use discovery::*;
 pub use messages::*;
 
-// Re-export metadata module types explicitly to avoid conflicts with types module
-// These types (Implementation, ServerInfo, ClientInfo) are the canonical versions
-pub use metadata::{ClientInfo, Implementation, MetadataBuilder, ProtocolCapabilities, ServerInfo};
+// Re-export metadata module types (Implementation is now only in types module)
+pub use metadata::{MetadataBuilder, ProtocolCapabilities};
 
 pub use missing_types::*;
 // Re-export roots_types items except those that conflict with messages
@@ -37,24 +36,23 @@ pub use roots_types::{
     // Explicitly exclude Root and ListRootsResult which are already in messages
 };
 pub use schema_introspection::*;
-
-// Re-export all types module items EXCEPT Implementation, ServerInfo, and ClientInfo
-// which are already exported from metadata module to avoid ambiguity
+// Re-export all types module items
 pub use types::{
     AnnotationAudience, Annotations, AudioContent, BaseMetadata, CallToolResult,
-    ClientCapabilities, CompletionsCapability, Content, ContentBlock, CreateMessageResult, Cursor,
-    DangerLevel, ElicitationAction, ElicitationCapability, ElicitationSchema, EmbeddedResource,
-    ErrorObject, GetPromptResult, ImageContent, JSONRPC_VERSION, JsonRpcBatchRequest,
-    JsonRpcBatchResponse, JsonRpcError, JsonRpcId, JsonRpcMessage, JsonRpcNotification,
-    JsonRpcRequest, JsonRpcRequestOrNotification, JsonRpcResponse, JsonRpcResponseOrError,
-    LATEST_PROTOCOL_VERSION, LoggingCapability, LoggingLevel, ModelHint, ModelPreferences,
-    Notification, NotificationParams, PROTOCOL_VERSION, PaginatedRequest, PaginatedResult,
-    PrimitiveSchemaDefinition, ProgressToken, Prompt, PromptArgument, PromptInfo, PromptMessage,
-    PromptResult, PromptsCapability, Request, RequestId, RequestMeta, RequestParams, Resource,
-    ResourceContents, ResourceInfo, ResourceLink, ResourceTemplate, ResourcesCapability, Role,
-    RootsCapability, SamplingCapability, SamplingContent, SamplingMessage, ServerCapabilities,
-    StopReason, TextContent, Tool, ToolAnnotations, ToolInfo, ToolInputSchema, ToolOutputSchema,
-    ToolResult, ToolsCapability, error_codes,
+    ClientCapabilities, ClientInfo, CompletionsCapability, Content, ContentBlock,
+    CreateMessageResult, Cursor, DangerLevel, ElicitationAction, ElicitationCapability,
+    ElicitationSchema, EmbeddedResource, ErrorObject, GetPromptResult, ImageContent,
+    Implementation, JSONRPC_VERSION, JsonRpcBatchRequest, JsonRpcBatchResponse, JsonRpcError,
+    JsonRpcId, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcRequestOrNotification,
+    JsonRpcResponse, JsonRpcResponseOrError, LATEST_PROTOCOL_VERSION, LoggingCapability,
+    LoggingLevel, ModelHint, ModelPreferences, Notification, NotificationParams, PROTOCOL_VERSION,
+    PaginatedRequest, PaginatedResult, PrimitiveSchemaDefinition, ProgressToken, Prompt,
+    PromptArgument, PromptInfo, PromptMessage, PromptResult, PromptsCapability, Request, RequestId,
+    RequestMeta, RequestParams, Resource, ResourceContents, ResourceInfo, ResourceLink,
+    ResourceTemplate, ResourcesCapability, Role, RootsCapability, SamplingCapability,
+    SamplingContent, SamplingMessage, ServerCapabilities, ServerInfo, StopReason, TextContent,
+    Tool, ToolAnnotations, ToolInfo, ToolInputSchema, ToolOutputSchema, ToolResult,
+    ToolsCapability, error_codes,
 };
 
 pub use validation::*;

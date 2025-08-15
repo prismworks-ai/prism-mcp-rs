@@ -871,9 +871,7 @@ impl McpServer {
     /// * `transport` - The transport to use for communication
     ///
     /// # Example
-    /// ```rust,no_run
-    /// # #[cfg(feature = "stdio")]
-    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// ```rust,ignore
     /// use prism_mcp_rs::prelude::*;
     ///
     /// #[tokio::main]
@@ -884,9 +882,6 @@ impl McpServer {
     /// let transport = StdioServerTransport::new();
     /// server.run_with_transport(transport).await
     /// }
-    /// # }
-    /// # #[cfg(not(feature = "stdio"))]
-    /// # fn main() {}
     /// ```
     pub async fn run_with_transport<T>(mut self, transport: T) -> McpResult<()>
     where

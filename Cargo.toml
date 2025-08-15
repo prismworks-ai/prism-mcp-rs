@@ -169,6 +169,24 @@ name = "advanced_features_showcase"
 path = "examples/advanced_features_showcase.rs"
 required-features = ["tracing-subscriber"]
 
+# Advanced 2025 Features Demo
+[[example]]
+name = "advanced_2025_features"
+path = "examples/advanced_2025_features.rs"
+required-features = ["stdio", "tracing-subscriber"]
+
+# Bidirectional Communication Demo
+[[example]]
+name = "bidirectional_communication_demo"
+path = "examples/bidirectional_communication_demo.rs"
+required-features = ["stdio", "tracing-subscriber"]
+
+# Production Error Handling Demo
+[[example]]
+name = "production_error_handling_demo"
+path = "examples/production_error_handling_demo.rs"
+required-features = ["stdio", "tracing-subscriber"]
+
 # Performance Benchmarks
 [[example]]
 name = "performance_benchmarks"

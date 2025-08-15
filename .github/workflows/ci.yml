@@ -258,6 +258,7 @@ jobs:
         with:
           name: benchmark-report
           path: reports/benchmark-report.md
+        continue-on-error: true
 
   # Commit reports back to repository (main branch only)
   commit-reports:
@@ -277,6 +278,7 @@ jobs:
         with:
           name: coverage-report
           path: reports/
+        continue-on-error: true
       
       - name: Download benchmark report
         uses: actions/download-artifact@v4
@@ -296,19 +298,4 @@ jobs:
             git commit -m "chore: update coverage and benchmark reports [skip ci]"
             git push
           fi
-        continue-on-error: true  # Don't fail CI if benchmarks have issues
-      
-      - name: Upload benchmark report
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-report
-          path: reports/benchmark-report.md
-      
-      - name: Commit benchmark report (if on main)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add reports/benchmark-report.md || true
-          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update benchmark report [skip ci]"
-          git push || true
+        continue-on-error: true

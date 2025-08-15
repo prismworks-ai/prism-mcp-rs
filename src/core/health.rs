@@ -795,8 +795,8 @@ mod tests {
             ("check2", Ok(HealthResult::degraded("Minor issue"))),
             (
                 "check3",
-                Err(tokio::time::timeout(Duration::from_millis(1), async {
-                    tokio::time::sleep(Duration::from_millis(10)).await
+                Err(tokio::time::timeout(Duration::from_millis(10), async {
+                    tokio::time::sleep(Duration::from_millis(100)).await
                 })
                 .await
                 .unwrap_err()),

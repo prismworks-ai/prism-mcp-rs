@@ -6,6 +6,8 @@
 // ! This test suite validates complete server functionality and tool/resource operations
 // ! using the STDIO transport with real message flows.
 
+#![cfg(feature = "stdio")]
+
 use prism_mcp_rs::{
     core::{
         error::{McpError, McpResult},

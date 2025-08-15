@@ -9,6 +9,8 @@
 // ! - Protocol compliance verification
 
 use futures::future;
+#[cfg(feature = "stdio")]
+use prism_mcp_rs::transport::StdioClientTransport;
 use prism_mcp_rs::{
     client::McpClient,
     core::{
@@ -18,8 +20,6 @@ use prism_mcp_rs::{
     protocol::{messages::*, methods::*, types::*},
     server::McpServer,
 };
-#[cfg(feature = "stdio")]
-use prism_mcp_rs::transport::StdioClientTransport;
 use serde_json::json;
 use std::{sync::Arc, time::Instant};
 use tokio::{

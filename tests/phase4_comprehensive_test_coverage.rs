@@ -17,8 +17,9 @@ use prism_mcp_rs::{
     },
     protocol::{messages::*, methods::*, types::*},
     server::McpServer,
-    transport::StdioClientTransport,
 };
+#[cfg(feature = "stdio")]
+use prism_mcp_rs::transport::StdioClientTransport;
 use serde_json::json;
 use std::{sync::Arc, time::Instant};
 use tokio::{
@@ -476,6 +477,7 @@ mod workflow_simulation_tests {
 mod cross_transport_tests {
     use super::*;
 
+    #[cfg(feature = "stdio")]
     #[tokio::test]
     async fn test_stdio_transport_protocol_compliance() {
         // Test that STDIO transport maintains protocol compliance

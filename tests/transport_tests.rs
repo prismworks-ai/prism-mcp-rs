@@ -6,6 +6,8 @@
 // ! Phase 1: Fixed shallow tests with functional testing
 // ! This replaces assert!(true) with actual functionality testing
 
+#![cfg(feature = "stdio")]
+
 use prism_mcp_rs::{
     core::error::McpError,
     protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse},

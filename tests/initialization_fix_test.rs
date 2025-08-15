@@ -3,6 +3,8 @@
 // ! This test verifies that the initialization handshake now works correctly
 // ! and that the server responds to the "initialize" method properly.
 
+#![cfg(feature = "stdio")]
+
 use prism_mcp_rs::{
     protocol::{
         messages::InitializeParams,

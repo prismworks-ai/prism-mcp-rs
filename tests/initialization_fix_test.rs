@@ -10,7 +10,7 @@ use prism_mcp_rs::{
         types::{ClientCapabilities, Implementation, JsonRpcRequest, LATEST_PROTOCOL_VERSION},
     },
     server::McpServer,
-    transport::stdio::StdioServerTransport,
+    transport::StdioServerTransport,
 };
 use serde_json::json;
 use std::sync::Arc;

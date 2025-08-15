@@ -17,7 +17,7 @@ use prism_mcp_rs::{
     },
     protocol::{messages::*, methods::*, types::*},
     server::McpServer,
-    transport::stdio::StdioClientTransport,
+    transport::StdioClientTransport,
 };
 use serde_json::json;
 use std::{sync::Arc, time::Instant};

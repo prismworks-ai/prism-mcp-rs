@@ -10,7 +10,7 @@ use crate::plugin::{
 use crate::protocol::types::{Tool, ToolResult};
 use serde_json::Value;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{error, info};
@@ -287,11 +287,17 @@ impl PluginManager {
         }
     }
 
-    /// Load all plugins from a configuration directory
-    pub async fn load_from_directory(&self, dir: &Path) -> McpResult<()> {
+    /// Load all plugins from a configuration directory, returning detailed results
+    pub async fn load_from_directory(&self, dir: &Path) -> McpResult<crate::plugin::LoadResult> {
+        let mut result = crate::plugin::LoadResult {
+            count: 0,
+            plugins: Vec::new(),
+            errors: Vec::new(),
+        };
+
         let config_path = dir.join("plugins.yaml");
         if !config_path.exists() {
-            return Ok(());
+            return Ok(result);
         }
 
         let content = tokio::fs::read_to_string(&config_path)
@@ -303,13 +309,28 @@ impl PluginManager {
 
         for config in configs {
             if config.enabled {
-                if let Err(e) = self.load_plugin(config).await {
-                    error!("Failed to load plugin: {}", e);
+                match self.load_plugin(config.clone()).await {
+                    Ok(()) => {
+                        result.count += 1;
+                        result.plugins.push(crate::plugin::LoadedPluginInfo {
+                            name: config.name.clone(),
+                            version: "unknown".to_string(), // Version would come from manifest, not config
+                            path: config
+                                .path
+                                .map(PathBuf::from)
+                                .unwrap_or_else(|| dir.join(&config.name)),
+                            enabled: config.enabled,
+                        });
+                    }
+                    Err(e) => {
+                        error!("Failed to load plugin {}: {}", config.name, e);
+                        result.errors.push((config.name, e));
+                    }
                 }
             }
         }
 
-        Ok(())
+        Ok(result)
     }
 
     /// Add a plugin search path

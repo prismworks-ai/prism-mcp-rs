@@ -108,22 +108,14 @@ mod tests {
 
     #[test]
     fn test_plugin_error_from_io_error() {
-        use std::io;
-        let io_err = io::Error::new(io::ErrorKind::NotFound, "file not found");
-        let plugin_err: types::PluginError = io_err.into();
+        // Note: PluginError doesn't have From<io::Error> implementation,
+        // so we test the LoadFailed variant instead which can represent IO errors
+        let plugin_err = PluginError::LoadFailed("file not found".to_string());
+        assert_eq!(plugin_err.to_string(), "Plugin load failed: file not found");
 
-        match plugin_err {
-            types::PluginError::Io(msg) => assert!(msg.contains("file not found")),
-            _ => panic!("Expected Io error variant"),
-        }
-
-        // Test another IO error kind
-        let io_err = io::Error::new(io::ErrorKind::PermissionDenied, "access denied");
-        let plugin_err: types::PluginError = io_err.into();
-        match plugin_err {
-            types::PluginError::Io(msg) => assert!(msg.contains("access denied")),
-            _ => panic!("Expected Io error variant"),
-        }
+        // Test another error scenario
+        let plugin_err = PluginError::LoadFailed("access denied".to_string());
+        assert_eq!(plugin_err.to_string(), "Plugin load failed: access denied");
     }
 
     // ==================== Plugin Watcher Tests ====================
@@ -656,24 +648,26 @@ mod tests {
 
     #[test]
     fn test_plugin_types_errors() {
-        use crate::plugin::types::PluginError;
-
+        // PluginError is already imported at the top via use crate::plugin::*;
         let err = PluginError::LoadFailed("failed".to_string());
-        assert!(err.to_string().contains("Failed to load"));
+        assert!(err.to_string().contains("load failed"));
 
         let err = PluginError::InitializationFailed("init failed".to_string());
         assert!(err.to_string().contains("initialization failed"));
 
-        let err = PluginError::IncompatibleVersion("1.0.0".to_string());
-        assert!(err.to_string().contains("Incompatible"));
+        let err = PluginError::VersionMismatch {
+            expected: "2.0.0".to_string(),
+            actual: "1.0.0".to_string(),
+        };
+        assert!(err.to_string().contains("Version mismatch"));
 
-        let err = PluginError::SymbolNotFound("symbol".to_string());
-        assert!(err.to_string().contains("Symbol not found"));
+        let err = PluginError::MissingDependency("libfoo".to_string());
+        assert!(err.to_string().contains("Missing dependency"));
 
-        let err = PluginError::ConfigurationError("config error".to_string());
-        assert!(err.to_string().contains("Configuration error"));
+        let err = PluginError::CommunicationError("timeout".to_string());
+        assert!(err.to_string().contains("communication error"));
 
-        let err = PluginError::Other("other".to_string());
-        assert!(err.to_string().contains("Other error"));
+        let err = PluginError::InvalidPlugin("invalid".to_string());
+        assert!(err.to_string().contains("Invalid plugin"));
     }
 }

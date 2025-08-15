@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Convenience methods for `ContentBlock::text()`, `ContentBlock::image()`, `ContentBlock::audio()`, `ContentBlock::resource_link()`
+- Convenience methods for `ToolResult::text()`, `ToolResult::error()`, `ToolResult::with_content()`, `ToolResult::with_structured()`
 - Comprehensive plugin architecture for runtime component loading
 - Support for MCP 2025-06-18 specification
 - Multiple transport implementations (STDIO, HTTP, WebSocket, HTTP/2)
@@ -24,16 +26,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example implementations for all major features
 
 ### Changed
-- N/A (initial release)
+- **BREAKING**: `ToolHandler` trait now consistently uses `HashMap<String, Value>` for arguments
+- Updated README with accurate, tested examples only
+- Improved developer experience with better error messages
 
 ### Deprecated
 - N/A (initial release)
 
 ### Removed
-- N/A (initial release)
+- Removed obsolete/incorrect code examples from README
+- Removed confusing type alias duplicates
 
 ### Fixed
-- N/A (initial release)
+- Fixed `ToolHandler` trait signature inconsistency
+- Fixed missing convenience methods that were documented but not implemented
+- Fixed compilation errors in example files
+- Fixed duplicate method implementations causing compilation errors
 
 ### Security
 - Implemented secure plugin loading mechanisms

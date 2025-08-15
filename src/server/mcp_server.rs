@@ -20,6 +20,40 @@ use crate::core::{
 use crate::protocol::{error_codes::*, messages::*, methods, types::*, validation::*};
 use crate::transport::traits::ServerTransport;
 
+#[cfg(feature = "plugin")]
+use crate::plugin::PluginManager;
+#[cfg(feature = "plugin")]
+use async_trait::async_trait;
+
+// Plugin tool handler wrapper
+#[cfg(feature = "plugin")]
+struct PluginToolHandler {
+    manager: Arc<RwLock<PluginManager>>,
+    tool_name: String,
+}
+
+#[cfg(feature = "plugin")]
+impl PluginToolHandler {
+    fn new(manager: Arc<RwLock<PluginManager>>, tool_name: String) -> Self {
+        Self { manager, tool_name }
+    }
+}
+
+#[cfg(feature = "plugin")]
+#[async_trait]
+impl ToolHandler for PluginToolHandler {
+    async fn call(
+        &self,
+        arguments: HashMap<String, Value>,
+    ) -> McpResult<crate::protocol::types::ToolResult> {
+        self.manager
+            .read()
+            .await
+            .execute_tool(&self.tool_name, serde_json::to_value(arguments)?)
+            .await
+    }
+}
+
 /// Configuration for the MCP server
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
@@ -43,6 +77,73 @@ impl Default for ServerConfig {
         }
     }
 }
+
+/// MCP Server implementation
+/// 
+/// The main server struct that handles MCP protocol communication, manages
+/// resources, tools, and prompts, and processes client requests.
+/// 
+/// # Examples
+/// 
+/// ## Basic Server Creation
+/// ```
+/// use prism_mcp_rs::server::McpServer;
+/// 
+/// let server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
+/// ```
+/// 
+/// ## Using ServerBuilder
+/// ```
+/// use prism_mcp_rs::server::ServerBuilder;
+/// 
+/// let server = ServerBuilder::new()
+///     .name("my-server")
+///     .version("1.0.0")
+///     .with_tools()
+///     .with_resources()
+///     .build();
+/// ```
+/// 
+/// ## Adding Tools
+/// ```no_run
+/// use prism_mcp_rs::server::McpServer;
+/// use prism_mcp_rs::core::{Tool, ToolHandler};
+/// use serde_json::{json, Value};
+/// use async_trait::async_trait;
+/// use std::collections::HashMap;
+/// 
+/// struct MyTool;
+/// 
+/// #[async_trait]
+/// impl ToolHandler for MyTool {
+///     async fn call(&self, _args: HashMap<String, Value>) 
+///         -> Result<prism_mcp_rs::protocol::ToolResult, Box<dyn std::error::Error + Send + Sync>> 
+///     {
+///         Ok(prism_mcp_rs::protocol::ToolResult {
+///             content: vec![],
+///             is_error: Some(false),
+///             structured_content: None,
+///             meta: None,
+///         })
+///     }
+/// }
+/// 
+/// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+/// let mut server = McpServer::new("server".to_string(), "1.0.0".to_string());
+/// 
+/// let tool = Tool {
+///     info: prism_mcp_rs::protocol::ToolInfo {
+///         name: "my_tool".to_string(),
+///         description: Some("My custom tool".to_string()),
+///         input_schema: json!({}),
+///     },
+///     handler: Box::new(MyTool),
+/// };
+/// 
+/// server.add_tool(tool).await?;
+/// # Ok(())
+/// # }
+/// ```
 
 /// Main MCP server implementation
 pub struct McpServer {
@@ -69,6 +170,9 @@ pub struct McpServer {
     /// Request ID counter
     #[allow(dead_code)]
     request_counter: Arc<Mutex<u64>>,
+    /// Plugin manager for dynamic tool loading
+    #[cfg(feature = "plugin")]
+    plugin_manager: Option<Arc<RwLock<PluginManager>>>,
 }
 
 /// Internal server state
@@ -116,7 +220,14 @@ impl McpServer {
             transport: Arc::new(Mutex::new(None)),
             state: Arc::new(RwLock::new(ServerState::Uninitialized)),
             request_counter: Arc::new(Mutex::new(0)),
+            #[cfg(feature = "plugin")]
+            plugin_manager: None,
         }
+    }
+
+    /// Create a new MCP server with ergonomic string parameters
+    pub fn create(name: impl Into<String>, version: impl Into<String>) -> Self {
+        Self::new(name.into(), version.into())
     }
 
     /// Create a new MCP server with custom configuration
@@ -126,11 +237,147 @@ impl McpServer {
         server
     }
 
+    /// Attach a plugin manager to the server
+    #[cfg(feature = "plugin")]
+    pub fn with_plugin_manager(mut self, manager: PluginManager) -> Self {
+        self.plugin_manager = Some(Arc::new(RwLock::new(manager)));
+        self
+    }
+
+    /// Internal method to sync plugin tools with server
+    #[cfg(feature = "plugin")]
+    pub async fn sync_plugin_tools(&self) -> McpResult<()> {
+        if let Some(ref manager) = self.plugin_manager {
+            let plugin_tools = manager.read().await.list_tools().await;
+
+            for tool in plugin_tools {
+                // Create a plugin tool wrapper
+                let handler = PluginToolHandler::new(manager.clone(), tool.name.clone());
+
+                // Convert the tool input schema to a simpler JSON value
+                let schema = serde_json::json!({
+                    "type": tool.input_schema.schema_type,
+                    "properties": tool.input_schema.properties,
+                    "required": tool.input_schema.required,
+                });
+
+                // Convert plugin tool to server tool format
+                self.add_tool(tool.name.clone(), tool.description.clone(), schema, handler)
+                    .await?;
+            }
+        }
+        Ok(())
+    }
+
     /// Set server capabilities
     pub fn set_capabilities(&mut self, capabilities: ServerCapabilities) {
         self.capabilities = capabilities;
     }
 
+    /// Set server configuration
+    pub fn set_config(&mut self, config: ServerConfig) {
+        self.config = config;
+    }
+
+    /// Set initial resources (used by ServerBuilder)
+    pub fn set_initial_resources(&mut self, resources: HashMap<String, Resource>) {
+        // This needs to be done synchronously during server construction
+        // We'll use block_on for this initial setup
+        let resources_arc = Arc::clone(&self.resources);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mut resources_lock = resources_arc.write().await;
+                *resources_lock = resources;
+            });
+        })
+        .join()
+        .unwrap();
+    }
+
+    /// Set initial tools (used by ServerBuilder)
+    pub fn set_initial_tools(&mut self, tools: HashMap<String, Tool>) {
+        let tools_arc = Arc::clone(&self.tools);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mut tools_lock = tools_arc.write().await;
+                *tools_lock = tools;
+            });
+        })
+        .join()
+        .unwrap();
+    }
+
+    /// Set initial prompts (used by ServerBuilder)
+    pub fn set_initial_prompts(&mut self, prompts: HashMap<String, Prompt>) {
+        let prompts_arc = Arc::clone(&self.prompts);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mut prompts_lock = prompts_arc.write().await;
+                *prompts_lock = prompts;
+            });
+        })
+        .join()
+        .unwrap();
+    }
+
+    /// Set initial resource templates (used by ServerBuilder)
+    pub fn set_initial_resource_templates(&mut self, templates: HashMap<String, ResourceTemplate>) {
+        let templates_arc = Arc::clone(&self.resource_templates);
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new().unwrap();
+            rt.block_on(async {
+                let mut templates_lock = templates_arc.write().await;
+                *templates_lock = templates;
+            });
+        })
+        .join()
+        .unwrap();
+    }
+
+    /// Create a builder for constructing servers
+    pub fn builder() -> crate::server::builder::ServerBuilder {
+        crate::server::builder::ServerBuilder::new()
+    }
+
+    /// Configure this server with capabilities using a fluent API
+    pub fn with_capabilities(mut self, capabilities: ServerCapabilities) -> Self {
+        self.capabilities = capabilities;
+        self
+    }
+
+    /// Configure this server with a specific configuration (fluent API)
+    pub fn with_server_config(mut self, config: ServerConfig) -> Self {
+        self.config = config;
+        self
+    }
+
+    /// Add a tool to the server with ergonomic string parameters
+    pub async fn add_tool<H>(
+        &self,
+        name: impl Into<String>,
+        description: Option<impl Into<String>>,
+        input_schema: Value,
+        handler: H,
+    ) -> McpResult<()>
+    where
+        H: ToolHandler + 'static,
+    {
+        let name = name.into();
+        let description = description.map(|d| d.into());
+        let tool = Tool::new(name.clone(), description, input_schema, handler);
+        self.tools.write().await.insert(name, tool);
+        Ok(())
+    }
+
+    /// Add a tool using the ToolBuilder result
+    pub async fn add_tool_built(&self, tool: Tool) -> McpResult<()> {
+        let name = tool.info.name.clone();
+        self.tools.write().await.insert(name, tool);
+        Ok(())
+    }
     /// Get server information
     pub fn info(&self) -> &ServerInfo {
         &self.info
@@ -247,67 +494,6 @@ impl McpServer {
     // ========================================================================
     // Tool Management
     // ========================================================================
-
-    /// Add a tool to the server
-    pub async fn add_tool<H>(
-        &self,
-        name: String,
-        description: Option<String>,
-        schema: Value,
-        handler: H,
-    ) -> McpResult<()>
-    where
-        H: ToolHandler + 'static,
-    {
-        let tool_schema = ToolInputSchema {
-            schema_type: "object".to_string(),
-            properties: schema
-                .get("properties")
-                .and_then(|p| p.as_object())
-                .map(|obj| obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect()),
-            required: schema.get("required").and_then(|r| {
-                r.as_array().map(|arr| {
-                    arr.iter()
-                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                        .collect()
-                })
-            }),
-            additional_properties: schema
-                .as_object()
-                .unwrap_or(&serde_json::Map::new())
-                .iter()
-                .map(|(k, v)| (k.clone(), v.clone()))
-                .collect(),
-        };
-
-        let tool_info = ToolInfo {
-            name: name.clone(),
-            description,
-            input_schema: tool_schema,
-            output_schema: None,
-            annotations: None,
-            title: None,
-            meta: None,
-        };
-
-        validate_tool_info(&tool_info)?;
-
-        let tool = Tool::new(
-            name.clone(),
-            tool_info.description.clone(),
-            serde_json::to_value(&tool_info.input_schema)?,
-            handler,
-        );
-
-        {
-            let mut tools = self.tools.write().await;
-            tools.insert(name, tool);
-        }
-
-        self.emit_tools_list_changed().await?;
-
-        Ok(())
-    }
 
     /// Add a simple tool with basic schema (convenience method)
     pub async fn add_simple_tool<F>(
@@ -749,6 +935,8 @@ impl McpServer {
                         transport: Arc::new(Mutex::new(None)),
                         state: Arc::new(RwLock::new(ServerState::Running)),
                         request_counter: Arc::new(Mutex::new(0)),
+                        #[cfg(feature = "plugin")]
+                        plugin_manager: None,
                     };
                     temp_server.handle_request(request).await
                 })

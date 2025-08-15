@@ -1,7 +1,80 @@
 //! MCP server implementation
 //!
-//! This module provides the main server implementation for the Model Context Protocol.
+//! This module provides the complete server-side implementation of the Model Context Protocol.
+//!
+//! # Architecture
+//!
+//! The server module is organized as follows:
+//! - [`McpServer`] - Main server struct handling protocol lifecycle
+//! - [`ServerBuilder`] - Fluent API for server configuration
+//! - `handlers` - Request/response handlers for each protocol method
+//! - `lifecycle` - Server startup, shutdown, and state management
+//! - `discovery_handler` - Protocol discovery and capability exchange
+//!
+//! # Usage Patterns
+//!
+//! ## Simple Server
+//! ```no_run
+//! use prism_mcp_rs::server::McpServer;
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let server = McpServer::new("server".to_string(), "1.0.0".to_string());
+//! // server.run_with_stdio().await?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Using ServerBuilder
+//! ```
+//! use prism_mcp_rs::server::{ServerBuilder, ServerConfig};
+//! use prism_mcp_rs::core::{Tool, Resource, Prompt};
+//!
+//! let server = ServerBuilder::new()
+//!     .name("complex-server")
+//!     .version("2.0.0")
+//!     .with_tools()  // Enable tools capability
+//!     .with_resources()  // Enable resources capability
+//!     .with_prompts()  // Enable prompts capability
+//!     .config(ServerConfig {
+//!         max_concurrent_requests: Some(1000),
+//!         request_timeout_ms: Some(60000),
+//!         enable_request_validation: true,
+//!         enable_response_validation: false,
+//!     })
+//!     .build();
+//! ```
+//!
+//! ## Custom Request Handling
+//! ```no_run
+//! use prism_mcp_rs::server::McpServer;
+//! use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse};
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let server = McpServer::new("server".to_string(), "1.0.0".to_string());
+//!
+//! // Handle requests programmatically
+//! let request = JsonRpcRequest::new(
+//!     "1".into(),
+//!     "initialize".to_string(),
+//!     None::<()>,
+//! )?;
+//!
+//! // Process the request
+//! // let response = server.handle_request(request).await?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! # Features
+//!
+//! - **Protocol Compliance**: Full MCP 2025-06-18 specification support
+//! - **Capability Management**: Dynamic capability negotiation
+//! - **Lifecycle Handling**: Proper initialization and shutdown
+//! - **Error Handling**: Comprehensive error responses
+//! - **Transport Agnostic**: Works with stdio, HTTP, WebSocket
 
+pub mod async_methods;
+pub mod builder;
 pub mod discovery_handler;
 pub mod handlers;
 pub mod lifecycle;
@@ -15,8 +88,9 @@ pub mod test_types;
 #[cfg(feature = "http")]
 pub mod http_server;
 
-// Re-export the main server type
-pub use mcp_server::McpServer;
+// Re-export the main server type and builder
+pub use builder::{ServerBuilder, ServerBuilderError};
+pub use mcp_server::{McpServer, ServerConfig, ServerState};
 
 // Re-export HTTP server when feature is enabled
 #[cfg(feature = "http")]

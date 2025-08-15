@@ -8,6 +8,30 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+
+/// Result of plugin loading operations
+#[derive(Debug, Clone)]
+pub struct LoadResult {
+    /// Number of successfully loaded plugins
+    pub count: usize,
+    /// Information about loaded plugins
+    pub plugins: Vec<LoadedPluginInfo>,
+    /// Errors encountered during loading
+    pub errors: Vec<(String, crate::plugin::PluginError)>,
+}
+
+/// Information about a loaded plugin for LoadResult
+#[derive(Debug, Clone)]
+pub struct LoadedPluginInfo {
+    /// Plugin name
+    pub name: String,
+    /// Plugin version
+    pub version: String,
+    /// Plugin path
+    pub path: std::path::PathBuf,
+    /// Whether the plugin is enabled
+    pub enabled: bool,
+}
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -142,35 +166,4 @@ pub struct LoadedPlugin {
 
     /// Registered prompts from this plugin
     pub prompts: HashMap<String, Arc<Prompt>>,
-}
-
-/// Plugin error types
-#[derive(Debug, thiserror::Error)]
-pub enum PluginError {
-    #[error("Failed to load plugin: {0}")]
-    LoadFailed(String),
-
-    #[error("Plugin initialization failed: {0}")]
-    InitializationFailed(String),
-
-    #[error("Incompatible plugin version: {0}")]
-    IncompatibleVersion(String),
-
-    #[error("Symbol not found: {0}")]
-    SymbolNotFound(String),
-
-    #[error("Configuration error: {0}")]
-    ConfigurationError(String),
-
-    #[error("I/O error: {0}")]
-    Io(String),
-
-    #[error("Other error: {0}")]
-    Other(String),
-}
-
-impl From<std::io::Error> for PluginError {
-    fn from(err: std::io::Error) -> Self {
-        PluginError::Io(err.to_string())
-    }
 }

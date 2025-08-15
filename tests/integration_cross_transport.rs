@@ -279,7 +279,7 @@ mod cross_transport_tests {
         let text_content = Content::text("Hello, world!");
         let image_content = Content::image("base64data", "image/png");
         let audio_content = Content::audio("audiodata", "audio/wav");
-        let resource_content = Content::resource("file:///test.txt");
+        let resource_content = Content::resource_link("file:///test.txt", "test.txt");
 
         // Test serialization/deserialization
         for content in vec![text_content, image_content, audio_content, resource_content] {

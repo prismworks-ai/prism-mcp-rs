@@ -43,7 +43,7 @@ pub use crate::export_plugin;
 use crate::core::error::McpError;
 
 /// Plugin system errors
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum PluginError {
     #[error("Plugin load failed: {0}")]
     LoadFailed(String),

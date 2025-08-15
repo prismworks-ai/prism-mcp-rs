@@ -83,8 +83,12 @@ mod tests {
         let result = manager
             .load_from_directory(Path::new("/nonexistent/dir"))
             .await;
-        // Should succeed even if directory doesn't exist (returns Ok(()) when no config file)
+        // Should succeed even if directory doesn't exist (returns empty LoadResult)
         assert!(result.is_ok());
+        let load_result = result.unwrap();
+        assert_eq!(load_result.count, 0);
+        assert!(load_result.plugins.is_empty());
+        assert!(load_result.errors.is_empty());
     }
 
     #[tokio::test]

@@ -45,7 +45,7 @@ path = "src/lib.rs"
 # Async runtime
 tokio = { version = "1.40", features = ["full"] }
 tokio-stream = { version = "0.1", features = ["sync"], optional = true }
-futures = { version = "0.3", optional = true }
+futures = { version = "0.3" }
 async-trait = "0.1.83"
 
 # Serialization
@@ -116,13 +116,13 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 default = ["stdio", "tracing-subscriber", "chrono", "dirs", "fastrand"]
 full = ["stdio", "http", "websocket", "streaming-http", "validation", "plugin", "tracing-subscriber", "chrono", "dirs", "fastrand"]
 stdio = ["chrono", "dirs", "fastrand"]  # Uses tokio::process + chrono for tool metadata + dirs for common roots + fastrand for retry jitter
-http = ["axum", "tower", "tower-http", "reqwest", "chrono", "tokio-stream", "futures", "fastrand", "dirs", "dep:http"]
-websocket = ["tokio-tungstenite", "http", "futures", "futures-util", "fastrand"]
+http = ["axum", "tower", "tower-http", "reqwest", "chrono", "tokio-stream", "fastrand", "dirs", "dep:http"]
+websocket = ["tokio-tungstenite", "http", "futures-util", "fastrand"]
 validation = ["jsonschema"]
 plugin = ["libloading", "notify", "serde_yaml"]
 
 # complete streaming features
-streaming-http = ["http", "bytes", "futures", "tokio-stream", "http-body-util"]
+streaming-http = ["http", "bytes", "tokio-stream", "http-body-util"]
 streaming-http2 = ["streaming-http", "h2", "hyper"]
 streaming-compression = ["streaming-http", "flate2", "brotli", "zstd"]
 streaming-full = ["streaming-http", "streaming-http2", "streaming-compression"]

@@ -35,16 +35,14 @@ impl ToolHandler for EchoHandler {
 
         let result = responses.join(separator);
 
-        Ok(ToolResult {
-            content: vec![ContentBlock::text(result)],
-            is_error: None,
-            structured_content: Some(json!({
+        Ok(ToolResult::with_structured(
+            vec![ContentBlock::text(result)],
+            json!({
                 "original_message": message,
                 "repeat_count": repeat_count,
                 "separator": separator
-            })),
-            meta: None,
-        })
+            }),
+        ))
     }
 }
 
@@ -54,13 +52,13 @@ async fn main() -> McpResult<()> {
     #[cfg(feature = "tracing-subscriber")]
     tracing_subscriber::fmt::init();
 
-    let server = McpServer::new("improved-echo-server".to_string(), "1.0.0".to_string());
+    let server = McpServer::create("improved-echo-server", "1.0.0");
 
-    // Add the echo tool using the improved API
+    // Add the echo tool using the improved ergonomic API
     server
         .add_tool(
-            "echo".to_string(),
-            Some("Echo a message with optional repetition".to_string()),
+            "echo",
+            Some("Echo a message with optional repetition"),
             json!({
                 "type": "object",
                 "properties": {

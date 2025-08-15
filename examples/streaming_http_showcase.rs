@@ -64,7 +64,7 @@ async fn demo_default_streaming() -> McpResult<()> {
 
     #[cfg(feature = "streaming-http")]
     {
-        let client = McpClient::new("streaming-demo".to_string(), "1.0.0".to_string());
+        let _client = McpClient::new("streaming-demo".to_string(), "1.0.0".to_string());
 
         println!("- Default Configuration:");
         let config = StreamingConfig::default();
@@ -101,7 +101,7 @@ async fn demo_memory_improved() -> McpResult<()> {
 
     #[cfg(feature = "streaming-http")]
     {
-        let client = McpClient::new("memory-demo".to_string(), "1.0.0".to_string());
+        let _client = McpClient::new("memory-demo".to_string(), "1.0.0".to_string());
 
         println!("- Memory-improved Configuration:");
         let config = StreamingConfig::memory_improved();
@@ -151,7 +151,7 @@ async fn demo_performance_improved() -> McpResult<()> {
 
     #[cfg(feature = "streaming-http")]
     {
-        let client = McpClient::new("perf-demo".to_string(), "1.0.0".to_string());
+        let _client = McpClient::new("perf-demo".to_string(), "1.0.0".to_string());
 
         println!("- Performance-improved Configuration:");
         let config = StreamingConfig::performance_improved();

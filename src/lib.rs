@@ -97,6 +97,7 @@ pub mod utils;
 // Re-export commonly used types for convenience
 pub use core::error::{McpError, McpResult};
 pub use protocol::types::*;
+pub use protocol::{JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, JsonRpcError, ErrorObject, ServerCapabilities};
 
 /// Prelude module for convenient imports (2025-06-18)
 ///
@@ -115,6 +116,8 @@ pub mod prelude {
     pub use crate::protocol::messages::*;
     pub use crate::protocol::missing_types::*;
     pub use crate::protocol::types::*;
+    pub use crate::protocol::error_helpers::IntoJsonRpcMessage;
+    pub use crate::protocol::error_codes;
 
     // Client and completion handlers
     pub use crate::client::{
@@ -130,7 +133,7 @@ pub mod prelude {
 
     // Server and Client
     pub use crate::client::McpClient;
-    pub use crate::server::McpServer;
+    pub use crate::server::{McpServer, ServerBuilder, ServerConfig};
 
     // Transport layer implementations
     #[cfg(feature = "stdio")]
@@ -142,11 +145,22 @@ pub mod prelude {
     #[cfg(feature = "websocket")]
     pub use crate::transport::{WebSocketClientTransport, WebSocketServerTransport};
 
+    // Plugin system
+    #[cfg(feature = "plugin")]
+    pub use crate::plugin::{LoadResult, LoadedPluginInfo, PluginManager};
+
+    // Tool builder
+    pub use crate::core::tool::ToolBuilder;
+
     // Essential external types
     pub use async_trait::async_trait;
     pub use serde_json::{Value, json};
     pub use std::collections::HashMap;
 }
+
+// Testing utilities (only available in tests)
+#[cfg(test)]
+pub mod test_utils;
 
 #[cfg(test)]
 mod tests {

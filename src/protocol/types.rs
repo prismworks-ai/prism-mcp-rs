@@ -463,6 +463,90 @@ pub enum ContentBlock {
 pub type Content = ContentBlock;
 
 // ============================================================================
+// ContentBlock Convenience Methods
+// ============================================================================
+
+impl ContentBlock {
+    /// Create a text content block
+    pub fn text<S: Into<String>>(text: S) -> Self {
+        ContentBlock::Text {
+            text: text.into(),
+            annotations: None,
+            meta: None,
+        }
+    }
+
+    /// Create a text content block with annotations
+    pub fn text_with_annotations<S: Into<String>>(text: S, annotations: Annotations) -> Self {
+        ContentBlock::Text {
+            text: text.into(),
+            annotations: Some(annotations),
+            meta: None,
+        }
+    }
+
+    /// Create an image content block
+    pub fn image<S: Into<String>>(data: S, mime_type: S) -> Self {
+        ContentBlock::Image {
+            data: data.into(),
+            mime_type: mime_type.into(),
+            annotations: None,
+            meta: None,
+        }
+    }
+
+    /// Create an audio content block
+    pub fn audio<S: Into<String>>(data: S, mime_type: S) -> Self {
+        ContentBlock::Audio {
+            data: data.into(),
+            mime_type: mime_type.into(),
+            annotations: None,
+            meta: None,
+        }
+    }
+
+    /// Create a resource link content block
+    pub fn resource_link<S: Into<String>>(uri: S, name: S) -> Self {
+        ContentBlock::ResourceLink {
+            uri: uri.into(),
+            name: name.into(),
+            description: None,
+            mime_type: None,
+            size: None,
+            title: None,
+            annotations: None,
+            meta: None,
+        }
+    }
+
+    /// Create an embedded resource content block
+    pub fn embedded_resource(resource: ResourceContents) -> Self {
+        ContentBlock::Resource {
+            resource,
+            annotations: None,
+            meta: None,
+        }
+    }
+
+    /// Create a resource content block (alias for resource_link for compatibility)
+    pub fn resource<S: Into<String>>(uri: S) -> Self {
+        // For simple resource references, use resource_link with empty name
+        // This is provided for backwards compatibility
+        let uri_str = uri.into();
+        ContentBlock::ResourceLink {
+            uri: uri_str.clone(),
+            name: uri_str,
+            description: None,
+            mime_type: None,
+            size: None,
+            title: None,
+            annotations: None,
+            meta: None,
+        }
+    }
+}
+
+// ============================================================================
 // Tool Types (2025-06-18 with Title and Structured Content)
 // ============================================================================
 
@@ -708,6 +792,52 @@ pub struct CallToolResult {
     /// Result metadata (2025-06-18)
     #[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
     pub meta: Option<HashMap<String, serde_json::Value>>,
+}
+
+// ============================================================================
+// CallToolResult/ToolResult Convenience Methods
+// ============================================================================
+
+impl CallToolResult {
+    /// Create a successful text result
+    pub fn text<S: Into<String>>(text: S) -> Self {
+        Self {
+            content: vec![ContentBlock::text(text)],
+            is_error: Some(false),
+            structured_content: None,
+            meta: None,
+        }
+    }
+
+    /// Create an error result
+    pub fn error<S: Into<String>>(message: S) -> Self {
+        Self {
+            content: vec![ContentBlock::text(message)],
+            is_error: Some(true),
+            structured_content: None,
+            meta: None,
+        }
+    }
+
+    /// Create a result with multiple content blocks
+    pub fn with_content(content: Vec<ContentBlock>) -> Self {
+        Self {
+            content,
+            is_error: Some(false),
+            structured_content: None,
+            meta: None,
+        }
+    }
+
+    /// Create a result with structured content
+    pub fn with_structured(content: Vec<ContentBlock>, structured: serde_json::Value) -> Self {
+        Self {
+            content,
+            is_error: Some(false),
+            structured_content: Some(structured),
+            meta: None,
+        }
+    }
 }
 
 // Re-export types with legacy names for compatibility
@@ -1270,68 +1400,6 @@ pub struct PaginatedResult {
 }
 
 // ============================================================================
-// Helper Constructors
-// ============================================================================
-
-impl ContentBlock {
-    /// Create text content
-    pub fn text<S: Into<String>>(text: S) -> Self {
-        Self::Text {
-            text: text.into(),
-            annotations: None,
-            meta: None,
-        }
-    }
-
-    /// Create image content
-    pub fn image<S: Into<String>>(data: S, mime_type: S) -> Self {
-        Self::Image {
-            data: data.into(),
-            mime_type: mime_type.into(),
-            annotations: None,
-            meta: None,
-        }
-    }
-
-    /// Create audio content (2025-06-18)
-    pub fn audio<S: Into<String>>(data: S, mime_type: S) -> Self {
-        Self::Audio {
-            data: data.into(),
-            mime_type: mime_type.into(),
-            annotations: None,
-            meta: None,
-        }
-    }
-
-    /// Create resource link content (2025-06-18 NEW)
-    pub fn resource_link<S: Into<String>>(uri: S, name: S) -> Self {
-        Self::ResourceLink {
-            uri: uri.into(),
-            name: name.into(),
-            description: None,
-            mime_type: None,
-            size: None,
-            title: None,
-            annotations: None,
-            meta: None,
-        }
-    }
-
-    /// Create embedded resource content (2025-06-18)
-    pub fn embedded_resource(resource: ResourceContents) -> Self {
-        Self::Resource {
-            resource,
-            annotations: None,
-            meta: None,
-        }
-    }
-
-    /// Create resource content (legacy compatibility)
-    pub fn resource<S: Into<String>>(uri: S) -> Self {
-        let uri_str = uri.into();
-        Self::resource_link(uri_str.clone(), uri_str)
-    }
-}
 
 impl SamplingContent {
     /// Create text content for sampling
@@ -1633,6 +1701,16 @@ impl JsonRpcResponse {
             id,
             result: Some(serde_json::to_value(result)?),
         })
+    }
+
+    /// Create a successful JSON-RPC response with an already-serialized value
+    /// This is an infallible version that takes a pre-serialized Value
+    pub fn success_unchecked(id: RequestId, result: serde_json::Value) -> Self {
+        Self {
+            jsonrpc: JSONRPC_VERSION.to_string(),
+            id,
+            result: Some(result),
+        }
     }
 }
 

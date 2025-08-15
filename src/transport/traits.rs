@@ -9,6 +9,45 @@ use async_trait::async_trait;
 
 /// Transport trait for MCP clients
 ///
+/// **Note**: This trait is primarily for internal use and advanced custom transport implementations.
+/// Most users should use the provided transport implementations (StdioTransport, HttpTransport, WebSocketTransport)
+/// rather than implementing this trait directly.
+///
+/// ## When to use Transport directly:
+/// - Implementing a custom transport protocol (e.g., IPC, named pipes, custom network protocol)
+/// - Creating mock transports for testing
+/// - Building transport middleware or decorators
+///
+/// ## Example Custom Transport:
+/// ```no_run
+/// use prism_mcp_rs::transport::traits::Transport;
+/// use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse, JsonRpcNotification};
+/// use prism_mcp_rs::core::error::McpResult;
+/// use async_trait::async_trait;
+///
+/// struct CustomTransport {
+///     // Your transport implementation
+/// }
+///
+/// #[async_trait]
+/// impl Transport for CustomTransport {
+///     async fn send_request(&mut self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
+///         // Implementation
+///         # todo!()
+///     }
+///     
+///     async fn send_notification(&mut self, notification: JsonRpcNotification) -> McpResult<()> {
+///         // Implementation
+///         # todo!()
+///     }
+///     
+///     async fn receive_notification(&mut self) -> McpResult<Option<JsonRpcNotification>> {
+///         // Implementation
+///         # todo!()
+///     }
+/// }
+/// ```
+///
 /// Trait defines the interface for sending requests and receiving responses
 /// in a client-side MCP connection.
 #[async_trait]

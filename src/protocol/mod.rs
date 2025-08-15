@@ -5,9 +5,82 @@
 //! serialization, validation, and new features like improved content system,
 //! annotations, improved capabilities, full metadata support, batch operations,
 //! and complete schema introspection.
+//!
+//! # Protocol Structure
+//!
+//! The MCP protocol is built on JSON-RPC 2.0 with extensions for:
+//! - **Bidirectional Communication**: Both client and server can send requests
+//! - **Capability Negotiation**: Dynamic feature discovery
+//! - **Content Types**: Rich content including text, images, and resources
+//! - **Batch Operations**: Efficient bulk request processing
+//!
+//! # Core Types
+//!
+//! ## JSON-RPC Messages
+//! ```
+//! use prism_mcp_rs::protocol::{
+//!     JsonRpcRequest, JsonRpcResponse, JsonRpcError, JsonRpcMessage
+//! };
+//! use serde_json::json;
+//!
+//! // Create a request
+//! let request = JsonRpcRequest::new(
+//!     json!("1"),
+//!     "tools/list".to_string(),
+//!     None::<()>,
+//! ).unwrap();
+//!
+//! // Create a success response
+//! let response = JsonRpcResponse::success_unchecked(
+//!     json!("1"),
+//!     json!({"tools": []}),
+//! );
+//!
+//! // Create an error response
+//! let error = JsonRpcError::method_not_found(json!("1"));
+//! ```
+//!
+//! ## Error Handling
+//! ```
+//! use prism_mcp_rs::protocol::{JsonRpcError, error_codes};
+//! use serde_json::json;
+//!
+//! // Standard JSON-RPC errors
+//! let parse_err = JsonRpcError::parse_error();
+//! let method_err = JsonRpcError::method_not_found(json!("1"));
+//! let invalid_params = JsonRpcError::invalid_params(json!("1"));
+//!
+//! // MCP-specific errors
+//! let tool_err = JsonRpcError::tool_not_found(json!("1"), "unknown-tool");
+//! let resource_err = JsonRpcError::resource_not_found(json!("1"), "missing.txt");
+//!
+//! // Custom errors with error codes
+//! let custom_err = JsonRpcError::new(
+//!     json!("1"),
+//!     error_codes::INTERNAL_ERROR,
+//!     "Internal server error".to_string(),
+//!     None::<()>,
+//! );
+//! ```
+//!
+//! # Protocol Flow
+//!
+//! 1. **Initialization**: Client sends `initialize` request
+//! 2. **Capability Exchange**: Server responds with supported capabilities
+//! 3. **Operation Phase**: Normal request/response exchange
+//! 4. **Shutdown**: Clean termination with proper cleanup
+//!
+//! # Features
+//!
+//! - **Type Safety**: Strongly typed protocol messages
+//! - **Validation**: Request and response validation
+//! - **Extensibility**: Support for custom methods and capabilities
+//! - **Batch Processing**: Efficient bulk operations
+//! - **Metadata**: Rich metadata for all protocol objects
 
 pub mod batch;
 pub mod discovery;
+pub mod error_helpers;
 pub mod messages;
 pub mod metadata;
 pub mod methods;
@@ -23,6 +96,7 @@ pub mod validation;
 // Re-export commonly used types and constants
 pub use batch::*;
 pub use discovery::*;
+pub use error_helpers::IntoJsonRpcMessage;
 pub use messages::*;
 
 // Re-export metadata module types (Implementation is now only in types module)

@@ -32,6 +32,8 @@
 //! ### Server Example
 //!
 //! ```rust,no_run
+//! # #[cfg(feature = "stdio")]
+//! # {
 //! use prism_mcp_rs::prelude::*;
 //!
 //! struct EchoHandler;
@@ -70,6 +72,9 @@
 //!
 //!     // Convenience method to run server with STDIO transport
 //!     server.run_with_stdio().await
+//! # }
+//! # #[cfg(not(feature = "stdio"))]
+//! # { Ok(()) }
 //! }
 //! ```
 //!

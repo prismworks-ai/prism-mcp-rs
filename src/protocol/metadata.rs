@@ -76,7 +76,7 @@ impl ProtocolCapabilities {
 
     /// Create from `Option<HashMap>` for compatibility
     pub fn from_hashmap(map: Option<HashMap<String, serde_json::Value>>) -> Self {
-        map.map(|fields| Self { fields }).unwrap_or_else(Self::new)
+        map.map(|fields| Self { fields }).unwrap_or_default()
     }
 }
 

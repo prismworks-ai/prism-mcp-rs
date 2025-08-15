@@ -1,0 +1,124 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new push happens
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-bench-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Run benchmarks
+        run: cargo bench --all-features --no-fail-fast | tee benchmark_results.txt
+      
+      - name: Parse benchmark results
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          tail -n 50 benchmark_results.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name == 'push'
+        with:
+          tool: 'cargo'
+          output-file-path: benchmark_results.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '150%'
+          comment-always: true
+          benchmark-data-dir-path: 'benchmarks'
+        continue-on-error: true
+  
+  compile-time:
+    name: Compile Time Benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Clean build
+        run: cargo clean
+      
+      - name: Measure compile time
+        run: |
+          START=$(date +%s)
+          cargo build --release --all-features
+          END=$(date +%s)
+          DURATION=$((END - START))
+          echo "## Compile Time" >> $GITHUB_STEP_SUMMARY
+          echo "Release build with all features: ${DURATION}s" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Measure incremental compile
+        run: |
+          touch src/lib.rs
+          START=$(date +%s)
+          cargo build --release --all-features
+          END=$(date +%s)
+          DURATION=$((END - START))
+          echo "Incremental build: ${DURATION}s" >> $GITHUB_STEP_SUMMARY
+  
+  size:
+    name: Binary Size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build release binary
+        run: cargo build --release --all-features
+      
+      - name: Measure binary size
+        run: |
+          SIZE=$(du -h target/release/libprism_mcp_rs.rlib | cut -f1)
+          echo "## Binary Size" >> $GITHUB_STEP_SUMMARY
+          echo "Release library size: $SIZE" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Strip binary and measure
+        run: |
+          strip target/release/libprism_mcp_rs.rlib || true
+          SIZE=$(du -h target/release/libprism_mcp_rs.rlib | cut -f1)
+          echo "Stripped library size: $SIZE" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,42 @@
+# cargo-vet configuration
+
+[policy]
+# Our crate
+[policy.prism-mcp-rs]
+criteria = ["safe-to-deploy"]
+
+# Core dependencies that we trust
+[[exemptions.serde]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used and trusted serialization library"
+
+[[exemptions.tokio]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used async runtime"
+
+[[exemptions.hyper]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used HTTP library"
+
+[[exemptions.tower]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used service framework"
+
+[[exemptions.tracing]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used tracing library"
+
+[[exemptions.anyhow]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used error handling library"
+
+[[exemptions.thiserror]]
+version = "*"
+criteria = "safe-to-deploy"
+notes = "Widely used error derive macro"

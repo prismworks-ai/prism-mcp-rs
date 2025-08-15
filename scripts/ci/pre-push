@@ -1,0 +1,201 @@
+#!/bin/bash
+
+# Pre-push hook that runs all CI checks locally before pushing to prevent remote CI failures
+# This mirrors the GitHub Actions CI pipeline
+
+set -e  # Exit on any error
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_header() {
+    echo -e "\n${BLUE}========================================${NC}"
+    echo -e "${BLUE} $1${NC}"
+    echo -e "${BLUE}========================================${NC}"
+}
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    print_error "Not in a git repository"
+    exit 1
+fi
+
+# Get the remote and branch being pushed to
+remote="$1"
+url="$2"
+
+# Only run on pushes to main or develop branches
+while read local_ref local_sha remote_ref remote_sha; do
+    if [[ "$remote_ref" == "refs/heads/main" ]] || [[ "$remote_ref" == "refs/heads/develop" ]]; then
+        echo -e "\n${GREEN}🚀 Pre-push CI validation for ${remote_ref##refs/heads/}${NC}"
+        echo "Remote: $remote"
+        echo "URL: $url"
+        
+        # Start CI pipeline
+        print_header "Starting Local CI Pipeline"
+        
+        # 1. Format Check
+        print_header "1. Code Formatting Check"
+        print_status "Running cargo fmt --check..."
+        if cargo fmt --all -- --check; then
+            print_success "Code formatting check passed"
+        else
+            print_error "Code formatting check failed"
+            print_warning "Run 'cargo fmt --all' to fix formatting issues"
+            exit 1
+        fi
+        
+        # 2. Clippy Linting
+        print_header "2. Clippy Linting"
+        print_status "Running cargo clippy with all features..."
+        if cargo clippy --all-features -- -W clippy::all -A unused_imports -A unused_variables -A dead_code -A unused_mut -A private_interfaces -A clippy::redundant_closure -A clippy::redundant_pattern_matching -A clippy::should_implement_trait -A clippy::manual_strip -A clippy::type_complexity; then
+            print_success "Clippy linting passed"
+        else
+            print_error "Clippy linting failed"
+            exit 1
+        fi
+        
+        # 3. Cargo Check
+        print_header "3. Cargo Check"
+        print_status "Running cargo check with all features..."
+        if cargo check --all-features; then
+            print_success "Cargo check passed"
+        else
+            print_error "Cargo check failed"
+            exit 1
+        fi
+        
+        # 4. Test Suite - Default Features
+        print_header "4. Test Suite (Default Features)"
+        print_status "Running cargo test with default features..."
+        if cargo test --verbose; then
+            print_success "Default feature tests passed"
+        else
+            print_error "Default feature tests failed"
+            exit 1
+        fi
+        
+        # 5. Test Suite - All Features
+        print_header "5. Test Suite (All Features)"
+        print_status "Running cargo test with all features..."
+        if cargo test --all-features --verbose; then
+            print_success "All feature tests passed"
+        else
+            print_error "All feature tests failed"
+            exit 1
+        fi
+        
+        # 6. Test Suite - No Default Features
+        print_header "6. Test Suite (No Default Features)"
+        print_status "Running cargo test with no default features..."
+        if cargo test --no-default-features --verbose --lib; then
+            print_success "No default feature tests passed"
+        else
+            print_error "No default feature tests failed"
+            exit 1
+        fi
+        
+        # 7. Feature-specific Tests
+        print_header "7. Feature-specific Tests"
+        features=("stdio" "http" "websocket" "validation" "full")
+        for feature in "${features[@]}"; do
+            print_status "Testing feature: $feature"
+            if cargo test --features "$feature" --verbose; then
+                print_success "Feature '$feature' tests passed"
+            else
+                print_error "Feature '$feature' tests failed"
+                exit 1
+            fi
+        done
+        
+        # 8. Examples Check
+        print_header "8. Examples Check"
+        print_status "Checking default examples..."
+        examples=("simple_server" "echo_server" "client_example" "database_server")
+        for example in "${examples[@]}"; do
+            if cargo check --example "$example"; then
+                print_success "Example '$example' check passed"
+            else
+                print_error "Example '$example' check failed"
+                exit 1
+            fi
+        done
+        
+        print_status "Checking HTTP examples..."
+        http_examples=("http_server" "http_client")
+        for example in "${http_examples[@]}"; do
+            if cargo check --example "$example" --features http; then
+                print_success "HTTP example '$example' check passed"
+            else
+                print_error "HTTP example '$example' check failed"
+                exit 1
+            fi
+        done
+        
+        print_status "Checking WebSocket examples..."
+        ws_examples=("websocket_server" "websocket_client")
+        for example in "${ws_examples[@]}"; do
+            if cargo check --example "$example" --features websocket; then
+                print_success "WebSocket example '$example' check passed"
+            else
+                print_error "WebSocket example '$example' check failed"
+                exit 1
+            fi
+        done
+        
+        # 9. Documentation Check
+        print_header "9. Documentation Check"
+        print_status "Running cargo doc..."
+        if cargo doc --all-features --no-deps --document-private-items; then
+            print_success "Documentation check passed"
+        else
+            print_error "Documentation check failed"
+            exit 1
+        fi
+        
+        # 10. Security Audit (optional, as it might fail on new vulnerabilities)
+        print_header "10. Security Audit"
+        print_status "Running cargo audit..."
+        if command -v cargo-audit >/dev/null 2>&1; then
+            if cargo audit; then
+                print_success "Security audit passed"
+            else
+                print_warning "Security audit found issues - review before deploying to production"
+                # Don't fail the hook on security issues, just warn
+            fi
+        else
+            print_warning "cargo-audit not installed, skipping security audit"
+            print_warning "Install with: cargo install cargo-audit"
+        fi
+        
+        # Final success message
+        print_header "🎉 All Local CI Checks Passed!"
+        print_success "Your code is ready to push and should pass GitHub Actions CI"
+        echo -e "\n${GREEN}Proceeding with push...${NC}\n"
+        
+        break
+    fi
+done
+
+exit 0

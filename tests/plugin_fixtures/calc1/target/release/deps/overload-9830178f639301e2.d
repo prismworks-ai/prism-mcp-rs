@@ -1,0 +1,10 @@
+/Users/rishirandhawa/projects/mcp-protocol-sdk/tests/plugin_fixtures/calc1/target/release/deps/overload-9830178f639301e2.d: /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/lib.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/unary.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/assignment.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/binary.rs
+
+/Users/rishirandhawa/projects/mcp-protocol-sdk/tests/plugin_fixtures/calc1/target/release/deps/liboverload-9830178f639301e2.rlib: /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/lib.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/unary.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/assignment.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/binary.rs
+
+/Users/rishirandhawa/projects/mcp-protocol-sdk/tests/plugin_fixtures/calc1/target/release/deps/liboverload-9830178f639301e2.rmeta: /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/lib.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/unary.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/assignment.rs /Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/binary.rs
+
+/Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/lib.rs:
+/Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/unary.rs:
+/Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/assignment.rs:
+/Users/rishirandhawa/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/overload-0.1.1/src/binary.rs:

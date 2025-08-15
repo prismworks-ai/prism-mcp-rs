@@ -1,0 +1,301 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new push happens
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Enable all features for CI
+  CARGO_BUILD_FLAGS: --all-features
+
+jobs:
+  # Run tests on multiple OS and Rust versions
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable, beta, nightly]
+        exclude:
+          # Windows beta/nightly can be flaky
+          - os: windows-latest
+            rust: beta
+          - os: windows-latest
+            rust: nightly
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Build
+        run: cargo build --verbose ${{ env.CARGO_BUILD_FLAGS }}
+      
+      - name: Run tests
+        run: cargo test --verbose ${{ env.CARGO_BUILD_FLAGS }}
+      
+      - name: Run doc tests
+        run: cargo test --doc --verbose ${{ env.CARGO_BUILD_FLAGS }}
+  
+  # Test with minimal features
+  minimal:
+    name: Minimal Features
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build with no features
+        run: cargo build --verbose --no-default-features
+      
+      - name: Test with no features
+        run: cargo test --verbose --no-default-features
+  
+  # Code coverage with llvm-cov
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      
+      - name: Install additional tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc jq
+      
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      
+      - name: Generate markdown coverage report
+        run: |
+          chmod +x scripts/ci/generate-coverage-report.sh
+          ./scripts/ci/generate-coverage-report.sh || ./scripts/ci/simple-coverage.sh
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: reports/coverage-report.md
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          verbose: true
+  
+  # Check code formatting
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      
+      - name: Check formatting
+        run: cargo fmt -- --check
+  
+  # Lint with clippy
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      
+      - name: Run clippy
+        run: cargo clippy ${{ env.CARGO_BUILD_FLAGS }} -- -D warnings
+  
+  # Build documentation
+  doc:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build documentation
+        run: cargo doc --no-deps ${{ env.CARGO_BUILD_FLAGS }}
+        env:
+          RUSTDOCFLAGS: -D warnings
+  
+  # Check for security vulnerabilities
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      
+      - name: Security audit
+        run: cargo audit
+  
+  # Verify package metadata
+  check:
+    name: Package Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Check package
+        run: cargo package --list
+      
+      - name: Verify build
+        run: cargo check ${{ env.CARGO_BUILD_FLAGS }}
+  
+  # Test examples
+  examples:
+    name: Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build examples
+        run: |
+          for example in examples/**/*.rs; do
+            if [ -f "$example" ]; then
+              echo "Building example: $example"
+              cargo build --example $(basename "$example" .rs) ${{ env.CARGO_BUILD_FLAGS }}
+            fi
+          done
+  
+  # Benchmark compilation and execution
+  bench:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install additional tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc jq
+      
+      - name: Build benchmarks
+        run: cargo bench --no-run ${{ env.CARGO_BUILD_FLAGS }}
+      
+      - name: Run benchmarks and generate report
+        run: |
+          chmod +x scripts/ci/run-benchmarks.sh
+          ./scripts/ci/run-benchmarks.sh
+        continue-on-error: true  # Don't fail CI if benchmarks have issues
+      
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report
+          path: reports/benchmark-report.md
+        continue-on-error: true
+
+  # Commit reports back to repository (main branch only)
+  commit-reports:
+    name: Commit Reports
+    runs-on: ubuntu-latest
+    needs: [coverage, bench]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: reports/
+        continue-on-error: true
+      
+      - name: Download benchmark report
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-report
+          path: reports/
+        continue-on-error: true
+      
+      - name: Commit reports
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add reports/*.md || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update coverage and benchmark reports [skip ci]"
+            git push
+          fi
+        continue-on-error: true

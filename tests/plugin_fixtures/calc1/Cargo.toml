@@ -1,0 +1,16 @@
+[package]
+name = "calc1-plugin"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+name = "calc1"
+crate-type = ["cdylib"]
+
+[dependencies]
+prism-mcp-rs = { path = "../../..", features = ["plugin"] }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.38", features = ["rt", "macros"] }
+tracing = "0.1"

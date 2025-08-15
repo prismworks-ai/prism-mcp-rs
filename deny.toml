@@ -1,0 +1,97 @@
+# Configuration for cargo-deny
+# More info: https://github.com/EmbarkStudios/cargo-deny
+
+[graph]
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "x86_64-apple-darwin" },
+    { triple = "x86_64-pc-windows-msvc" },
+]
+
+[licenses]
+# List of allowed licenses
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "MPL-2.0",
+    "Unlicense",
+]
+
+# List of denied licenses
+deny = [
+    "GPL-2.0",
+    "GPL-3.0",
+    "AGPL-3.0",
+    "LGPL-2.0",
+    "LGPL-3.0",
+]
+
+copyleft = "warn"
+allow-osi-fsf-free = "neither"
+default = "deny"
+confidence-threshold = 0.8
+
+[bans]
+# Deny multiple versions of the same crate
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+
+# List of explicitly allowed duplicate crates
+allow = [
+    # Common duplicates that are hard to avoid
+    { name = "bitflags" },
+    { name = "syn" },
+]
+
+# Skip certain crates entirely
+skip = [
+    # Dev dependencies that we don't care about
+    { name = "criterion" },
+]
+
+# Similarly named crates that are allowed
+skip-tree = [
+    # Skip dev-dependencies
+    { name = "criterion" },
+]
+
+[advisories]
+# The path where the advisory database is cloned/fetched into
+db-path = "~/.cargo/advisory-db"
+
+# The url(s) of the advisory databases to use
+db-urls = ["https://github.com/rustsec/advisory-db"]
+
+# The lint level for security vulnerabilities
+vulnerability = "deny"
+
+# The lint level for unmaintained crates
+unmaintained = "warn"
+
+# The lint level for crates with security notices
+notice = "warn"
+
+# A list of advisory IDs to ignore
+ignore = [
+    # Example: "RUSTSEC-2019-0001",
+]
+
+[sources]
+# Lint level for what to happen when a crate from a crate registry that is not in the allow list is encountered
+unknown-registry = "warn"
+
+# Lint level for what to happen when a crate from a git repository that is not in the allow list is encountered
+unknown-git = "warn"
+
+# List of allowed crate registries
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
+# List of allowed Git repositories
+allow-git = []

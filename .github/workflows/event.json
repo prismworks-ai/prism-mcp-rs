@@ -1,0 +1,11 @@
+{
+  "push": {
+    "ref": "refs/heads/main",
+    "repository": {
+      "name": "prism-mcp-rs",
+      "owner": {
+        "login": "prismworks-ai"
+      }
+    }
+  }
+}

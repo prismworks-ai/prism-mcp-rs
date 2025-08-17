@@ -132,11 +132,11 @@ jobs:
           RUSTDOCFLAGS: "-D warnings"
       
       # Step 13: Validate and Extract Documentation Examples
-      - name: "[13/18] Extract and Validate Documentation Examples"
+      - name: "[13/18] Validate Documentation Examples"
         run: |
-          echo "🔍 Extracting and validating documentation examples..."
-          cargo test validate_and_generate_examples -- --nocapture || echo "⚠️  Some examples need fixing"
-          echo "✅ Example extraction complete"
+          echo "📚 Validating documentation examples..."
+          cargo test --doc
+          echo "✅ Documentation tests complete"
       
       # Step 14: Build Integrated Examples
       - name: "[14/18] Build Integrated Examples"
@@ -212,7 +212,7 @@ jobs:
           echo "  10. Minimal Feature Tests"
           echo "  11. Documentation Build"
           echo "  12. Build Documentation"
-          echo "  13. Extract & Validate Doc Examples"
+          echo "  13. Validate Documentation Examples"
           echo "  14. Build All Examples"
           echo "  15. Test Examples"
           echo "  16. Build Generated Examples"
@@ -223,16 +223,15 @@ jobs:
           echo "📝 The actual CI on GitHub runs many of these in parallel."
           echo ""
           echo "💡 Example Validation Workflow:"
-          echo "  1. Documentation examples are extracted from source files"
-          echo "  2. Examples are validated and generated to examples/generated/"
-          echo "  3. If examples fail, fix them in the source documentation"
-          echo "  4. Re-run validation to regenerate corrected examples"
+          echo "  1. Documentation examples are validated using cargo test --doc"
+          echo "  2. Examples in examples/ directory are built with cargo build --examples"
+          echo "  3. If examples fail, fix them in the source documentation or example files"
           echo ""
           echo "💡 Tips for local development:"
           echo "  - Run 'make quick' for formatting and basic tests"
           echo "  - Run 'make check' for standard CI checks"
           echo "  - Run 'make test' for all tests"
-          echo "  - Run 'cargo test validate_and_generate_examples' to fix examples"
+          echo "  - Run 'cargo test --doc' to test documentation examples"
           echo "  - Run 'make commit-ready' for full validation"
 
   # Alternative: Quick validation job for faster local testing

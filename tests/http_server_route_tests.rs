@@ -276,7 +276,7 @@ mod http_server_route_tests {
         }
     }
 
-    #[cfg(all(feature = "tokio-stream", feature = "futures"))]
+    #[cfg(feature = "tokio-stream")]
     #[tokio::test]
     async fn test_sse_stream_processing() {
         use tokio_stream::{wrappers::BroadcastStream, StreamExt};
@@ -369,10 +369,7 @@ mod http_server_route_tests {
     #[tokio::test]
     async fn test_health_check_response_structure() {
         // Test health check response structure
-        #[cfg(feature = "chrono")]
         let timestamp = chrono::Utc::now().to_rfc3339();
-        #[cfg(not(feature = "chrono"))]
-        let timestamp = "unavailable";
 
         let health_response = json!({
             "status": "healthy",
@@ -462,7 +459,7 @@ mod http_server_route_tests {
         StatusCode::OK
     }
 
-    #[cfg(all(feature = "tokio-stream", feature = "futures"))]
+    #[cfg(feature = "tokio-stream")]
     async fn test_handle_sse_events(
         State(_state): State<Arc<RwLock<TestHttpServerState>>>,
     ) -> StatusCode {
@@ -470,7 +467,7 @@ mod http_server_route_tests {
         StatusCode::OK
     }
 
-    #[cfg(not(all(feature = "tokio-stream", feature = "futures")))]
+    #[cfg(not(feature = "tokio-stream"))]
     async fn test_handle_sse_events(
         State(_state): State<Arc<RwLock<TestHttpServerState>>>,
     ) -> StatusCode {

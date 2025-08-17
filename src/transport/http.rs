@@ -7,20 +7,25 @@ use async_trait::async_trait;
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
-    response::{sse::Event, Sse},
     routing::{get, post},
     Json, Router,
 };
+
+#[cfg(feature = "sse")]
+use axum::response::{sse::Event, Sse};
 use reqwest::Client;
 use serde_json::Value;
-use std::{collections::HashMap, convert::Infallible, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
+
+#[cfg(feature = "sse")]
+use std::convert::Infallible;
 use tokio::sync::{broadcast, mpsc, Mutex, RwLock};
 
-#[cfg(all(feature = "futures", feature = "tokio-stream"))]
-use futures::stream::Stream;
+#[cfg(feature = "sse")]
+use futures_util::{Stream, StreamExt};
 
-#[cfg(feature = "tokio-stream")]
-use tokio_stream::{wrappers::BroadcastStream, StreamExt};
+#[cfg(feature = "sse")]
+use tokio_stream::wrappers::BroadcastStream;
 
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
@@ -165,7 +170,7 @@ impl HttpClientTransport {
 
         let mut stream = response.bytes_stream();
 
-        #[cfg(feature = "tokio-stream")]
+        #[cfg(feature = "sse")]
         {
             while let Some(chunk) = stream.next().await {
                 match chunk {
@@ -193,9 +198,9 @@ impl HttpClientTransport {
             }
         }
 
-        #[cfg(not(feature = "tokio-stream"))]
+        #[cfg(not(feature = "sse"))]
         {
-            tracing::warn!("SSE streaming requires tokio-stream feature");
+            tracing::warn!("SSE streaming requires SSE feature");
         }
 
         Ok(())
@@ -657,7 +662,7 @@ async fn handle_mcp_notification(Json(_notification): Json<JsonRpcNotification>)
 }
 
 /// Handle Server-Sent Events for real-time notifications
-#[cfg(all(feature = "tokio-stream", feature = "futures"))]
+#[cfg(feature = "sse")]
 async fn handle_sse_events(
     State(state): State<Arc<RwLock<HttpServerState>>>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
@@ -685,18 +690,15 @@ async fn handle_sse_events(
     )
 }
 
-/// Handle Server-Sent Events (fallback when features not available)
-#[cfg(not(all(feature = "tokio-stream", feature = "futures")))]
+/// Handle Server-Sent Events (fallback when SSE feature not available)
+#[cfg(not(feature = "sse"))]
 async fn handle_sse_events(_state: State<Arc<RwLock<HttpServerState>>>) -> StatusCode {
     StatusCode::NOT_IMPLEMENTED
 }
 
 /// Handle health check requests
 async fn handle_health_check() -> Json<Value> {
-    #[cfg(feature = "chrono")]
     let timestamp = chrono::Utc::now().to_rfc3339();
-    #[cfg(not(feature = "chrono"))]
-    let timestamp = "unavailable";
 
     Json(serde_json::json!({
         "status": "healthy",
@@ -986,7 +988,7 @@ mod tests {
         assert_eq!(result, StatusCode::OK);
     }
 
-    #[cfg(not(all(feature = "tokio-stream", feature = "futures")))]
+    #[cfg(not(feature = "sse"))]
     #[tokio::test]
     async fn test_handle_sse_events_not_implemented() {
         let (notification_sender, _) = broadcast::channel(100);

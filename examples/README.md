@@ -12,7 +12,9 @@ cargo build --examples
 cargo run --example complete_workflow
 
 # Run with specific features
-cargo run --example streaming_http_showcase --features streaming-http
+cargo run --example sse_showcase --features sse
+cargo run --example http2_showcase --features http2
+cargo run --example chunked_encoding_showcase --features chunked-encoding
 ```
 
 ## Available Examples
@@ -31,10 +33,11 @@ cargo run --example streaming_http_showcase --features streaming-http
 - **plugin_integration.rs** - Plugin system usage
 - **custom_transport.rs** - Implementing custom transports
 
-### Streaming & Performance
+### Advanced HTTP Features
 
-- **streaming_http_showcase.rs** - HTTP streaming capabilities
-- **streaming_http2_showcase.rs** - HTTP/2 streaming features
+- **sse_showcase.rs** - Server-Sent Events for real-time updates
+- **http2_showcase.rs** - HTTP/2 protocol with multiplexing and server push
+- **chunked_encoding_showcase.rs** - Chunked transfer encoding for large payloads
 - **performance_benchmarks.rs** - Performance testing examples
 
 ### Best Practices

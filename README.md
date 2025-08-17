@@ -27,7 +27,7 @@
 - 🚀 **High Performance** - Async/await, zero-copy operations, and efficient serialization
 - 🔌 **Plugin System** - Runtime-loadable plugins with hot reload support
 - 🛡️ **Type Safe** - Leverage Rust's type system for compile-time guarantees
-- 🔄 **Multiple Transports** - STDIO, WebSocket, HTTP/SSE out of the box
+- 🔄 **Multiple Transports** - STDIO, WebSocket, HTTP with optional SSE support
 - 📦 **Batteries Included** - Authentication, TLS, compression, and more
 - ✅ **Production Ready** - Comprehensive test suite with 229+ tests
 
@@ -112,13 +112,22 @@ async fn main() -> McpResult<()> {
 
 | Feature | Description | Default |
 |---------|-------------|------|
+| **Core Transports** | | |
 | `stdio` | Standard I/O transport | ✅ |
+| `http` | HTTP transport with JSON-RPC | ❌ |
 | `websocket` | WebSocket transport | ❌ |
-| `http` | HTTP/SSE transport | ❌ |
-| `plugin` | Plugin system support | ❌ |
-| `auth` | Authentication mechanisms | ❌ |
+| **HTTP Features** | | |
+| `sse` | Server-Sent Events for real-time updates | ❌ |
+| `http2` | HTTP/2 protocol with multiplexing | ❌ |
+| `chunked-encoding` | Chunked transfer for large payloads | ❌ |
+| `compression` | Response compression (gzip, brotli, zstd) | ❌ |
+| **Extensions** | | |
+| `plugin` | Plugin system with hot reload | ❌ |
+| `auth` | Authentication (JWT, Argon2) | ❌ |
 | `tls` | TLS/SSL support | ❌ |
+| **Bundles** | | |
 | `full` | All features enabled | ❌ |
+| `minimal` | Bare minimum (no features) | ❌ |
 
 Enable features in your `Cargo.toml`:
 

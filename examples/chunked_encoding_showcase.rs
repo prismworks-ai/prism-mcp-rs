@@ -11,12 +11,12 @@
 // ! This example requires the following features to be enabled:
 // ! ```toml
 // ! [dependencies]
-// ! prism-mcp-rs = { version = "*", features = ["streaming-http", "tracing-subscriber", "chrono"] }
+// ! prism-mcp-rs = { version = "*", features = ["chunked-encoding", "tracing-subscriber", "chrono"] }
 // ! ```
 // !
 // ! ## Running this Example
 // ! ```bash
-// ! cargo run --example streaming_http_showcase --features "streaming-http tracing-subscriber chrono"
+// ! cargo run --example chunked_encoding_showcase --features "chunked-encoding tracing-subscriber chrono"
 // ! ```
 
 use prism_mcp_rs::prelude::*;
@@ -62,7 +62,7 @@ async fn demo_default_streaming() -> McpResult<()> {
     println!("Package: Demo 1: Default Streaming Configuration");
     println!("==========================================\n");
 
-    #[cfg(feature = "streaming-http")]
+    #[cfg(feature = "chunked-encoding")]
     {
         let _client = McpClient::new("streaming-demo".to_string(), "1.0.0".to_string());
 
@@ -83,11 +83,11 @@ async fn demo_default_streaming() -> McpResult<()> {
         println!("[x] Default streaming configuration ready for production use\n");
     }
 
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     {
         println!("Warning:  Streaming HTTP feature not enabled");
         println!(
-            "   Enable with: cargo run --features streaming-http --example streaming_http_showcase\n"
+            "   Enable with: cargo run --features chunked-encoding --example chunked_encoding_showcase\n"
         );
     }
 
@@ -99,7 +99,7 @@ async fn demo_memory_improved() -> McpResult<()> {
     println!("💾 Demo 2: Memory-improved Configuration");
     println!("=========================================\n");
 
-    #[cfg(feature = "streaming-http")]
+    #[cfg(feature = "chunked-encoding")]
     {
         let _client = McpClient::new("memory-demo".to_string(), "1.0.0".to_string());
 
@@ -136,7 +136,7 @@ async fn demo_memory_improved() -> McpResult<()> {
         println!("```\n");
     }
 
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     {
         println!("Warning:  Streaming HTTP feature not enabled\n");
     }
@@ -149,7 +149,7 @@ async fn demo_performance_improved() -> McpResult<()> {
     println!("# Demo 3: Performance-improved Configuration");
     println!("==============================================\n");
 
-    #[cfg(feature = "streaming-http")]
+    #[cfg(feature = "chunked-encoding")]
     {
         let _client = McpClient::new("perf-demo".to_string(), "1.0.0".to_string());
 
@@ -197,7 +197,7 @@ async fn demo_performance_improved() -> McpResult<()> {
         println!("```\n");
     }
 
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     {
         println!("Warning:  Streaming HTTP feature not enabled\n");
     }
@@ -210,7 +210,7 @@ async fn demo_custom_configuration() -> McpResult<()> {
     println!("⚙️ Demo 4: Custom Configuration with complete Features");
     println!("=====================================================\n");
 
-    #[cfg(feature = "streaming-http")]
+    #[cfg(feature = "chunked-encoding")]
     {
         println!("- Custom Configuration Examples:");
 
@@ -268,7 +268,7 @@ async fn demo_custom_configuration() -> McpResult<()> {
         println!("```\n");
     }
 
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     {
         println!("Warning:  Streaming HTTP feature not enabled\n");
     }
@@ -281,7 +281,7 @@ async fn demo_payload_analysis() -> McpResult<()> {
     println!("📊 Demo 5: smart Payload Analysis");
     println!("======================================\n");
 
-    #[cfg(feature = "streaming-http")]
+    #[cfg(feature = "chunked-encoding")]
     {
         use prism_mcp_rs::protocol::types::JsonRpcRequest;
         use prism_mcp_rs::transport::ContentAnalyzer;
@@ -366,10 +366,10 @@ async fn demo_payload_analysis() -> McpResult<()> {
         println!("  • smooth fallback for edge cases\n");
     }
 
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     {
         println!("Warning:  Streaming HTTP feature not enabled");
-        println!("   Enable with: --features streaming-http\n");
+        println!("   Enable with: --features chunked-encoding\n");
     }
 
     Ok(())

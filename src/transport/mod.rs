@@ -94,7 +94,12 @@ pub mod http_auth;
 #[cfg(feature = "websocket")]
 pub mod websocket;
 
-#[cfg(feature = "streaming-http")]
+// Advanced HTTP transport features (chunking, compression, HTTP/2)
+#[cfg(any(
+    feature = "chunked-encoding",
+    feature = "compression",
+    feature = "http2"
+))]
 pub mod streaming_http;
 
 // Re-export commonly used types
@@ -129,12 +134,17 @@ mod http_convenience_test;
 #[cfg(feature = "websocket")]
 pub use websocket::{WebSocketClientTransport, WebSocketServerTransport};
 
-#[cfg(feature = "streaming-http")]
+// Chunked encoding and streaming features
+#[cfg(feature = "chunked-encoding")]
 pub use streaming_http::{
-    CompressionType, ContentAnalyzer, ContentType, StreamingAnalysis, StreamingConfig,
-    StreamingHttpClientTransport, StreamingStrategy,
+    ContentAnalyzer, ContentType, StreamingAnalysis, StreamingConfig, StreamingHttpClientTransport,
+    StreamingStrategy,
 };
 
+// Compression features
+#[cfg(feature = "compression")]
+pub use streaming_http::CompressionType;
+
 // HTTP/2 specific re-exports
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 pub use streaming_http::{Http2Config, Http2StreamManager, PushPromise, StreamInfo, StreamState};

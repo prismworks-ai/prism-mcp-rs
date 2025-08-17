@@ -1,13 +1,13 @@
-// ! complete Streaming HTTP Transport - smart performance improvements
+// ! Advanced HTTP Transport Features
 // !
-// ! Module provides an complete HTTP transport implementation with:
-// ! - Chunked transfer encoding for large payloads
-// ! - complete compression (Gzip, Brotli, Zstd)
-// ! - HTTP/2 Server Push capabilities
-// ! - smart content analysis
-// ! - Adaptive buffering and flow control
+// ! This module provides advanced HTTP transport capabilities:
+// ! - Chunked transfer encoding for large payloads (chunked-encoding feature)
+// ! - Response compression: Gzip, Brotli, Zstd (compression feature)
+// ! - HTTP/2 protocol support with multiplexing (http2 feature)
+// ! - Intelligent content analysis and adaptive strategies
+// ! - Backpressure and flow control
 // !
-// ! complete for:
+// ! Ideal for:
 // ! - Large data processing (>100KB payloads)
 // ! - Memory-constrained environments
 // ! - High-performance applications
@@ -24,29 +24,30 @@ use crate::core::error::{McpError, McpResult};
 use crate::protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
 use crate::transport::traits::{ConnectionState, Transport, TransportStats};
 
-#[cfg(feature = "streaming-http")]
+// Chunked encoding support
+#[cfg(feature = "chunked-encoding")]
 use bytes::{Bytes, BytesMut};
-#[cfg(feature = "streaming-http")]
-// Streaming utilities will be used when implementing the actual streaming body
+#[cfg(feature = "chunked-encoding")]
 use tokio_stream::wrappers::ReceiverStream;
 
-// HTTP/2 support for complete streaming - Full Server Push implementation
-#[cfg(feature = "streaming-http2")]
+// HTTP/2 protocol support
+#[cfg(feature = "http2")]
 use h2::client::{Connection, SendRequest};
-#[cfg(feature = "streaming-http2")]
-use http::{HeaderMap, Method, Request};
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
+use http::{Method, Request};
+#[cfg(feature = "http2")]
 use tokio::net::TcpStream;
 
-// HTTP/2 Server Push specific types
-#[cfg(feature = "streaming-http2")]
+// HTTP/2 specific types
+#[cfg(feature = "http2")]
+use http::HeaderMap;
+#[cfg(feature = "http2")]
 use std::collections::HashMap;
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 use std::pin::Pin;
-// Note: Context and Poll imports removed as they're not currently used
 
 /// HTTP/2 Server Push handler for processing pushed streams
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 pub type ServerPushHandler = Box<
     dyn Fn(PushPromise) -> Pin<Box<dyn std::future::Future<Output = McpResult<()>> + Send>>
         + Send
@@ -54,7 +55,7 @@ pub type ServerPushHandler = Box<
 >;
 
 /// HTTP/2 Push Promise metadata
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 #[derive(Debug, Clone)]
 pub struct PushPromise {
     pub method: String,
@@ -65,7 +66,7 @@ pub struct PushPromise {
 }
 
 /// HTTP/2 stream management for bidirectional communication
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 #[derive(Debug)]
 pub struct Http2StreamManager {
     pub active_streams: HashMap<u32, StreamInfo>,
@@ -74,7 +75,7 @@ pub struct Http2StreamManager {
     pub connection_window_size: u32,
 }
 
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 #[derive(Debug, Clone)]
 pub struct StreamInfo {
     pub stream_id: u32,
@@ -86,7 +87,7 @@ pub struct StreamInfo {
     pub bytes_received: u64,
 }
 
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 #[derive(Debug, Clone, PartialEq)]
 pub enum StreamState {
     Open,
@@ -96,7 +97,7 @@ pub enum StreamState {
     Reserved(u32), // For push promised streams
 }
 
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 impl Http2StreamManager {
     pub fn new(max_concurrent_streams: usize) -> Self {
         Self {
@@ -156,7 +157,7 @@ impl Http2StreamManager {
 }
 
 /// HTTP/2 specific configuration
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 #[derive(Debug, Clone)]
 pub struct Http2Config {
     /// Maximum concurrent streams per connection
@@ -177,7 +178,7 @@ pub struct Http2Config {
     pub validate_push_promises: bool,
 }
 
-#[cfg(feature = "streaming-http2")]
+#[cfg(feature = "http2")]
 impl Default for Http2Config {
     fn default() -> Self {
         Self {
@@ -215,11 +216,11 @@ pub enum ContentType {
 pub enum StreamingStrategy {
     Traditional,
     ChunkedStreaming,
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     Http2ServerPush,
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     Http2Multiplexed,
-    #[cfg(feature = "streaming-compression")]
+    #[cfg(feature = "compression")]
     CompressedStreaming,
 }
 
@@ -247,7 +248,7 @@ pub struct StreamingConfig {
     /// Enable adaptive chunk sizing
     pub adaptive_chunk_sizing: bool,
     /// HTTP/2 specific configuration
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     pub http2_config: Http2Config,
 }
 
@@ -264,7 +265,7 @@ impl Default for StreamingConfig {
             max_concurrent_chunks: 10,
             backpressure_threshold: 1024 * 1024, // 1MB
             adaptive_chunk_sizing: true,
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             http2_config: Http2Config::default(),
         }
     }
@@ -291,11 +292,11 @@ impl StreamingConfig {
             enable_http2_server_push: true,
             max_concurrent_chunks: 20,
             backpressure_threshold: 4 * 1024 * 1024, // 4MB
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             compression_type: CompressionType::Brotli,
-            #[cfg(not(feature = "streaming-compression"))]
+            #[cfg(not(feature = "compression"))]
             compression_type: CompressionType::Gzip,
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             http2_config: Http2Config {
                 max_concurrent_streams: 200,
                 initial_window_size: 131072, // 128KB
@@ -328,12 +329,12 @@ impl StreamingConfig {
                 self.compression_type = CompressionType::Gzip;
                 self.enable_compression = true;
             }
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             7..=9 => {
                 self.compression_type = CompressionType::Brotli;
                 self.enable_compression = true;
             }
-            #[cfg(not(feature = "streaming-compression"))]
+            #[cfg(not(feature = "compression"))]
             7..=9 => {
                 self.compression_type = CompressionType::Gzip;
                 self.enable_compression = true;
@@ -357,9 +358,9 @@ impl StreamingConfig {
         match self.compression_type {
             CompressionType::None => 0,
             CompressionType::Gzip => 6,
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             CompressionType::Brotli => 8,
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             CompressionType::Zstd => 7,
         }
     }
@@ -374,14 +375,14 @@ impl StreamingConfig {
 pub enum CompressionType {
     None,
     Gzip,
-    #[cfg(feature = "streaming-compression")]
+    #[cfg(feature = "compression")]
     Brotli,
-    #[cfg(feature = "streaming-compression")]
+    #[cfg(feature = "compression")]
     Zstd,
 }
 
 // For tests without streaming-compression feature
-#[cfg(all(test, not(feature = "streaming-compression")))]
+#[cfg(all(test, not(feature = "compression")))]
 impl CompressionType {
     #[allow(dead_code)]
     pub fn test_brotli() -> Self {
@@ -447,30 +448,30 @@ impl ContentAnalyzer {
         let should_stream = content_size > 8192 || has_large_strings || has_binary_data;
 
         let recommended_strategy = if has_binary_data {
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             {
                 StreamingStrategy::CompressedStreaming
             }
-            #[cfg(not(feature = "streaming-compression"))]
+            #[cfg(not(feature = "compression"))]
             {
                 StreamingStrategy::ChunkedStreaming
             }
         } else if content_size > 100_000 {
             // Very large payloads benefit from multiplexing
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             {
                 StreamingStrategy::Http2Multiplexed
             }
-            #[cfg(not(feature = "streaming-http2"))]
+            #[cfg(not(feature = "http2"))]
             {
                 StreamingStrategy::ChunkedStreaming
             }
         } else if content_size > 32768 {
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             {
                 StreamingStrategy::Http2ServerPush
             }
-            #[cfg(not(feature = "streaming-http2"))]
+            #[cfg(not(feature = "http2"))]
             {
                 StreamingStrategy::ChunkedStreaming
             }
@@ -606,9 +607,9 @@ impl ContentAnalyzer {
 
         if entropy < 0.3 {
             // Low entropy - highly repetitive content, good for compression
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             return CompressionType::Brotli;
-            #[cfg(not(feature = "streaming-compression"))]
+            #[cfg(not(feature = "compression"))]
             return CompressionType::Gzip;
         } else if entropy < 0.7 {
             // Medium entropy - moderate compression benefit
@@ -680,7 +681,7 @@ impl ContentAnalyzer {
 }
 
 /// Streaming buffer with flow control
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 pub struct StreamingBuffer {
     buffer: BytesMut,
     chunk_size: usize,
@@ -689,7 +690,7 @@ pub struct StreamingBuffer {
     network_metrics: NetworkMetrics,
 }
 
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 #[derive(Debug, Clone)]
 pub struct FlowControl {
     pub max_concurrent_chunks: usize,
@@ -697,7 +698,7 @@ pub struct FlowControl {
     pub adaptive_chunk_sizing: bool,
 }
 
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 #[derive(Debug, Clone, Default)]
 pub struct NetworkMetrics {
     pub high_bandwidth: bool,
@@ -706,7 +707,7 @@ pub struct NetworkMetrics {
     pub throughput_bps: f64,
 }
 
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 impl StreamingBuffer {
     pub fn new(chunk_size: usize, max_buffer_size: usize) -> Self {
         Self {
@@ -783,13 +784,13 @@ impl StreamingBuffer {
 }
 
 /// Streaming compressor for multiple compression algorithms
-#[cfg(feature = "streaming-compression")]
+#[cfg(feature = "compression")]
 pub struct StreamingCompressor {
     compression_type: CompressionType,
     threshold: usize,
 }
 
-#[cfg(feature = "streaming-compression")]
+#[cfg(feature = "compression")]
 impl StreamingCompressor {
     pub fn new(compression_type: CompressionType) -> Self {
         Self {
@@ -872,27 +873,27 @@ impl StreamingCompressor {
 }
 
 /// Streaming HTTP client transport with advanced features
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 pub struct StreamingHttpClientTransport {
     client: reqwest::Client,
     base_url: String,
     config: StreamingConfig,
     content_analyzer: ContentAnalyzer,
-    #[cfg(feature = "streaming-compression")]
+    #[cfg(feature = "compression")]
     compressor: Option<StreamingCompressor>,
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     h2_client: Option<SendRequest<bytes::Bytes>>,
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     h2_connection: Option<Connection<TcpStream, bytes::Bytes>>,
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     server_push_handlers: Arc<RwLock<HashMap<String, ServerPushHandler>>>,
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     stream_manager: Arc<RwLock<Http2StreamManager>>,
     stats: Arc<RwLock<TransportStats>>,
     connection_state: Arc<RwLock<ConnectionState>>,
 }
 
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 impl StreamingHttpClientTransport {
     /// Create streaming HTTP transport with default configuration
     pub async fn new<S: AsRef<str>>(base_url: S) -> McpResult<Self> {
@@ -910,14 +911,14 @@ impl StreamingHttpClientTransport {
         // Note: For full HTTP/2 Server Push support, we would use h2 crate directly
         // reqwest 0.12.x doesn't expose all HTTP/2 features we need
         // The current implementation provides chunked streaming which works over HTTP/2
-        #[cfg(feature = "streaming-http2")]
+        #[cfg(feature = "http2")]
         let _http2_config = config.enable_http2_server_push; // Prepared for future h2 integration
 
         let client = client_builder
             .build()
             .map_err(|e| McpError::Http(format!("Failed to create streaming client: {e}")))?;
 
-        #[cfg(feature = "streaming-compression")]
+        #[cfg(feature = "compression")]
         let compressor =
             if config.enable_compression && config.compression_type != CompressionType::None {
                 Some(StreamingCompressor::new(config.compression_type.clone()))
@@ -926,7 +927,7 @@ impl StreamingHttpClientTransport {
             };
 
         // Extract HTTP/2 config before moving config
-        #[cfg(feature = "streaming-http2")]
+        #[cfg(feature = "http2")]
         let max_streams = config.http2_config.max_concurrent_streams;
 
         Ok(Self {
@@ -934,15 +935,15 @@ impl StreamingHttpClientTransport {
             base_url: base_url.as_ref().to_string(),
             config,
             content_analyzer: ContentAnalyzer::new(),
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             compressor,
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             h2_client: None, // Will be initialized on first HTTP/2 request
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             h2_connection: None,
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             server_push_handlers: Arc::new(RwLock::new(HashMap::new())),
-            #[cfg(feature = "streaming-http2")]
+            #[cfg(feature = "http2")]
             stream_manager: Arc::new(RwLock::new(Http2StreamManager::new(max_streams))),
             stats: Arc::new(RwLock::new(TransportStats::default())),
             connection_state: Arc::new(RwLock::new(ConnectionState::Disconnected)),
@@ -972,7 +973,7 @@ impl StreamingHttpClientTransport {
                         }
                     }
                 }
-                #[cfg(feature = "streaming-compression")]
+                #[cfg(feature = "compression")]
                 StreamingStrategy::CompressedStreaming => {
                     match self.send_compressed_request(request.clone()).await {
                         Ok(response) => Ok(response),
@@ -985,7 +986,7 @@ impl StreamingHttpClientTransport {
                         }
                     }
                 }
-                #[cfg(feature = "streaming-http2")]
+                #[cfg(feature = "http2")]
                 StreamingStrategy::Http2ServerPush => {
                     match self.send_http2_request(request.clone()).await {
                         Ok(response) => Ok(response),
@@ -998,7 +999,7 @@ impl StreamingHttpClientTransport {
                         }
                     }
                 }
-                #[cfg(feature = "streaming-http2")]
+                #[cfg(feature = "http2")]
                 StreamingStrategy::Http2Multiplexed => {
                     // For multiplexed strategy, we use the same HTTP/2 implementation
                     // but could optimize for concurrent requests in the future
@@ -1081,7 +1082,7 @@ impl StreamingHttpClientTransport {
         self.handle_response(response).await
     }
 
-    #[cfg(feature = "streaming-compression")]
+    #[cfg(feature = "compression")]
     async fn send_compressed_request(
         &mut self,
         request: JsonRpcRequest,
@@ -1121,7 +1122,7 @@ impl StreamingHttpClientTransport {
         self.handle_response(response).await
     }
 
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     async fn send_http2_request(&mut self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
         // Initialize H2 client if not already done
         if self.h2_client.is_none() {
@@ -1251,7 +1252,7 @@ impl StreamingHttpClientTransport {
     }
 
     /// Register a server push handler for specific paths
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     pub async fn register_push_handler<F>(&mut self, path: String, handler: F)
     where
         F: Fn(PushPromise) -> Pin<Box<dyn std::future::Future<Output = McpResult<()>> + Send>>
@@ -1265,14 +1266,14 @@ impl StreamingHttpClientTransport {
     }
 
     /// Get HTTP/2 stream statistics
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     pub async fn get_http2_stats(&self) -> (usize, u64, u64) {
         let stream_manager = self.stream_manager.read().await;
         stream_manager.get_stream_stats()
     }
 
     /// Initialize HTTP/2 client with direct h2 connection
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     async fn init_h2_client(&mut self) -> McpResult<()> {
         use url::Url;
 
@@ -1312,7 +1313,7 @@ impl StreamingHttpClientTransport {
     }
 
     /// Send multiplexed HTTP/2 requests for improved performance
-    #[cfg(feature = "streaming-http2")]
+    #[cfg(feature = "http2")]
     pub async fn send_multiplexed_requests(
         &mut self,
         requests: Vec<JsonRpcRequest>,
@@ -1395,7 +1396,7 @@ impl StreamingHttpClientTransport {
     }
 }
 
-#[cfg(feature = "streaming-http")]
+#[cfg(feature = "chunked-encoding")]
 #[async_trait]
 impl Transport for StreamingHttpClientTransport {
     async fn send_request(&mut self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
@@ -1450,10 +1451,10 @@ impl Transport for StreamingHttpClientTransport {
 }
 
 // Stub implementations for when streaming features are not enabled
-#[cfg(not(feature = "streaming-http"))]
+#[cfg(not(feature = "chunked-encoding"))]
 pub struct StreamingHttpClientTransport;
 
-#[cfg(not(feature = "streaming-http"))]
+#[cfg(not(feature = "chunked-encoding"))]
 impl StreamingHttpClientTransport {
     pub async fn new<S: AsRef<str>>(_base_url: S) -> McpResult<Self> {
         Err(McpError::Transport(
@@ -1471,7 +1472,7 @@ impl StreamingHttpClientTransport {
     }
 }
 
-#[cfg(not(feature = "streaming-http"))]
+#[cfg(not(feature = "chunked-encoding"))]
 #[async_trait]
 impl Transport for StreamingHttpClientTransport {
     async fn send_request(&mut self, _request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
@@ -1736,11 +1737,11 @@ mod tests {
             CompressionType::Gzip => {
                 // JSON should benefit from compression
             }
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             CompressionType::Brotli => {
                 // JSON should benefit from compression
             }
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             CompressionType::Zstd => {
                 // JSON should benefit from compression
             }
@@ -1761,11 +1762,11 @@ mod tests {
             CompressionType::Gzip => {
                 // Repetitive data should compress well
             }
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             CompressionType::Brotli => {
                 // Repetitive data should compress well
             }
-            #[cfg(feature = "streaming-compression")]
+            #[cfg(feature = "compression")]
             CompressionType::Zstd => {
                 // Repetitive data should compress well
             }
@@ -1877,7 +1878,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     async fn test_streaming_client_creation_without_feature() {
         // When streaming-http feature is not enabled, should return error
         let result = StreamingHttpClientTransport::new("http://localhost:3000").await;
@@ -1891,7 +1892,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     async fn test_streaming_client_with_config_without_feature() {
         // When streaming-http feature is not enabled, should return error
         let config = StreamingConfig::default();
@@ -1929,14 +1930,14 @@ mod tests {
         // Test that CompressionType enum values are as expected
         let none = CompressionType::None;
         let gzip = CompressionType::Gzip;
-        #[cfg(feature = "streaming-compression")]
+        #[cfg(feature = "compression")]
         let brotli = CompressionType::Brotli;
-        #[cfg(not(feature = "streaming-compression"))]
+        #[cfg(not(feature = "compression"))]
         let brotli = CompressionType::test_brotli();
 
-        #[cfg(feature = "streaming-compression")]
+        #[cfg(feature = "compression")]
         let zstd = CompressionType::Zstd;
-        #[cfg(not(feature = "streaming-compression"))]
+        #[cfg(not(feature = "compression"))]
         let zstd = CompressionType::test_zstd();
 
         // Test that they can be compared
@@ -1944,13 +1945,13 @@ mod tests {
         assert_ne!(gzip, CompressionType::None);
 
         // Only test inequality when compression features are enabled
-        #[cfg(feature = "streaming-compression")]
+        #[cfg(feature = "compression")]
         {
             assert_ne!(brotli, gzip);
             assert_ne!(zstd, brotli);
         }
 
-        #[cfg(not(feature = "streaming-compression"))]
+        #[cfg(not(feature = "compression"))]
         {
             // When feature is disabled, test methods return Gzip
             assert_eq!(brotli, gzip);

@@ -600,7 +600,7 @@ async fn demo_streaming_http_transport() -> McpResult<()> {
     println!("🌊 complete Streaming HTTP Transport");
     println!("===================================\n");
 
-    #[cfg(feature = "streaming-http")]
+    #[cfg(feature = "chunked-encoding")]
     {
         use prism_mcp_rs::transport::{CompressionType, ContentAnalyzer, StreamingConfig};
 
@@ -731,14 +731,14 @@ async fn demo_streaming_http_transport() -> McpResult<()> {
         println!("  • smooth fallback to traditional HTTP\n");
     }
 
-    #[cfg(not(feature = "streaming-http"))]
+    #[cfg(not(feature = "chunked-encoding"))]
     {
         println!("Warning:  Streaming HTTP Transport - Feature Not Enabled");
         println!("===============================================");
         println!("To use streaming HTTP transport, enable the feature:");
         println!("```toml");
         println!("[dependencies]");
-        println!("prism-mcp-rs = {{ version = \"*\", features = [\"streaming-http\"] }}");
+        println!("prism-mcp-rs = {{ version = \"*\", features = [\"chunked-encoding\"] }}");
         println!();
         println!("# Or for all streaming features:");
         println!("prism-mcp-rs = {{ version = \"*\", features = [\"streaming-full\"] }}");

@@ -535,10 +535,10 @@ mod http_sse_streaming_tests {
 
     #[tokio::test]
     async fn test_tokio_stream_feature_handling() {
-        // Test behavior with and without tokio-stream feature
-        #[cfg(feature = "tokio-stream")]
+        // Test behavior with and without sse feature
+        #[cfg(feature = "sse")]
         {
-            // When tokio-stream is available, SSE should work
+            // When sse is available, SSE should work
             use tokio_stream::StreamExt;
 
             let (tx, rx) = broadcast::channel(10);
@@ -549,18 +549,15 @@ mod http_sse_streaming_tests {
 
             // Should be able to receive
             if let Some(result) = stream.next().await {
-                assert!(
-                    result.is_ok(),
-                    "Stream should work with tokio-stream feature"
-                );
+                assert!(result.is_ok(), "Stream should work with sse feature");
             }
         }
 
-        #[cfg(not(feature = "tokio-stream"))]
+        #[cfg(not(feature = "sse"))]
         {
-            // Without tokio-stream, would log warning
+            // Without sse, would log warning
             // This test just ensures the conditional compilation works
-            assert!(true, "tokio-stream feature not enabled");
+            assert!(true, "sse feature not enabled");
         }
     }
 

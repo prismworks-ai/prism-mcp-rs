@@ -142,7 +142,6 @@ impl Default for ServerConfig {
 /// # Ok(())
 /// # }
 /// ```
-
 /// Main MCP server implementation
 pub struct McpServer {
     /// Server information

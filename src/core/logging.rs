@@ -57,8 +57,7 @@ impl From<&McpError> for ErrorLogLevel {
             #[cfg(feature = "websocket")]
             McpError::WebSocket(_) => ErrorLogLevel::Warning,
 
-            #[cfg(feature = "validation")]
-            McpError::SchemaValidation(_) => ErrorLogLevel::Info,
+            // McpError::SchemaValidation(_) => ErrorLogLevel::Info, // TODO: When validation is implemented
 
             // Cancellation is informational
             McpError::Auth(_) => ErrorLogLevel::Warning,

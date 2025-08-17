@@ -10,13 +10,8 @@
 # Use the same image as GitHub Actions
 --platform ubuntu-latest=catthehacker/ubuntu:act-latest
 
-# Default to running push events
---eventpath .github/workflows/event.json
+# Bind working directory to container instead of copying (faster)
+--bind
 
-# Bind mount the cargo registry for caching dependencies
---bind $HOME/.cargo/registry:/github/home/.cargo/registry
---bind $HOME/.cargo/git:/github/home/.cargo/git
-
-# Keep containers around for debugging if needed
-# Comment this out if you want containers removed after runs
-# --rm=false
+# Verbose output for debugging
+--verbose

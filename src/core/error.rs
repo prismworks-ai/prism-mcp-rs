@@ -78,11 +78,10 @@ pub enum McpError {
     #[error("WebSocket error: {0}")]
     WebSocket(String),
 
-    /// JSON Schema validation errors
-    #[cfg(feature = "validation")]
-    #[error("Schema validation error: {0}")]
-    SchemaValidation(String),
-
+    // TODO: Implement JSON Schema validation
+    // /// JSON Schema validation errors
+    // #[error("Schema validation error: {0}")]
+    // SchemaValidation(String),
     /// Timeout errors
     #[error("Timeout error: {0}")]
     Timeout(String),
@@ -201,8 +200,7 @@ impl McpError {
             McpError::Http(_) => true,
             #[cfg(feature = "websocket")]
             McpError::WebSocket(_) => true,
-            #[cfg(feature = "validation")]
-            McpError::SchemaValidation(_) => false,
+            // McpError::SchemaValidation(_) => false, // TODO: When validation is implemented
             McpError::Cancelled(_) => false,
             McpError::Auth(_) => false,
             McpError::Internal(_) => false,
@@ -231,8 +229,7 @@ impl McpError {
             McpError::Http(_) => "http",
             #[cfg(feature = "websocket")]
             McpError::WebSocket(_) => "websocket",
-            #[cfg(feature = "validation")]
-            McpError::SchemaValidation(_) => "validation",
+            // McpError::SchemaValidation(_) => "validation", // TODO: When validation is implemented
             McpError::Cancelled(_) => "cancelled",
             McpError::Auth(_) => "auth",
             McpError::Internal(_) => "internal",

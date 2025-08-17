@@ -144,7 +144,7 @@ mod route_handler_tests {
         assert!(health_data["timestamp"].is_string());
     }
 
-    #[cfg(all(feature = "tokio-stream", feature = "futures"))]
+    #[cfg(feature = "sse")]
     #[tokio::test]
     async fn test_handle_sse_events() {
         let (notification_sender, _) = broadcast::channel(100);
@@ -163,7 +163,7 @@ mod route_handler_tests {
         // but we can verify the function doesn't panic and returns the expected type
     }
 
-    #[cfg(not(all(feature = "tokio-stream", feature = "futures")))]
+    #[cfg(not(feature = "sse"))]
     #[tokio::test]
     async fn test_handle_sse_events_not_implemented() {
         let (notification_sender, _) = broadcast::channel(100);

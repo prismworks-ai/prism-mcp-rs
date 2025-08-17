@@ -166,7 +166,7 @@ async fn demo_complete_optimizations() -> McpResult<()> {
     println!("  [x] complete compression (Gzip, Brotli, Zstd)");
     println!("  [x] smart content analysis");
     println!("  [x] Adaptive buffering and flow control");
-    println!("  * HTTP/2 Server Push capabilities (with streaming-http2 feature)");
+    println!("  * HTTP/2 Server Push capabilities (with http2 feature)");
 
     println!("\n## complete for:");
     println!("  • Large data processing (>100KB payloads)");

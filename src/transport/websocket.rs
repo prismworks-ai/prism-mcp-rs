@@ -4,10 +4,8 @@
 // ! offering bidirectional, real-time communication between clients and servers.
 
 use async_trait::async_trait;
-use futures_util::{
-    sink::SinkExt,
-    stream::{SplitSink, SplitStream, StreamExt},
-};
+use futures::{SinkExt, StreamExt};
+use futures_util::stream::{SplitSink, SplitStream};
 use serde_json::Value;
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
@@ -216,8 +214,7 @@ impl Transport for WebSocketClientTransport {
 
         tracing::trace!("Sending WebSocket request: {}", request_text);
 
-        self.send_message(Message::Text(request_text.into()))
-            .await?;
+        self.send_message(Message::Text(request_text)).await?;
 
         // Wait for response with timeout
         let timeout_duration = Duration::from_millis(self.config.read_timeout_ms.unwrap_or(60_000));
@@ -236,8 +233,7 @@ impl Transport for WebSocketClientTransport {
 
         tracing::trace!("Sending WebSocket notification: {}", notification_text);
 
-        self.send_message(Message::Text(notification_text.into()))
-            .await
+        self.send_message(Message::Text(notification_text)).await
     }
 
     async fn receive_notification(&mut self) -> McpResult<Option<JsonRpcNotification>> {
@@ -430,7 +426,7 @@ impl WebSocketServerTransport {
                                             // Send response back to client
                                             let mut clients_guard = clients.write().await;
                                             if let Some(client) = clients_guard.get_mut(&client_id) {
-                                                if let Err(e) = client.sender.send(Message::Text(response_text.into())).await {
+                                                if let Err(e) = client.sender.send(Message::Text(response_text)).await {
                                                     tracing::error!("Failed to send response to client {}: {}", client_id, e);
                                                     break;
                                                 }
@@ -568,7 +564,7 @@ impl ServerTransport for WebSocketServerTransport {
         for (client_id, client) in clients_guard.iter_mut() {
             if let Err(e) = client
                 .sender
-                .send(Message::Text(notification_text.clone().into()))
+                .send(Message::Text(notification_text.clone()))
                 .await
             {
                 tracing::error!("Failed to send notification to client {}: {}", client_id, e);

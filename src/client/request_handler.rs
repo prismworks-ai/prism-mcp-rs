@@ -237,8 +237,7 @@ impl InteractiveClientRequestHandler {
     /// let handler = InteractiveClientRequestHandler::new("My App")
     /// .add_common_roots();
     /// ```
-    /// Add common file system roots (requires dirs feature)
-    #[cfg(feature = "dirs")]
+    /// Add common file system roots
     pub fn add_common_roots(mut self) -> Self {
         // Add home directory
         if let Some(home_dir) = dirs::home_dir() {
@@ -261,13 +260,6 @@ impl InteractiveClientRequestHandler {
                 .push(Root::new(desktop_uri).with_name("Desktop".to_string()));
         }
 
-        self
-    }
-
-    /// Add common file system roots (no-op when dirs feature is disabled)
-    #[cfg(not(feature = "dirs"))]
-    pub fn add_common_roots(self) -> Self {
-        // No-op when dirs feature is not enabled
         self
     }
 

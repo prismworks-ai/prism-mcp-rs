@@ -7,7 +7,6 @@
 // ! - Performance metrics and tracking
 // ! - Deprecation warnings and versioning
 
-#[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -229,7 +228,6 @@ pub struct ToolPerformanceMetrics {
     /// Success rate as percentage (0.0 to 100.0)
     pub success_rate: f64,
     /// Last execution timestamp
-    #[cfg(feature = "chrono")]
     pub last_execution: Option<DateTime<Utc>>,
     /// Recent execution times (last 10 executions)
     pub recent_execution_times: Vec<Duration>,
@@ -246,7 +244,6 @@ impl Default for ToolPerformanceMetrics {
             success_count: 0,
             error_count: 0,
             success_rate: 0.0,
-            #[cfg(feature = "chrono")]
             last_execution: None,
             recent_execution_times: Vec::new(),
         }
@@ -265,10 +262,7 @@ impl ToolPerformanceMetrics {
         self.success_count += 1;
         self.record_execution_time(execution_time);
         self.update_success_rate();
-        #[cfg(feature = "chrono")]
-        {
-            self.last_execution = Some(Utc::now());
-        }
+        self.last_execution = Some(Utc::now());
     }
 
     /// Record a failed execution
@@ -277,10 +271,7 @@ impl ToolPerformanceMetrics {
         self.error_count += 1;
         self.record_execution_time(execution_time);
         self.update_success_rate();
-        #[cfg(feature = "chrono")]
-        {
-            self.last_execution = Some(Utc::now());
-        }
+        self.last_execution = Some(Utc::now());
     }
 
     /// Record execution time and update statistics
@@ -335,10 +326,8 @@ pub struct ToolDeprecation {
     /// Recommended replacement tool
     pub replacement: Option<String>,
     /// Date when tool was deprecated
-    #[cfg(feature = "chrono")]
     pub deprecated_date: Option<DateTime<Utc>>,
     /// Date when tool will be removed (if known)
-    #[cfg(feature = "chrono")]
     pub removal_date: Option<DateTime<Utc>>,
     /// Severity of deprecation warning
     pub severity: DeprecationSeverity,
@@ -365,9 +354,7 @@ impl ToolDeprecation {
             deprecated: true,
             reason: Some(reason),
             replacement: None,
-            #[cfg(feature = "chrono")]
             deprecated_date: Some(Utc::now()),
-            #[cfg(feature = "chrono")]
             removal_date: None,
             severity: DeprecationSeverity::Low,
         }
@@ -380,7 +367,6 @@ impl ToolDeprecation {
     }
 
     /// Set removal date
-    #[cfg(feature = "chrono")]
     pub fn with_removal_date(mut self, removal_date: DateTime<Utc>) -> Self {
         self.removal_date = Some(removal_date);
         self

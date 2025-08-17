@@ -462,17 +462,9 @@ impl RetryPolicy {
         let capped_delay = base_delay.min(self.config.max_delay_ms as f64);
 
         let final_delay = if self.config.enable_jitter {
-            #[cfg(feature = "fastrand")]
-            {
-                let jitter_range = capped_delay * self.config.jitter_factor;
-                let jitter = (fastrand::f64() - 0.5) * 2.0 * jitter_range;
-                (capped_delay + jitter).max(0.0)
-            }
-            #[cfg(not(feature = "fastrand"))]
-            {
-                // No jitter without fastrand
-                capped_delay
-            }
+            let jitter_range = capped_delay * self.config.jitter_factor;
+            let jitter = (fastrand::f64() - 0.5) * 2.0 * jitter_range;
+            (capped_delay + jitter).max(0.0)
         } else {
             capped_delay
         };

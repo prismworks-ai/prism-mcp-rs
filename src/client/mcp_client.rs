@@ -549,13 +549,13 @@ impl McpClient {
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("data-processor".to_string(), "1.0.0".to_string());
     /// let config = StreamingConfig::performance_improved();
-    /// let init = client.connect_with_streaming_http("http://localhost:3000", config).await?;
+    /// let init = client.connect_with_chunked_encoding("http://localhost:3000", config).await?;
     /// println!("Connected with streaming HTTP to {}", init.server_info.name);
     /// Ok(())
     /// }
     /// ```
-    #[cfg(feature = "streaming-http")]
-    pub async fn connect_with_streaming_http(
+    #[cfg(feature = "chunked-encoding")]
+    pub async fn connect_with_chunked_encoding(
         &mut self,
         server_url: &str,
         config: crate::transport::StreamingConfig,
@@ -581,12 +581,12 @@ impl McpClient {
     /// #[tokio::main]
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("my-app".to_string(), "1.0.0".to_string());
-    /// let init = client.connect_with_streaming_http_default("http://localhost:3000").await?;
+    /// let init = client.connect_with_chunked_encoding_default("http://localhost:3000").await?;
     /// Ok(())
     /// }
     /// ```
-    #[cfg(feature = "streaming-http")]
-    pub async fn connect_with_streaming_http_default(
+    #[cfg(feature = "chunked-encoding")]
+    pub async fn connect_with_chunked_encoding_default(
         &mut self,
         server_url: &str,
     ) -> McpResult<InitializeResult> {
@@ -611,12 +611,12 @@ impl McpClient {
     /// #[tokio::main]
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("embedded-app".to_string(), "1.0.0".to_string());
-    /// let init = client.connect_with_streaming_http_memory_improved("http://localhost:3000").await?;
+    /// let init = client.connect_with_chunked_encoding_memory_improved("http://localhost:3000").await?;
     /// Ok(())
     /// }
     /// ```
-    #[cfg(feature = "streaming-http")]
-    pub async fn connect_with_streaming_http_memory_improved(
+    #[cfg(feature = "chunked-encoding")]
+    pub async fn connect_with_chunked_encoding_memory_improved(
         &mut self,
         server_url: &str,
     ) -> McpResult<InitializeResult> {
@@ -643,12 +643,12 @@ impl McpClient {
     /// #[tokio::main]
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("high-perf-app".to_string(), "1.0.0".to_string());
-    /// let init = client.connect_with_streaming_http_performance_improved("http://localhost:3000").await?;
+    /// let init = client.connect_with_chunked_encoding_performance_improved("http://localhost:3000").await?;
     /// Ok(())
     /// }
     /// ```
-    #[cfg(feature = "streaming-http")]
-    pub async fn connect_with_streaming_http_performance_improved(
+    #[cfg(feature = "chunked-encoding")]
+    pub async fn connect_with_chunked_encoding_performance_improved(
         &mut self,
         server_url: &str,
     ) -> McpResult<InitializeResult> {
@@ -729,24 +729,24 @@ impl McpClient {
             | TransportUseCase::MemoryConstrained
             | TransportUseCase::HighPerformance => {
                 // Streaming HTTP transport for complete efficiency
-                #[cfg(feature = "streaming-http")]
+                #[cfg(feature = "chunked-encoding")]
                 {
                     match use_case {
                         TransportUseCase::MemoryConstrained => {
                             tracing::info!("Using memory-improved streaming HTTP transport");
-                            self.connect_with_streaming_http_memory_improved(server_url)
+                            self.connect_with_chunked_encoding_memory_improved(server_url)
                                 .await
                         }
                         TransportUseCase::HighPerformance
                         | TransportUseCase::LargeDataProcessing => {
                             tracing::info!("Using performance-improved streaming HTTP transport");
-                            self.connect_with_streaming_http_performance_improved(server_url)
+                            self.connect_with_chunked_encoding_performance_improved(server_url)
                                 .await
                         }
-                        _ => self.connect_with_streaming_http_default(server_url).await,
+                        _ => self.connect_with_chunked_encoding_default(server_url).await,
                     }
                 }
-                #[cfg(not(feature = "streaming-http"))]
+                #[cfg(not(feature = "chunked-encoding"))]
                 {
                     tracing::warn!(
                         "Streaming HTTP requested but feature not enabled, using traditional HTTP"
@@ -882,10 +882,10 @@ impl McpClient {
                 description: "complete HTTP with chunked streaming, smart content analysis, and compression".to_string(),
                 use_cases: vec!["Large data processing".to_string(), "Memory-constrained environments".to_string(), "High-performance applications".to_string()],
                 pros: vec!["Memory efficient".to_string(), "complete compression (Gzip/Brotli/Zstd)".to_string(), "smart content analysis".to_string(), "Adaptive buffering".to_string()],
-                cons: vec!["More complexity".to_string(), "Requires streaming-http feature".to_string()],
+                cons: vec!["More complexity".to_string(), "Requires chunked-encoding feature".to_string()],
                 latency: "10-30ms".to_string(),
                 throughput: "Very High".to_string(),
-                available: cfg!(feature = "streaming-http"),
+                available: cfg!(feature = "chunked-encoding"),
             },
         ]
     }

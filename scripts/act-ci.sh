@@ -22,29 +22,28 @@ docker ps -a | grep act | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null |
 
 # Create cargo cache directory if it doesn't exist
 mkdir -p ~/.cargo/{registry,git}
+mkdir -p ~/.act-cache
 
 # Optional: Pull the latest Act image to ensure we're up to date
 echo -e "${YELLOW}📦 Ensuring Act image is up to date...${NC}"
 docker pull catthehacker/ubuntu:act-latest
 
-# Run Act with all optimizations
+# Run Act with:
+# - BuildKit enabled for better caching
+# - Container reuse for faster subsequent runs
+# - Bind mount for working directory
+# - Verbose output for debugging
 echo -e "${GREEN}🎬 Starting Act with workflow: ${1:-ci-local.yml}${NC}"
 
 # Default to ci-local.yml if no workflow specified
 WORKFLOW=${1:-ci-local.yml}
 
-# Run Act with:
-# - BuildKit enabled for better caching
-# - Container reuse for faster subsequent runs
-# - Cargo registry bind mount for dependency caching
-# - Verbose output for debugging
-DOCKER_BUILDKIT=1 act \
-  -W ".github/workflows/${WORKFLOW}" \
-  push \
-  --reuse \
-  --bind "$HOME/.cargo/registry:/github/home/.cargo/registry" \
-  --bind "$HOME/.cargo/git:/github/home/.cargo/git" \
-  --platform "ubuntu-latest=catthehacker/ubuntu:act-latest" \
-  -v
+# Create a Docker volume for cargo cache if it doesn't exist
+docker volume create act-cargo-cache 2>/dev/null || true
+
+# Run Act with optimizations
+# Note: Act doesn't support custom bind mounts via CLI, so we use Docker volumes
+DOCKER_BUILDKIT=1 act push \
+  -W ".github/workflows/${WORKFLOW}"
 
 echo -e "${GREEN}✅ Act CI run complete${NC}"

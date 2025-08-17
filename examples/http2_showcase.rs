@@ -8,7 +8,7 @@
 // ! - Multiplexed concurrent requests
 // ! - Custom HTTP/2 frame processing
 // !
-// ! Run with: cargo run --example streaming_http2_showcase --features streaming-http2,tracing-subscriber
+// ! Run with: cargo run --example streaming_http2_showcase --features http2,tracing-subscriber
 
 use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::transport::{

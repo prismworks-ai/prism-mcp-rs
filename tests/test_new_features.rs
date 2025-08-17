@@ -1,7 +1,7 @@
 // ! Integration tests for newly implemented features
 
-use prism_mcp_rs::Implementation; // Use the root-level Implementation
 use prism_mcp_rs::protocol::*;
+use prism_mcp_rs::Implementation; // Use the root-level Implementation
 use serde_json::json;
 use std::collections::HashMap;
 
@@ -76,12 +76,10 @@ fn test_schema_introspection() {
     let result = builder.build();
 
     assert_eq!(result.protocol.version, "2025-06-18");
-    assert!(
-        result
-            .protocol
-            .supported_versions
-            .contains(&"2025-06-18".to_string())
-    );
+    assert!(result
+        .protocol
+        .supported_versions
+        .contains(&"2025-06-18".to_string()));
 
     // Test introspection provider
     let provider = IntrospectionProvider::new();

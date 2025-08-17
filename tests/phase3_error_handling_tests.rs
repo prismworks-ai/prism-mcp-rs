@@ -17,7 +17,7 @@ use prism_mcp_rs::{
     core::error::{McpError, McpResult},
     protocol::{messages::*, types::*},
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use tokio::time::timeout;
 
 // ============================================================================
@@ -430,7 +430,7 @@ mod improved_error_handling {
 #[cfg(test)]
 mod timeout_and_failure_scenarios {
     use super::*;
-    use tokio::time::{Duration, sleep};
+    use tokio::time::{sleep, Duration};
 
     #[tokio::test]
     async fn test_operation_timeout_scenarios() {

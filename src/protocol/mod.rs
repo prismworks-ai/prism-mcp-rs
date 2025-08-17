@@ -46,7 +46,7 @@
 //! use serde_json::json;
 //!
 //! // Standard JSON-RPC errors
-//! let parse_err = JsonRpcError::parse_error();
+//! let parse_err = JsonRpcError::parse_error(json!(null));
 //! let method_err = JsonRpcError::method_not_found(json!("1"));
 //! let invalid_params = JsonRpcError::invalid_params(json!("1"));
 //!
@@ -58,8 +58,7 @@
 //! let custom_err = JsonRpcError::new(
 //!     json!("1"),
 //!     error_codes::INTERNAL_ERROR,
-//!     "Internal server error".to_string(),
-//!     None::<()>,
+//!     "Internal server error".to_string()
 //! );
 //! ```
 //!
@@ -112,21 +111,21 @@ pub use roots_types::{
 pub use schema_introspection::*;
 // Re-export all types module items
 pub use types::{
-    AnnotationAudience, Annotations, AudioContent, BaseMetadata, CallToolResult,
+    error_codes, AnnotationAudience, Annotations, AudioContent, BaseMetadata, CallToolResult,
     ClientCapabilities, ClientInfo, CompletionsCapability, Content, ContentBlock,
     CreateMessageResult, Cursor, DangerLevel, ElicitationAction, ElicitationCapability,
     ElicitationSchema, EmbeddedResource, ErrorObject, GetPromptResult, ImageContent,
-    Implementation, JSONRPC_VERSION, JsonRpcBatchRequest, JsonRpcBatchResponse, JsonRpcError,
-    JsonRpcId, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcRequestOrNotification,
-    JsonRpcResponse, JsonRpcResponseOrError, LATEST_PROTOCOL_VERSION, LoggingCapability,
-    LoggingLevel, ModelHint, ModelPreferences, Notification, NotificationParams, PROTOCOL_VERSION,
-    PaginatedRequest, PaginatedResult, PrimitiveSchemaDefinition, ProgressToken, Prompt,
-    PromptArgument, PromptInfo, PromptMessage, PromptResult, PromptsCapability, Request, RequestId,
-    RequestMeta, RequestParams, Resource, ResourceContents, ResourceInfo, ResourceLink,
-    ResourceTemplate, ResourcesCapability, Role, RootsCapability, SamplingCapability,
-    SamplingContent, SamplingMessage, ServerCapabilities, ServerInfo, StopReason, TextContent,
-    Tool, ToolAnnotations, ToolInfo, ToolInputSchema, ToolOutputSchema, ToolResult,
-    ToolsCapability, error_codes,
+    Implementation, JsonRpcBatchRequest, JsonRpcBatchResponse, JsonRpcError, JsonRpcId,
+    JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcRequestOrNotification,
+    JsonRpcResponse, JsonRpcResponseOrError, LoggingCapability, LoggingLevel, ModelHint,
+    ModelPreferences, Notification, NotificationParams, PaginatedRequest, PaginatedResult,
+    PrimitiveSchemaDefinition, ProgressToken, Prompt, PromptArgument, PromptInfo, PromptMessage,
+    PromptResult, PromptsCapability, Request, RequestId, RequestMeta, RequestParams, Resource,
+    ResourceContents, ResourceInfo, ResourceLink, ResourceTemplate, ResourcesCapability, Role,
+    RootsCapability, SamplingCapability, SamplingContent, SamplingMessage, ServerCapabilities,
+    ServerInfo, StopReason, TextContent, Tool, ToolAnnotations, ToolInfo, ToolInputSchema,
+    ToolOutputSchema, ToolResult, ToolsCapability, JSONRPC_VERSION, LATEST_PROTOCOL_VERSION,
+    PROTOCOL_VERSION,
 };
 
 pub use validation::*;

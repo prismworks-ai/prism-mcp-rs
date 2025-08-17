@@ -634,12 +634,10 @@ mod tests {
         let result = builder.build();
 
         assert_eq!(result.protocol.version, "2025-06-18");
-        assert!(
-            result
-                .protocol
-                .supported_versions
-                .contains(&"2025-06-18".to_string())
-        );
+        assert!(result
+            .protocol
+            .supported_versions
+            .contains(&"2025-06-18".to_string()));
     }
 
     #[test]
@@ -652,28 +650,22 @@ mod tests {
 
         // Check for specific transports
         assert!(introspection.transports.iter().any(|t| t.name == "stdio"));
-        assert!(
-            introspection
-                .transports
-                .iter()
-                .any(|t| t.name == "websocket")
-        );
+        assert!(introspection
+            .transports
+            .iter()
+            .any(|t| t.name == "websocket"));
 
         // Check for specific capabilities
-        assert!(
-            introspection
-                .capabilities
-                .capabilities
-                .iter()
-                .any(|c| c.name == "tools")
-        );
-        assert!(
-            introspection
-                .capabilities
-                .capabilities
-                .iter()
-                .any(|c| c.name == "elicitation")
-        );
+        assert!(introspection
+            .capabilities
+            .capabilities
+            .iter()
+            .any(|c| c.name == "tools"));
+        assert!(introspection
+            .capabilities
+            .capabilities
+            .iter()
+            .any(|c| c.name == "elicitation"));
     }
 
     #[test]

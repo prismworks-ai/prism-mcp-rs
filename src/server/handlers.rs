@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::{LATEST_PROTOCOL_VERSION, messages::*, methods, types::*};
+use crate::protocol::{messages::*, methods, types::*, LATEST_PROTOCOL_VERSION};
 
 /// Handler for initialization requests
 pub struct InitializeHandler;
@@ -611,13 +611,11 @@ mod tests {
         assert!(notifications::prompts_list_changed().is_ok());
         assert!(notifications::resource_updated("file:///test".to_string()).is_ok());
         assert!(notifications::progress("token".to_string(), 0.5, Some(100.0)).is_ok());
-        assert!(
-            notifications::log_message(
-                LoggingLevel::Info,
-                Some("test".to_string()),
-                json!({"message": "test log"})
-            )
-            .is_ok()
-        );
+        assert!(notifications::log_message(
+            LoggingLevel::Info,
+            Some("test".to_string()),
+            json!({"message": "test log"})
+        )
+        .is_ok());
     }
 }

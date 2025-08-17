@@ -20,7 +20,7 @@
 #   make full        - Run complete CI pipeline (uses Act)
 #   make help        - Show all available targets
 
-.PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean setup-hooks
+.PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean setup-hooks examples-validate examples-clean
 
 # Default target
 help: ## Show this help message
@@ -104,16 +104,18 @@ test-features: ## Run feature-specific tests
 	@cargo test --features validation --verbose
 
 # Examples
-examples: ## Check all examples compile
-	@echo "📚 Checking examples..."
-	@cargo check --example simple_server
-	@cargo check --example echo_server
-	@cargo check --example basic_client
-	@cargo check --example database_server
-	@cargo check --example http_server --features http
-	@cargo check --example http_client --features http
-	@cargo check --example websocket_server --features websocket
-	@cargo check --example websocket_client --features websocket
+examples: ## Build all examples
+	@echo "📚 Building examples..."
+	@cargo build --examples --all-features
+	@echo "✅ All examples built"
+
+examples-test: ## Test all examples compile
+	@echo "🧪 Testing examples..."
+	@cargo test --examples
+
+test-docs: ## Test documentation examples
+	@echo "📖 Testing documentation examples..."
+	@cargo test --doc
 
 # Documentation
 docs: ## Generate documentation
@@ -207,6 +209,8 @@ install-act: ## Install Act for local CI
 	else \
 		echo "✅ Act is already installed: $$(act --version)"; \
 	fi
+
+
 # Git hooks
 setup-hooks: ## Set up Git hooks for automatic CI
 	@echo "🪝 Setting up Git hooks..."
@@ -232,6 +236,21 @@ push-ready: check ## Check if code is ready to push
 	@echo "✅ Code is ready to push!"
 
 # CI simulation with Act
+local-ci: ## Run full CI pipeline locally with Act
+	@echo "🚀 Running full CI pipeline locally with Act..."
+	@./scripts/local-ci.sh
+
+local-ci-quick: ## Run quick CI validation locally with Act
+	@echo "⚡ Running quick CI validation locally with Act..."
+	@./scripts/local-ci.sh --quick
+
+local-ci-verbose: ## Run CI locally with verbose output
+	@echo "🔍 Running CI with verbose output..."
+	@./scripts/local-ci.sh --verbose
+
+local-ci-dry: ## Show what CI would run without executing
+	@echo "👀 Showing CI dry run..."
+	@./scripts/local-ci.sh --dry-run
 ci-local: ## Run CI locally with Act
 	@echo "🚀 Running CI locally with Act..."
 	@act push
@@ -265,6 +284,8 @@ ci-full: ## Full CI pipeline with Act
 	@echo "   make docs-open      # Generate and open docs"
 	@echo ""
 	@echo "🐳 Act for Local CI (GitHub Actions locally!):"
+	@echo "   make local-ci       # Run full CI pipeline locally"
+	@echo "   make local-ci-quick # Run quick validation locally"
 	@echo "   act -l              # List available workflows"
 	@echo "   act -j test         # Run test job"
 	@echo "   act -j clippy       # Run clippy job"

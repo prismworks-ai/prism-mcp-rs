@@ -853,7 +853,7 @@ pub fn create_typed_tool<H>(
 where
     H: ToolHandler + 'static,
 {
-    use serde_json::{Map, json};
+    use serde_json::{json, Map};
 
     let mut properties = Map::new();
     for (param_name, param_desc, param_schema) in parameters {

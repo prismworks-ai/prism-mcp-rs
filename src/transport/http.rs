@@ -5,22 +5,22 @@
 
 use async_trait::async_trait;
 use axum::{
-    Json, Router,
     extract::State,
     http::{HeaderMap, StatusCode},
-    response::{Sse, sse::Event},
+    response::{sse::Event, Sse},
     routing::{get, post},
+    Json, Router,
 };
 use reqwest::Client;
 use serde_json::Value;
 use std::{collections::HashMap, convert::Infallible, sync::Arc, time::Duration};
-use tokio::sync::{Mutex, RwLock, broadcast, mpsc};
+use tokio::sync::{broadcast, mpsc, Mutex, RwLock};
 
 #[cfg(all(feature = "futures", feature = "tokio-stream"))]
 use futures::stream::Stream;
 
 #[cfg(feature = "tokio-stream")]
-use tokio_stream::{StreamExt, wrappers::BroadcastStream};
+use tokio_stream::{wrappers::BroadcastStream, StreamExt};
 
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
@@ -28,7 +28,7 @@ use tower_http::cors::{Any, CorsLayer};
 use crate::core::error::{McpError, McpResult};
 use crate::core::logging::ErrorContext;
 use crate::protocol::types::{
-    JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse, error_codes,
+    error_codes, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
 };
 use crate::transport::traits::{ConnectionState, ServerTransport, Transport, TransportConfig};
 

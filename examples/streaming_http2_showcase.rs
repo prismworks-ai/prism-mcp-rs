@@ -211,11 +211,11 @@ async fn main() -> McpResult<()> {
 
 /// Example of how to implement a custom server push handler
 /// This would typically be used with a real MCP server that supports HTTP/2 Server Push
-fn create_resource_update_handler()
--> impl Fn(PushPromise) -> Pin<Box<dyn std::future::Future<Output = McpResult<()>> + Send>>
-+ Send
-+ Sync
-+ 'static {
+fn create_resource_update_handler(
+) -> impl Fn(PushPromise) -> Pin<Box<dyn std::future::Future<Output = McpResult<()>> + Send>>
+       + Send
+       + Sync
+       + 'static {
     |promise: PushPromise| {
         Box::pin(async move {
             info!("🔄 Processing Resource Update Push Promise");

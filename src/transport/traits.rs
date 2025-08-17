@@ -45,6 +45,11 @@ use async_trait::async_trait;
 ///         // Implementation
 ///         # todo!()
 ///     }
+///     
+///     async fn close(&mut self) -> McpResult<()> {
+///         // Close implementation
+///         Ok(())
+///     }
 /// }
 /// ```
 ///

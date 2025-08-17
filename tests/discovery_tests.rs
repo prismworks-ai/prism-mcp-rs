@@ -92,11 +92,9 @@ async fn test_discovery_filter_server() {
     // Should include methods like sampling/createMessage, roots/list, elicitation/create
     let all_methods: Vec<_> = result.methods.values().flat_map(|v| v.iter()).collect();
 
-    assert!(
-        all_methods
-            .iter()
-            .any(|m| m.name == "sampling/createMessage")
-    );
+    assert!(all_methods
+        .iter()
+        .any(|m| m.name == "sampling/createMessage"));
     assert!(all_methods.iter().any(|m| m.name == "roots/list"));
     assert!(all_methods.iter().any(|m| m.name == "elicitation/create"));
 }

@@ -10,11 +10,11 @@ use std::process::Stdio;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
 use tokio::process::{Child, Command};
-use tokio::sync::{Mutex, mpsc};
-use tokio::time::{Duration, timeout};
+use tokio::sync::{mpsc, Mutex};
+use tokio::time::{timeout, Duration};
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse, error_codes};
+use crate::protocol::types::{error_codes, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
 use crate::transport::traits::{
     ConnectionState, ServerRequestHandler, ServerTransport, Transport, TransportConfig,
 };
@@ -520,7 +520,7 @@ mod tests {
     use serde_json::json;
     use std::collections::HashMap;
     use std::sync::Arc;
-    use tokio::sync::{Mutex, mpsc};
+    use tokio::sync::{mpsc, Mutex};
 
     #[test]
     fn test_stdio_server_creation() {

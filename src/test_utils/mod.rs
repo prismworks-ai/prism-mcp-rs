@@ -1,11 +1,11 @@
 //! Testing utilities for MCP implementations
 //!
 //! This module provides helper functions and utilities for testing MCP servers and clients.
-//! 
+//!
 //! # Usage
-//! 
+//!
 //! These utilities are only available when running tests:
-//! 
+//!
 //! ```
 //! #[cfg(test)]
 //! mod tests {
@@ -29,7 +29,7 @@ use crate::protocol::*;
 use serde_json::{json, Value};
 
 /// Create a mock JSON-RPC request for testing
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_request;
@@ -37,15 +37,12 @@ use serde_json::{json, Value};
 /// assert_eq!(request.method, "initialize");
 /// ```
 pub fn mock_request(method: &str) -> JsonRpcRequest {
-    JsonRpcRequest::new(
-        json!("test-123"),
-        method.to_string(),
-        None::<()>,
-    ).expect("Failed to create mock request")
+    JsonRpcRequest::new(json!("test-123"), method.to_string(), None::<()>)
+        .expect("Failed to create mock request")
 }
 
 /// Create a mock JSON-RPC request with parameters
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_request_with_params;
@@ -56,19 +53,16 @@ pub fn mock_request(method: &str) -> JsonRpcRequest {
 /// );
 /// ```
 pub fn mock_request_with_params<T: serde::Serialize>(method: &str, params: T) -> JsonRpcRequest {
-    JsonRpcRequest::new(
-        json!("test-123"),
-        method.to_string(),
-        Some(params),
-    ).expect("Failed to create mock request with params")
+    JsonRpcRequest::new(json!("test-123"), method.to_string(), Some(params))
+        .expect("Failed to create mock request with params")
 }
 
 /// Assert that a JsonRpcMessage is an error with specific code
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the message is not an error or has a different error code
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::assert_error_response;
@@ -91,11 +85,11 @@ pub fn assert_error_response(response: &JsonRpcMessage, expected_code: i32) {
 }
 
 /// Assert that a JsonRpcMessage is a successful response
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the message is not a successful response
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::assert_success_response;
@@ -108,13 +102,13 @@ pub fn assert_error_response(response: &JsonRpcMessage, expected_code: i32) {
 /// ```
 pub fn assert_success_response(response: &JsonRpcMessage) {
     match response {
-        JsonRpcMessage::Response(_) => {},
+        JsonRpcMessage::Response(_) => {}
         _ => panic!("Expected success response, got {:?}", response),
     }
 }
 
 /// Create a mock tool call request
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_tool_call;
@@ -130,11 +124,12 @@ pub fn mock_tool_call(tool_name: &str, args: Value) -> JsonRpcRequest {
             "name": tool_name,
             "arguments": args
         })),
-    ).expect("Failed to create mock tool call")
+    )
+    .expect("Failed to create mock tool call")
 }
 
 /// Create a mock resource read request
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_resource_read;
@@ -148,11 +143,12 @@ pub fn mock_resource_read(uri: &str) -> JsonRpcRequest {
         Some(json!({
             "uri": uri
         })),
-    ).expect("Failed to create mock resource read")
+    )
+    .expect("Failed to create mock resource read")
 }
 
 /// Create a mock prompt get request
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_prompt_get;
@@ -168,11 +164,12 @@ pub fn mock_prompt_get(prompt_name: &str, args: Value) -> JsonRpcRequest {
             "name": prompt_name,
             "arguments": args
         })),
-    ).expect("Failed to create mock prompt get")
+    )
+    .expect("Failed to create mock prompt get")
 }
 
 /// Create a mock initialize request
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_initialize;
@@ -191,11 +188,12 @@ pub fn mock_initialize(client_name: &str, client_version: &str) -> JsonRpcReques
                 "version": client_version
             }
         })),
-    ).expect("Failed to create mock initialize")
+    )
+    .expect("Failed to create mock initialize")
 }
 
 /// Create a mock notification
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_notification;
@@ -212,7 +210,7 @@ pub fn mock_notification(method: &str, params: Value) -> JsonRpcNotification {
 }
 
 /// Create a mock successful response with result
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_success;
@@ -224,22 +222,18 @@ pub fn mock_success(result: Value) -> JsonRpcResponse {
 }
 
 /// Create a mock error response
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::mock_error;
 /// let error = mock_error(-32601, "Method not found");
 /// ```
 pub fn mock_error(code: i32, message: &str) -> JsonRpcError {
-    JsonRpcError::new(
-        json!("test-123"),
-        code,
-        message.to_string(),
-    )
+    JsonRpcError::new(json!("test-123"), code, message.to_string())
 }
 
 /// Test helper to verify a response contains expected fields
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::{mock_success, assert_response_contains};
@@ -250,13 +244,13 @@ pub fn mock_error(code: i32, message: &str) -> JsonRpcError {
 pub fn assert_response_contains(response: &JsonRpcResponse, expected_fields: &[&str]) {
     if let Some(ref result) = response.result {
         if let Some(result_obj) = result.as_object() {
-        for field in expected_fields {
-            assert!(
-                result_obj.contains_key(*field),
-                "Response missing expected field: {}",
-                field
-            );
-        }
+            for field in expected_fields {
+                assert!(
+                    result_obj.contains_key(*field),
+                    "Response missing expected field: {}",
+                    field
+                );
+            }
         }
     } else {
         panic!("Response result is not an object");
@@ -264,7 +258,7 @@ pub fn assert_response_contains(response: &JsonRpcResponse, expected_fields: &[&
 }
 
 /// Test helper to create a batch request
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::{create_batch_request, mock_request};
@@ -275,11 +269,11 @@ pub fn assert_response_contains(response: &JsonRpcResponse, expected_fields: &[&
 /// assert_eq!(batch.len(), 2);
 /// ```
 pub fn create_batch_request(requests: Vec<JsonRpcRequest>) -> JsonRpcBatchRequest {
-    requests  // JsonRpcBatchRequest is a type alias for Vec<JsonRpcRequest>
+    requests // JsonRpcBatchRequest is a type alias for Vec<JsonRpcRequest>
 }
 
 /// Test helper to create a batch response
-/// 
+///
 /// # Example
 /// ```
 /// # use prism_mcp_rs::test_utils::{create_batch_response, mock_success};
@@ -290,43 +284,44 @@ pub fn create_batch_request(requests: Vec<JsonRpcRequest>) -> JsonRpcBatchReques
 /// ]);
 /// assert_eq!(batch.len(), 1);
 /// ```
-pub fn create_batch_response(responses: Vec<JsonRpcResponseOrError>) -> Vec<JsonRpcResponseOrError> {
+pub fn create_batch_response(
+    responses: Vec<JsonRpcResponseOrError>,
+) -> Vec<JsonRpcResponseOrError> {
     responses
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_mock_request() {
         let request = mock_request("test_method");
         assert_eq!(request.method, "test_method");
         assert_eq!(request.jsonrpc, JSONRPC_VERSION);
     }
-    
+
     #[test]
     fn test_mock_request_with_params() {
         let request = mock_request_with_params("test", json!({"key": "value"}));
         assert_eq!(request.method, "test");
         assert!(request.params.is_some());
     }
-    
+
     #[test]
     fn test_assert_error_response() {
         let error = JsonRpcMessage::Error(JsonRpcError::parse_error(json!(1)));
         assert_error_response(&error, -32700);
     }
-    
+
     #[test]
     #[should_panic(expected = "Expected error response")]
     fn test_assert_error_response_panic() {
-        let response = JsonRpcMessage::Response(
-            JsonRpcResponse::success_unchecked(json!("1"), json!({}))
-        );
+        let response =
+            JsonRpcMessage::Response(JsonRpcResponse::success_unchecked(json!("1"), json!({})));
         assert_error_response(&response, -32700);
     }
-    
+
     #[test]
     fn test_mock_tool_call() {
         let request = mock_tool_call("calc", json!({"x": 1}));
@@ -334,7 +329,7 @@ mod tests {
         let params = request.params.unwrap();
         assert_eq!(params["name"], "calc");
     }
-    
+
     #[test]
     fn test_mock_initialize() {
         let request = mock_initialize("client", "1.0.0");
@@ -342,7 +337,7 @@ mod tests {
         let params = request.params.unwrap();
         assert_eq!(params["protocolVersion"], LATEST_PROTOCOL_VERSION);
     }
-    
+
     #[test]
     fn test_assert_response_contains() {
         let response = mock_success(json!({
@@ -351,7 +346,7 @@ mod tests {
         }));
         assert_response_contains(&response, &["field1", "field2"]);
     }
-    
+
     #[test]
     #[should_panic(expected = "Response missing expected field")]
     fn test_assert_response_contains_missing() {

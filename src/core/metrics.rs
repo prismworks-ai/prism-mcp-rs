@@ -4,8 +4,8 @@
 // ! performance monitoring, and operational insights.
 
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{info, warn};
 

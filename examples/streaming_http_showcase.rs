@@ -285,7 +285,7 @@ async fn demo_payload_analysis() -> McpResult<()> {
     {
         use prism_mcp_rs::protocol::types::JsonRpcRequest;
         use prism_mcp_rs::transport::ContentAnalyzer;
-        use serde_json::{Value, json};
+        use serde_json::{json, Value};
 
         let analyzer = ContentAnalyzer::new();
 

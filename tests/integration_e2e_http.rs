@@ -18,7 +18,7 @@ use prism_mcp_rs::{
     server::McpServer,
     transport::{HttpServerTransport, ServerTransport, TransportConfig},
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::Mutex;
 

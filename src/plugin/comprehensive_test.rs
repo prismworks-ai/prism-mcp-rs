@@ -6,10 +6,10 @@ mod tests {
     use crate::plugin::api::PluginDependency;
     use crate::plugin::watcher::PluginWatcher;
     use crate::plugin::*;
-    use serde_json::{Value, json};
+    use serde_json::{json, Value};
     use std::path::Path;
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
 
     // ==================== PluginError Tests ====================
 

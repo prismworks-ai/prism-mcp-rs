@@ -7,18 +7,21 @@ use serde_json::Value;
 
 use crate::protocol::{
     error_codes::*,
-    types::{ErrorObject, JsonRpcError, JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, 
-            JsonRpcNotification, RequestId, JSONRPC_VERSION},
+    types::{
+        ErrorObject, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest,
+        JsonRpcResponse, RequestId, JSONRPC_VERSION,
+    },
 };
 
 impl JsonRpcError {
     /// Create a new JSON-RPC error with the given parameters
-    /// 
+    ///
     /// # Examples
-    /// 
-    /// ```rust,ignore
+    ///
+    /// ```rust,no_run
     /// use prism_mcp_rs::protocol::JsonRpcError;
-    /// 
+    /// use serde_json::json;
+    ///
     /// let error = JsonRpcError::new(
     ///     json!("req-123"),
     ///     -32601,
@@ -38,13 +41,13 @@ impl JsonRpcError {
     }
 
     /// Create a new JSON-RPC error with additional data
-    /// 
+    ///
     /// # Examples
-    /// 
-    /// ```rust,ignore
+    ///
+    /// ```rust,no_run
     /// use prism_mcp_rs::protocol::JsonRpcError;
     /// use serde_json::json;
-    /// 
+    ///
     /// let error = JsonRpcError::with_data(
     ///     json!("req-123"),
     ///     -32602,
@@ -70,21 +73,21 @@ impl JsonRpcError {
     }
 
     /// Create a "Parse error" response (-32700)
-    /// 
+    ///
     /// Invalid JSON was received by the server
     pub fn parse_error(id: RequestId) -> Self {
         Self::new(id, PARSE_ERROR, "Parse error")
     }
 
     /// Create an "Invalid Request" response (-32600)
-    /// 
+    ///
     /// The JSON sent is not a valid Request object
     pub fn invalid_request(id: RequestId) -> Self {
         Self::new(id, INVALID_REQUEST, "Invalid Request")
     }
 
     /// Create a "Method not found" response (-32601)
-    /// 
+    ///
     /// The method does not exist or is not available
     pub fn method_not_found(id: RequestId) -> Self {
         Self::new(id, METHOD_NOT_FOUND, "Method not found")
@@ -102,7 +105,7 @@ impl JsonRpcError {
     }
 
     /// Create an "Invalid params" response (-32602)
-    /// 
+    ///
     /// Invalid method parameter(s)
     pub fn invalid_params(id: RequestId) -> Self {
         Self::new(id, INVALID_PARAMS, "Invalid params")
@@ -114,7 +117,7 @@ impl JsonRpcError {
     }
 
     /// Create an "Internal error" response (-32603)
-    /// 
+    ///
     /// Internal JSON-RPC error
     pub fn internal_error(id: RequestId) -> Self {
         Self::new(id, INTERNAL_ERROR, "Internal error")
@@ -126,7 +129,7 @@ impl JsonRpcError {
     }
 
     /// Create a "Tool not found" error (-32000)
-    /// 
+    ///
     /// MCP-specific: The requested tool does not exist
     pub fn tool_not_found<S: Into<String>>(id: RequestId, tool_name: S) -> Self {
         let name = tool_name.into();
@@ -139,7 +142,7 @@ impl JsonRpcError {
     }
 
     /// Create a "Resource not found" error (-32001)
-    /// 
+    ///
     /// MCP-specific: The requested resource does not exist
     pub fn resource_not_found<S: Into<String>>(id: RequestId, uri: S) -> Self {
         let uri = uri.into();
@@ -152,7 +155,7 @@ impl JsonRpcError {
     }
 
     /// Create a "Prompt not found" error (-32002)
-    /// 
+    ///
     /// MCP-specific: The requested prompt does not exist
     pub fn prompt_not_found<S: Into<String>>(id: RequestId, prompt_name: S) -> Self {
         let name = prompt_name.into();
@@ -219,12 +222,12 @@ impl From<JsonRpcRequest> for JsonRpcMessage {
 
 impl TryFrom<JsonRpcMessage> for JsonRpcRequest {
     type Error = crate::core::error::McpError;
-    
+
     fn try_from(msg: JsonRpcMessage) -> Result<Self, Self::Error> {
         match msg {
             JsonRpcMessage::Request(req) => Ok(req),
             _ => Err(crate::core::error::McpError::Protocol(
-                "Not a JSON-RPC request".to_string()
+                "Not a JSON-RPC request".to_string(),
             )),
         }
     }
@@ -232,12 +235,12 @@ impl TryFrom<JsonRpcMessage> for JsonRpcRequest {
 
 impl TryFrom<JsonRpcMessage> for JsonRpcResponse {
     type Error = crate::core::error::McpError;
-    
+
     fn try_from(msg: JsonRpcMessage) -> Result<Self, Self::Error> {
         match msg {
             JsonRpcMessage::Response(resp) => Ok(resp),
             _ => Err(crate::core::error::McpError::Protocol(
-                "Not a JSON-RPC response".to_string()
+                "Not a JSON-RPC response".to_string(),
             )),
         }
     }
@@ -245,12 +248,12 @@ impl TryFrom<JsonRpcMessage> for JsonRpcResponse {
 
 impl TryFrom<JsonRpcMessage> for JsonRpcError {
     type Error = crate::core::error::McpError;
-    
+
     fn try_from(msg: JsonRpcMessage) -> Result<Self, Self::Error> {
         match msg {
             JsonRpcMessage::Error(err) => Ok(err),
             _ => Err(crate::core::error::McpError::Protocol(
-                "Not a JSON-RPC error".to_string()
+                "Not a JSON-RPC error".to_string(),
             )),
         }
     }
@@ -258,17 +261,16 @@ impl TryFrom<JsonRpcMessage> for JsonRpcError {
 
 impl TryFrom<JsonRpcMessage> for JsonRpcNotification {
     type Error = crate::core::error::McpError;
-    
+
     fn try_from(msg: JsonRpcMessage) -> Result<Self, Self::Error> {
         match msg {
             JsonRpcMessage::Notification(notif) => Ok(notif),
             _ => Err(crate::core::error::McpError::Protocol(
-                "Not a JSON-RPC notification".to_string()
+                "Not a JSON-RPC notification".to_string(),
             )),
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -314,7 +316,8 @@ mod tests {
         assert_eq!(method_err.error.message, "Method not found");
 
         // Method not found with name
-        let method_err_with_name = JsonRpcError::method_not_found_with_name(id.clone(), "test_method");
+        let method_err_with_name =
+            JsonRpcError::method_not_found_with_name(id.clone(), "test_method");
         assert_eq!(method_err_with_name.error.code, METHOD_NOT_FOUND);
         assert!(method_err_with_name.error.message.contains("test_method"));
         assert!(method_err_with_name.error.data.is_some());
@@ -325,9 +328,13 @@ mod tests {
         assert_eq!(params_err.error.message, "Invalid params");
 
         // Invalid params with message
-        let params_err_msg = JsonRpcError::invalid_params_with_message(id.clone(), "Missing required field 'name'");
+        let params_err_msg =
+            JsonRpcError::invalid_params_with_message(id.clone(), "Missing required field 'name'");
         assert_eq!(params_err_msg.error.code, INVALID_PARAMS);
-        assert_eq!(params_err_msg.error.message, "Missing required field 'name'");
+        assert_eq!(
+            params_err_msg.error.message,
+            "Missing required field 'name'"
+        );
 
         // Internal error
         let internal_err = JsonRpcError::internal_error(id.clone());
@@ -335,7 +342,8 @@ mod tests {
         assert_eq!(internal_err.error.message, "Internal error");
 
         // Internal error with message
-        let internal_err_msg = JsonRpcError::internal_error_with_message(id.clone(), "Database connection failed");
+        let internal_err_msg =
+            JsonRpcError::internal_error_with_message(id.clone(), "Database connection failed");
         assert_eq!(internal_err_msg.error.code, INTERNAL_ERROR);
         assert_eq!(internal_err_msg.error.message, "Database connection failed");
     }

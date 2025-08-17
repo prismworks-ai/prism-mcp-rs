@@ -813,8 +813,8 @@ impl StreamingCompressor {
     }
 
     async fn compress_gzip(&self, data: &[u8]) -> McpResult<Vec<u8>> {
-        use flate2::Compression;
         use flate2::write::GzEncoder;
+        use flate2::Compression;
         use std::io::Write;
 
         let mut encoder = GzEncoder::new(Vec::new(), Compression::default());

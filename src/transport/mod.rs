@@ -16,6 +16,7 @@
 //! # Available Transports
 //!
 //! ## STDIO Transport (Default)
+
 //! ```no_run
 //! # #[cfg(feature = "stdio")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -30,6 +31,7 @@
 //! ```
 //!
 //! ## HTTP Transport
+
 //! ```no_run
 //! # #[cfg(feature = "http")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,6 +44,7 @@
 //! ```
 //!
 //! ## WebSocket Transport
+
 //! ```no_run
 //! # #[cfg(feature = "websocket")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
@@ -51,6 +54,7 @@
 //! # Ok(())
 //! # }
 //! ```
+
 //!
 //! # Transport Traits
 //!

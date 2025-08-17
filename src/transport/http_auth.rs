@@ -9,7 +9,7 @@ use std::sync::Arc;
 use crate::auth::{AuthConfig, AuthorizationClient};
 use crate::core::error::{McpError, McpResult};
 use crate::protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
-use crate::transport::{Transport, http::HttpClientTransport};
+use crate::transport::{http::HttpClientTransport, Transport};
 
 /// HTTP transport with automatic authorization support
 pub struct AuthorizedHttpTransport {

@@ -5,7 +5,7 @@
 
 use async_trait::async_trait;
 use prism_mcp_rs::prelude::*;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::collections::HashMap;
 
 // =============================================================================

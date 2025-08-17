@@ -50,7 +50,7 @@ Container and CI pipeline management:
 - **pre-push**: Git hook that validates code before pushing
 
 **Note:** Most CI scripts have been removed in favor of using Act to run GitHub Actions locally.
-See DEVELOPMENT.md for instructions on setting up and using Act.
+See docs/DEVELOPMENT.md for instructions on setting up and using Act.
 
 ### Future Categories
 

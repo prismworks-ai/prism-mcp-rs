@@ -449,19 +449,19 @@ impl McpClient {
     /// * `session_handler` - A closure that receives the connected client for operations
     ///
     /// # Example
-    /// ```rust,ignore
+    /// ```rust,no_run
     /// use prism_mcp_rs::prelude::*;
     ///
     /// #[tokio::main]
     /// async fn main() -> McpResult<()> {
-    /// let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
+    ///     let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
     ///
-    /// client.run_with_stdio("my-mcp-server", vec!["--verbose"], |client| async move {
-    /// // Your client operations here
-    /// let tools = client.list_tools(None).await?;
-    /// println!("Available tools: {:?}", tools);
-    /// Ok(())
-    /// }).await
+    ///     client.run_with_stdio("my-mcp-server", vec!["--verbose"], |_client| async move {
+    ///         // Your client operations here
+    ///         // Note: client operations would typically use _client parameter
+    ///         println!("Client connected successfully");
+    ///         Ok(())
+    ///     }).await
     /// }
     /// ```
     #[cfg(feature = "stdio")]
@@ -620,8 +620,8 @@ impl McpClient {
         &mut self,
         server_url: &str,
     ) -> McpResult<InitializeResult> {
-        use crate::transport::StreamingConfig;
         use crate::transport::streaming_http::StreamingHttpClientTransport;
+        use crate::transport::StreamingConfig;
 
         let config = StreamingConfig::memory_improved();
         let transport = StreamingHttpClientTransport::with_config(server_url, config).await?;
@@ -652,8 +652,8 @@ impl McpClient {
         &mut self,
         server_url: &str,
     ) -> McpResult<InitializeResult> {
-        use crate::transport::StreamingConfig;
         use crate::transport::streaming_http::StreamingHttpClientTransport;
+        use crate::transport::StreamingConfig;
 
         let config = StreamingConfig::performance_improved();
         let transport = StreamingHttpClientTransport::with_config(server_url, config).await?;

@@ -8,9 +8,12 @@
 //! ## Tools
 //! Tools represent executable functions that can be called by the MCP protocol:
 //!
+
 //! ```
 //! use prism_mcp_rs::core::{Tool, ToolBuilder, ToolHandler};
-//! use prism_mcp_rs::protocol::ToolInfo;
+//! use prism_mcp_rs::core::error::{McpError, McpResult};
+//! use std::collections::HashMap;
+//! use prism_mcp_rs::protocol::types::{ToolInfo, ToolResult, ContentBlock};
 //! use serde_json::{json, Value};
 //! use async_trait::async_trait;
 //!
@@ -18,43 +21,61 @@
 //!
 //! #[async_trait]
 //! impl ToolHandler for CalculatorTool {
-//!     async fn handle(&self, params: Option<Value>) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
-//!         // Tool implementation
-//!         Ok(json!({"result": 42}))
+//!     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+//!         // Tool implementation  
+//!         Ok(ToolResult {
+//!             content: vec![ContentBlock::Text {
+//!                 text: "Result: 42".to_string(),
+//!                 annotations: None,
+//!                 meta: None,
+//!             }],
+//!             is_error: Some(false),
+//!             meta: None,
+//!             structured_content: None,
+//!         })
 //!     }
 //! }
 //!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! // Build the tool with the handler
 //! let tool = ToolBuilder::new("calculator")
 //!     .description("Performs calculations")
-//!     .input_schema(json!({
-//!         "type": "object",
-//!         "properties": {
-//!             "expression": {"type": "string"}
-//!         }
-//!     }))
-//!     .handler(Box::new(CalculatorTool))
-//!     .build();
+//!     .build(CalculatorTool)?;
+//! # Ok(())
+//! # }
 //! ```
+
 //!
 //! ## Resources
 //! Resources provide access to external data sources:
 //!
 //! ```
 //! use prism_mcp_rs::core::{Resource, ResourceHandler};
-//! use prism_mcp_rs::protocol::{ResourceContents, ContentBlock, TextContent};
+//! use prism_mcp_rs::core::error::McpResult;
+//! use std::collections::HashMap;
+//! use prism_mcp_rs::protocol::types::{ResourceContents, ContentBlock};
+//! use prism_mcp_rs::core::{ResourceInfo};
 //! use async_trait::async_trait;
 //!
 //! struct FileResource;
 //!
 //! #[async_trait]
 //! impl ResourceHandler for FileResource {
-//!     async fn handle(&self, uri: &str) -> Result<ResourceContents, Box<dyn std::error::Error + Send + Sync>> {
-//!         Ok(ResourceContents {
+//!     async fn read(
+//!         &self,
+//!         uri: &str,
+//!         params: &HashMap<String, String>,
+//!     ) -> McpResult<Vec<ResourceContents>> {
+//!         Ok(vec![ResourceContents::Text {
 //!             uri: uri.to_string(),
 //!             mime_type: Some("text/plain".to_string()),
-//!             text: Some("File contents".to_string()),
-//!             blob: None,
-//!         })
+//!             text: "File contents".to_string(),
+//!             meta: None,
+//!         }])
+//!     }
+//!     
+//!     async fn list(&self) -> McpResult<Vec<ResourceInfo>> {
+//!         Ok(vec![])
 //!     }
 //! }
 //! ```
@@ -64,7 +85,9 @@
 //!
 //! ```
 //! use prism_mcp_rs::core::{Prompt, PromptHandler};
-//! use prism_mcp_rs::protocol::{PromptResult, PromptMessage, Role};
+//! use prism_mcp_rs::core::error::McpResult;
+//! use std::collections::HashMap;
+//! use prism_mcp_rs::protocol::types::{PromptResult, PromptMessage, Role, ContentBlock};
 //! use serde_json::Value;
 //! use async_trait::async_trait;
 //!
@@ -72,15 +95,20 @@
 //!
 //! #[async_trait]
 //! impl PromptHandler for GreetingPrompt {
-//!     async fn handle(&self, params: Option<Value>) -> Result<PromptResult, Box<dyn std::error::Error + Send + Sync>> {
+//!     async fn get(&self, arguments: HashMap<String, Value>) -> McpResult<PromptResult> {
 //!         Ok(PromptResult {
 //!             description: Some("A friendly greeting".to_string()),
 //!             messages: vec![
 //!                 PromptMessage {
 //!                     role: Role::Assistant,
-//!                     content: "Hello! How can I help you today?".into(),
+//!                     content: ContentBlock::Text {
+//!                         text: "Hello! How can I help you today?".to_string(),
+//!                         annotations: None,
+//!                         meta: None,
+//!                     },
 //!                 }
 //!             ],
+//!             meta: None,
 //!         })
 //!     }
 //! }
@@ -95,7 +123,7 @@
 //! fn process_data() -> McpResult<String> {
 //!     // Return errors using the ? operator
 //!     let data = std::fs::read_to_string("data.txt")
-//!         .map_err(|e| McpError::Io(e))?;
+//!         .map_err(|e| McpError::Io(e.to_string()))?;
 //!     
 //!     Ok(data)
 //! }

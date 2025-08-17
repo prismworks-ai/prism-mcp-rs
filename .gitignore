@@ -108,6 +108,10 @@ node_modules/
 # Generated files
 *.generated.*
 
+# Examples
+!examples/*.rs
+!examples/README.md
+
 # Enterprise-related content (should not leak to OSS)
 *enterprise*
 *commercial*

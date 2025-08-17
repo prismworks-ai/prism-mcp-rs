@@ -5,7 +5,7 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use prism_mcp_rs::client::McpClientBuilder;
 use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;

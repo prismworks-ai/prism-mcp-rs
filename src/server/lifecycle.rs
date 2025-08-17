@@ -15,7 +15,7 @@ mod tests {
     use async_trait::async_trait;
     use std::sync::Arc;
     use tokio::sync::Mutex;
-    use tokio::time::{Duration, timeout};
+    use tokio::time::{timeout, Duration};
 
     #[tokio::test]
     async fn test_server_startup_shutdown() {

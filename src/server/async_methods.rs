@@ -4,7 +4,9 @@
 //! processing messages, and managing server operations asynchronously.
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::{JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
+use crate::protocol::{
+    JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
+};
 use crate::server::McpServer;
 use futures::future::Future;
 use serde_json::Value;
@@ -13,7 +15,7 @@ use std::pin::Pin;
 impl McpServer {
     /// Process any JSON-RPC message asynchronously
     ///
-    /// This method handles all types of JSON-RPC messages (requests, responses, 
+    /// This method handles all types of JSON-RPC messages (requests, responses,
     /// notifications, errors) and returns an appropriate response.
     ///
     /// # Arguments
@@ -48,10 +50,9 @@ impl McpServer {
             JsonRpcMessage::Notification(notif) => {
                 self.handle_notification(notif).await?;
                 // Notifications don't get responses
-                Ok(JsonRpcMessage::Response(JsonRpcResponse::success_unchecked(
-                    Value::Null,
-                    Value::Null,
-                )))
+                Ok(JsonRpcMessage::Response(
+                    JsonRpcResponse::success_unchecked(Value::Null, Value::Null),
+                ))
             }
             JsonRpcMessage::Response(resp) => {
                 // Responses are typically handled by the client side
@@ -197,7 +198,7 @@ impl McpServer {
         // 1. Receive messages from transport
         // 2. Process them with the custom processor
         // 3. Send responses back through transport
-        
+
         tracing::info!("Server running with custom processor");
         Ok(())
     }
@@ -228,7 +229,7 @@ impl McpServer {
                                     jsonrpc: "2.0".to_string(),
                                     id: Value::Null,
                                     error: crate::protocol::types::ErrorObject {
-                                        code: -32603,  // Internal error
+                                        code: -32603, // Internal error
                                         message: err.to_string(),
                                         data: None,
                                     },
@@ -243,7 +244,7 @@ impl McpServer {
                             jsonrpc: "2.0".to_string(),
                             id: Value::Null,
                             error: crate::protocol::types::ErrorObject {
-                                code: -32700,  // Parse error
+                                code: -32700, // Parse error
                                 message: err.to_string(),
                                 data: None,
                             },
@@ -283,11 +284,11 @@ impl McpServer {
         // In a real implementation, this would integrate with
         // long-running operations and provide progress updates
         progress_callback(50.0, "Processing request".to_string());
-        
+
         let response = self.handle_request(request).await?;
-        
+
         progress_callback(100.0, "Request completed".to_string());
-        
+
         Ok(response)
     }
 
@@ -343,7 +344,7 @@ impl McpServer {
         use tokio::time::{sleep, Duration};
 
         let mut last_error = None;
-        
+
         for attempt in 0..=max_retries {
             match self.handle_request(request.clone()).await {
                 Ok(response) => return Ok(response),
@@ -388,11 +389,11 @@ impl McpServer {
             + Sync,
     {
         let mut current = message;
-        
+
         for mw in middleware.iter() {
             current = mw(current).await?;
         }
-        
+
         self.process_message(current).await
     }
 }
@@ -405,17 +406,13 @@ mod tests {
     #[tokio::test]
     async fn test_process_message() {
         let server = McpServer::new("test".to_string(), "1.0.0".to_string());
-        
-        let request = JsonRpcRequest::new(
-            json!(1),
-            "ping".to_string(),
-            None::<serde_json::Value>,
-        )
-        .unwrap();
-        
+
+        let request =
+            JsonRpcRequest::new(json!(1), "ping".to_string(), None::<serde_json::Value>).unwrap();
+
         let message = JsonRpcMessage::Request(request);
         let response = server.process_message(message).await.unwrap();
-        
+
         match response {
             JsonRpcMessage::Response(_) => {}
             _ => panic!("Expected response message"),
@@ -425,13 +422,13 @@ mod tests {
     #[tokio::test]
     async fn test_handle_notification() {
         let server = McpServer::new("test".to_string(), "1.0.0".to_string());
-        
+
         let notification = JsonRpcNotification {
             jsonrpc: "2.0".to_string(),
             method: "initialized".to_string(),
             params: None,
         };
-        
+
         let result = server.handle_notification(notification).await;
         assert!(result.is_ok());
     }
@@ -439,12 +436,12 @@ mod tests {
     #[tokio::test]
     async fn test_parallel_requests() {
         let server = McpServer::new("test".to_string(), "1.0.0".to_string());
-        
+
         let requests = vec![
             JsonRpcRequest::new(json!(1), "ping".to_string(), None::<serde_json::Value>).unwrap(),
             JsonRpcRequest::new(json!(2), "ping".to_string(), None::<serde_json::Value>).unwrap(),
         ];
-        
+
         let responses = server.handle_requests_parallel(requests).await;
         assert_eq!(responses.len(), 2);
         assert!(responses.iter().all(|r| r.is_ok()));
@@ -453,14 +450,10 @@ mod tests {
     #[tokio::test]
     async fn test_request_with_timeout() {
         let server = McpServer::new("test".to_string(), "1.0.0".to_string());
-        
-        let request = JsonRpcRequest::new(
-            json!(1),
-            "ping".to_string(),
-            None::<serde_json::Value>,
-        )
-        .unwrap();
-        
+
+        let request =
+            JsonRpcRequest::new(json!(1), "ping".to_string(), None::<serde_json::Value>).unwrap();
+
         // Should complete within timeout
         let result = server.handle_request_with_timeout(request, 1000).await;
         assert!(result.is_ok());

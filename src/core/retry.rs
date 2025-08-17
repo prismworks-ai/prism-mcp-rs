@@ -6,8 +6,8 @@
 // ! - Circuit breaker pattern for cascading failure protection
 // ! - complete logging and metrics integration
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 use tracing::{debug, error, warn};
@@ -501,8 +501,8 @@ fn current_time_millis() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
     use std::sync::atomic::AtomicU32;
+    use std::sync::Arc;
     use tokio::time::Duration;
 
     #[tokio::test]
@@ -607,12 +607,10 @@ mod tests {
             .call(async { Ok::<(), McpError>(()) }, &context)
             .await;
         assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .to_string()
-                .contains("Circuit breaker is open")
-        );
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Circuit breaker is open"));
     }
 
     #[tokio::test]

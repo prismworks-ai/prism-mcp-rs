@@ -13,7 +13,7 @@ use prism_mcp_rs::{
     protocol::{methods::*, types::*},
     server::McpServer,
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -108,7 +108,7 @@ mod boundary_condition_tests {
         }
 
         // Test various unicode scenarios
-        let unicode_tests = vec![
+        let unicode_tests = [
             "Hello, 世界! 🌍",             // Mixed ASCII, Chinese, emoji
             "Здравствуй мир! #",           // Cyrillic with emoji
             "مرحبا بالعالم *",             // Arabic with emoji
@@ -171,7 +171,7 @@ mod boundary_condition_tests {
         }
 
         // Test boundary numeric values
-        let numeric_tests = vec![
+        let numeric_tests = [
             json!(0),                           // Zero
             json!(-0),                          // Negative zero
             json!(i64::MAX),                    // Max i64
@@ -473,7 +473,7 @@ mod error_recovery_tests {
         }
 
         // Test resource cleanup scenarios
-        let cleanup_scenarios = vec![
+        let cleanup_scenarios = [
             (false, false, true), // No allocation, no failure, should succeed
             (true, false, true),  // Allocation, no failure, should succeed
             (true, true, false),  // Allocation, then failure, should handle cleanup
@@ -515,7 +515,7 @@ mod malformed_input_tests {
     #[tokio::test]
     async fn test_malformed_json_rpc_requests() {
         // Test various malformed JSON-RPC structures
-        let malformed_json_strings = vec![
+        let malformed_json_strings = [
             r#"{"method": "test"}"#,                             // Missing jsonrpc
             r#"{"jsonrpc": "1.0", "method": "test"}"#,           // Wrong version
             r#"{"jsonrpc": "2.0"}"#,                             // Missing method
@@ -553,7 +553,7 @@ mod malformed_input_tests {
         )));
 
         // Test various invalid method names
-        let invalid_methods = vec![
+        let invalid_methods = [
             "",
             " ",
             "\n",

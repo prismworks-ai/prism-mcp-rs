@@ -44,19 +44,19 @@ jobs:
           toolchain: ${{ matrix.rust }}
       
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Cache cargo index
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Cache cargo build
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
@@ -210,7 +210,7 @@ jobs:
       - name: Verify build
         run: cargo check ${{ env.CARGO_BUILD_FLAGS }}
   
-  # Test examples
+  # Test and validate examples
   examples:
     name: Examples
     runs-on: ubuntu-latest
@@ -220,14 +220,21 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Build examples
+      - name: Build Examples
         run: |
-          for example in examples/**/*.rs; do
-            if [ -f "$example" ]; then
-              echo "Building example: $example"
-              cargo build --example $(basename "$example" .rs) ${{ env.CARGO_BUILD_FLAGS }}
-            fi
-          done
+          echo "🔨 Building examples..."
+          cargo build --examples ${{ env.CARGO_BUILD_FLAGS }}
+      
+      - name: Test Examples
+        run: |
+          echo "🧪 Testing examples..."
+          cargo test --examples ${{ env.CARGO_BUILD_FLAGS }}
+      
+      - name: Test Documentation Examples
+        run: |
+          echo "📖 Testing documentation examples..."
+          cargo test --doc ${{ env.CARGO_BUILD_FLAGS }}
+
   
   # Benchmark compilation and execution
   bench:
@@ -258,44 +265,4 @@ jobs:
         with:
           name: benchmark-report
           path: reports/benchmark-report.md
-        continue-on-error: true
-
-  # Commit reports back to repository (main branch only)
-  commit-reports:
-    name: Commit Reports
-    runs-on: ubuntu-latest
-    needs: [coverage, bench]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report
-          path: reports/
-        continue-on-error: true
-      
-      - name: Download benchmark report
-        uses: actions/download-artifact@v4
-        with:
-          name: benchmark-report
-          path: reports/
-        continue-on-error: true
-      
-      - name: Commit reports
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add reports/*.md || true
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: update coverage and benchmark reports [skip ci]"
-            git push
-          fi
         continue-on-error: true

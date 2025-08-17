@@ -31,8 +31,11 @@
 //!
 //! ### Server Example
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use prism_mcp_rs::prelude::*;
+//! use std::collections::HashMap;
+//! use serde_json::{json, Value};
+//! use async_trait::async_trait;
 //!
 //! struct EchoHandler;
 //!
@@ -73,6 +76,42 @@
 //! }
 //! ```
 //!
+//! ### Client Example
+//!
+//! ```rust,no_run
+//! use prism_mcp_rs::prelude::*;
+//! use prism_mcp_rs::transport::stdio::StdioTransport;
+//! use serde_json::json;
+//!
+//! #[tokio::main]
+//! async fn main() -> McpResult<()> {
+//!     // Create a client
+//!     let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
+//!     
+//!     // Set up transport
+//!     let transport = StdioTransport::new();
+//!     client.connect(Box::new(transport)).await?;
+//!     
+//!     // Initialize the connection
+//!     client.initialize().await?;
+//!     
+//!     // List available tools
+//!     let tools = client.list_tools(None).await?;
+//!     println!("Available tools: {:?}", tools);
+//!     
+//!     // Call a tool
+//!     let result = client.call_tool(
+//!         "echo",
+//!         json!({
+//!             "message": "Hello from client!"
+//!         })
+//!     ).await?;
+//!     
+//!     println!("Tool result: {:?}", result);
+//!     Ok(())
+//! }
+//! ```
+//!
 //! ## Module Organization
 //!
 //! - [`core`]: Core abstractions for resources, tools, prompts, and errors
@@ -97,7 +136,9 @@ pub mod utils;
 // Re-export commonly used types for convenience
 pub use core::error::{McpError, McpResult};
 pub use protocol::types::*;
-pub use protocol::{JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, JsonRpcError, ErrorObject, ServerCapabilities};
+pub use protocol::{
+    ErrorObject, JsonRpcError, JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, ServerCapabilities,
+};
 
 /// Prelude module for convenient imports (2025-06-18)
 ///
@@ -113,11 +154,11 @@ pub mod prelude {
     };
 
     // Protocol types and messages
+    pub use crate::protocol::error_codes;
+    pub use crate::protocol::error_helpers::IntoJsonRpcMessage;
     pub use crate::protocol::messages::*;
     pub use crate::protocol::missing_types::*;
     pub use crate::protocol::types::*;
-    pub use crate::protocol::error_helpers::IntoJsonRpcMessage;
-    pub use crate::protocol::error_codes;
 
     // Client and completion handlers
     pub use crate::client::{
@@ -154,7 +195,7 @@ pub mod prelude {
 
     // Essential external types
     pub use async_trait::async_trait;
-    pub use serde_json::{Value, json};
+    pub use serde_json::{json, Value};
     pub use std::collections::HashMap;
 }
 

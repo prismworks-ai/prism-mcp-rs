@@ -3,15 +3,16 @@
 //! This example shows how to implement a custom transport for MCP communication.
 //! The custom transport uses in-memory channels for testing and demonstration.
 
-use prism_mcp_rs::prelude::*;
-use prism_mcp_rs::transport::traits::{ServerTransport, ServerRequestHandler};
 use async_trait::async_trait;
+use prism_mcp_rs::prelude::*;
+use prism_mcp_rs::transport::traits::{ServerRequestHandler, ServerTransport};
 use serde_json::{json, Value};
 use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
 
 /// Custom in-memory transport for testing
+#[derive(Clone)]
 struct MemoryTransport {
     /// Incoming message queue
     incoming: Arc<Mutex<VecDeque<JsonRpcMessage>>>,
@@ -85,7 +86,7 @@ impl MemoryTransport {
 impl ServerTransport for MemoryTransport {
     async fn start(&mut self) -> McpResult<()> {
         *self.running.write().await = true;
-        
+
         // Start background processing
         let self_clone = Self {
             incoming: Arc::clone(&self.incoming),
@@ -93,11 +94,11 @@ impl ServerTransport for MemoryTransport {
             handler: Arc::clone(&self.handler),
             running: Arc::clone(&self.running),
         };
-        
+
         tokio::spawn(async move {
             self_clone.process_messages().await;
         });
-        
+
         Ok(())
     }
 
@@ -126,7 +127,10 @@ struct EchoTool;
 
 #[async_trait]
 impl ToolHandler for EchoTool {
-    async fn call(&self, arguments: std::collections::HashMap<String, Value>) -> McpResult<ToolResult> {
+    async fn call(
+        &self,
+        arguments: std::collections::HashMap<String, Value>,
+    ) -> McpResult<ToolResult> {
         let message = arguments
             .get("message")
             .and_then(|v| v.as_str())
@@ -150,10 +154,7 @@ async fn main() -> McpResult<()> {
     println!("============================\n");
 
     // Create server with custom configuration
-    let mut server = McpServer::new(
-        "custom-transport-server".to_string(),
-        "1.0.0".to_string(),
-    );
+    let mut server = McpServer::new("custom-transport-server".to_string(), "1.0.0".to_string());
 
     // Add a tool
     server
@@ -201,27 +202,28 @@ async fn main() -> McpResult<()> {
         )),
     )?;
 
-    transport.send_message(JsonRpcMessage::Request(init_request)).await;
-    
+    transport
+        .send_message(JsonRpcMessage::Request(init_request))
+        .await;
+
     // Wait for response
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     if let Some(response) = transport.receive_message().await {
         println!("📥 Received initialization response: {:?}\n", response);
     }
 
     // Send tool list request
-    let list_tools_request = JsonRpcRequest::new(
-        json!(2),
-        "tools/list".to_string(),
-        None::<Value>,
-    )?;
+    let list_tools_request =
+        JsonRpcRequest::new(json!(2), "tools/list".to_string(), None::<Value>)?;
 
-    transport.send_message(JsonRpcMessage::Request(list_tools_request)).await;
-    
+    transport
+        .send_message(JsonRpcMessage::Request(list_tools_request))
+        .await;
+
     // Wait for response
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     if let Some(response) = transport.receive_message().await {
         println!("📥 Received tools list response: {:?}\n", response);
     }
@@ -241,11 +243,13 @@ async fn main() -> McpResult<()> {
         }),
     )?;
 
-    transport.send_message(JsonRpcMessage::Request(call_tool_request)).await;
-    
+    transport
+        .send_message(JsonRpcMessage::Request(call_tool_request))
+        .await;
+
     // Wait for response
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     if let Some(response) = transport.receive_message().await {
         println!("📥 Received tool call response: {:?}\n", response);
     }

@@ -281,7 +281,11 @@ prism-mcp-rs provides testing utilities:
 ```rust
 #[cfg(test)]
 mod tests {
-    use prism_mcp_rs::test_utils::*;
+    // Test utilities are now in a separate crate
+    // Add to your Cargo.toml:
+    // [dev-dependencies]
+    // prism-test-utils = { git = "https://github.com/prismworks-ai/mcp-rs-dev" }
+    use prism_test_utils::*;
     
     #[test]
     fn test_my_handler() {

@@ -71,7 +71,11 @@ impl ProtocolCapabilities {
 
     /// Convert to Option for serialization
     pub fn to_option(self) -> Option<Self> {
-        if self.is_empty() { None } else { Some(self) }
+        if self.is_empty() {
+            None
+        } else {
+            Some(self)
+        }
     }
 
     /// Create from `Option<HashMap>` for compatibility

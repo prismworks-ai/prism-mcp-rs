@@ -5,7 +5,7 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use prism_mcp_rs::protocol::{ErrorObject, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
 use std::collections::HashMap;

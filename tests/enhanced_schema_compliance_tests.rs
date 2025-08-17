@@ -874,20 +874,16 @@ mod improved_schema_compliance {
         // Validate all method names are properly formatted
         for method in &client_requests {
             assert!(!method.is_empty());
-            assert!(
-                method
-                    .chars()
-                    .all(|c| c.is_ascii_alphanumeric() || c == '/' || c == '_')
-            );
+            assert!(method
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '/' || c == '_'));
         }
 
         for method in &server_requests {
             assert!(!method.is_empty());
-            assert!(
-                method
-                    .chars()
-                    .all(|c| c.is_ascii_alphanumeric() || c == '/' || c == '_')
-            );
+            assert!(method
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '/' || c == '_'));
         }
 
         for method in &client_notifications {

@@ -3,9 +3,9 @@
 // ! Module provides structured error logging with categorization,
 // ! context preservation, and integration with the metrics system.
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::collections::HashMap;
-use tracing::{Level, error, info, span, warn};
+use tracing::{error, info, span, warn, Level};
 
 use crate::core::error::McpError;
 use crate::core::metrics::global_metrics;

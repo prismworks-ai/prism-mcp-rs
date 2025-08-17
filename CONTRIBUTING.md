@@ -1,248 +1,177 @@
 # Contributing to Prism MCP SDK
 
-Thank you for your interest in contributing to the Prism MCP SDK. This guide outlines our contribution process using GitHub Issues as the primary communication channel.
+Thank you for your interest in contributing to the Prism MCP SDK! This document provides the technical process for setting up a development environment, running tests, and submitting pull requests.
 
-## Before you start
-
-### Required reading
-
-1. **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development setup and build process
-2. **[README.md](README.md)** - Project overview and architecture
-3. **[docs/PLUGIN_GUIDE.md](docs/PLUGIN_GUIDE.md)** - If contributing plugins
-
-### Issue-first approach
-
-**All contributions must start with a GitHub Issue.** This ensures:
-- No duplicate work
-- Alignment with project goals
-- Proper tracking and attribution
-- Clear communication
-
-## How to contribute
-
-### 1. Reporting bugs
-
-**Use Issue Label:** `bug`
-
-Before reporting:
-1. Search [existing issues](https://github.com/prismworks-ai/prism-mcp-rs/issues?q=is%3Aissue+label%3Abug)
-2. Verify the bug exists in the latest version
-3. Collect reproduction information
-
-Create an issue with:
-```markdown
-**Description:**
-Clear description of the bug
-
-**Steps to reproduce:**
-1. Step one
-2. Step two
-3. Step three
-
-**Expected behavior:**
-What should happen
-
-**Actual behavior:**
-What actually happens
-
-**Environment:**
-- OS: [e.g., Ubuntu 22.04]
-- Rust version: [e.g., 1.85.0]
-- SDK version: [e.g., 0.1.0]
-
-**Code sample:**
-```rust
-// Minimal reproduction code
-```
-```
-
-### 2. Requesting features
-
-**Use Issue Label:** `feature-request`
-
-Before requesting:
-1. Search [existing feature requests](https://github.com/prismworks-ai/prism-mcp-rs/issues?q=is%3Aissue+label%3Afeature-request)
-2. Check the [roadmap](https://github.com/prismworks-ai/prism-mcp-rs/projects)
-3. Consider if it aligns with project goals
-
-Create an issue with:
-```markdown
-**Problem:**
-What problem does this solve?
-
-**Proposed solution:**
-How would this work?
-
-**Alternatives considered:**
-What other approaches exist?
-
-**Use cases:**
-Who benefits and how?
-
-**Implementation notes:**
-Any technical considerations?
-```
-
-**Note:** For major features, consider discussing your approach in the issue comments before implementing.
-
-### 3. Fixing documentation
-
-**Use Issue Label:** `documentation`
-
-For documentation fixes:
-1. Small fixes (typos, grammar): Create issue and PR together
-2. Large changes: Discuss in issue first
-
-Create an issue with:
-```markdown
-**Location:**
-File path and line numbers
-
-**Current text:**
-What it says now
-
-**Proposed text:**
-What it should say
-
-**Reason:**
-Why this change improves documentation
-```
-
-### 4. Asking questions
-
-**Use Issue Label:** `question`
-
-For questions about:
-- How to use the SDK
-- Architecture decisions
-- Implementation details
-- Best practices
-
-Create an issue with:
-```markdown
-**Context:**
-What are you trying to do?
-
-**Question:**
-Specific question
-
-**What I've tried:**
-Research/attempts made
-
-**Related docs:**
-Links to relevant documentation
-```
-
-### 5. Making suggestions
-
-**Use Issue Label:** `enhancement`
-
-For improvements that aren't new features:
-- Performance optimizations
-- Code refactoring
-- Build process improvements
-- Testing enhancements
-
-Create an issue with:
-```markdown
-**Current situation:**
-How it works now
-
-**Suggested improvement:**
-How it could be better
-
-**Benefits:**
-Why this matters
-
-**Trade-offs:**
-Any downsides?
-```
-
-## Issue labels
-
-We use these labels to categorize issues:
-
-| Label | Purpose |
-|-------|---------|
-| `bug` | Something isn't working |
-| `documentation` | Documentation improvements |
-| `feature-request` | New feature proposal |
-| `enhancement` | Improvement to existing code |
-| `question` | Questions about the project |
-| `good-first-issue` | Good for newcomers |
-| `help-wanted` | Extra attention needed |
-| `blocked` | Waiting on something else |
-| `wontfix` | Will not be worked on |
-| `duplicate` | This issue already exists |
-
-## Pull request process
+## Development Setup
 
 ### Prerequisites
 
-1. **Issue exists:** Every PR must reference an issue
-2. **Issue is unassigned:** Check that nobody else is working on it
-3. **Development setup:** Complete setup from [DEVELOPMENT.md](DEVELOPMENT.md)
+- Rust 1.85+ (install from [rustup.rs](https://rustup.rs/))
+- Git
+- Make (optional but recommended)
 
-### Step-by-step process
+### Setting Up Your Environment
 
-#### 1. Self-assign the issue
-
-If an issue is unassigned and you want to work on it:
-- Self-assign it to yourself (if you have permissions)
-- Or comment "I'm working on this" to claim it
-- For complex features, consider posting your approach as a comment for feedback
-
-#### 2. Fork and branch
+1. **Fork and Clone**
 
 ```bash
 # Fork on GitHub, then:
 git clone https://github.com/YOUR_USERNAME/prism-mcp-rs
 cd prism-mcp-rs
-git remote add upstream https://github.com/prismworks-ai/prism-mcp-rs
-git checkout -b issue-123-description
 ```
 
-#### 3. Make changes
+2. **Install Development Tools**
 
-Follow the development workflow:
 ```bash
-# Regular development cycle
-make quick          # Quick checks during development
-make test           # Run tests
-make docs           # Update documentation if needed
+make install-tools
 
-# Before committing
-make commit-ready   # Full validation
+# Or manually:
+cargo install cargo-audit cargo-llvm-cov cargo-deny cargo-nextest
+rustup component add rustfmt clippy
 ```
 
-#### 4. Commit your changes
+3. **Create a Feature Branch**
+
+```bash
+git checkout -b issue-123-feature-description
+```
+
+## Development Process
+
+### 1. Start with an Issue
+
+All contributions must begin with a GitHub Issue:
+
+- Search [existing issues](https://github.com/prismworks-ai/prism-mcp-rs/issues) first
+- Create a new issue with the appropriate label (`bug`, `feature-request`, `enhancement`, `documentation`)
+- Wait for discussion/approval before starting major work
+
+### 2. Code Standards
+
+| Check | Command | Requirement |
+|-------|---------|-------------|
+| Format | `cargo fmt` | Must pass |
+| Lint | `cargo clippy -- -D warnings` | Zero warnings |
+| Test | `cargo test` | All tests pass |
+| Doc Test | `cargo test --doc` | All examples work |
+| Coverage | `make coverage` | Maintain >65% |
+
+### 3. Writing Code
+
+#### Documentation
+
+All public APIs must be documented:
+
+```rust
+/// Brief description of the function.
+///
+/// # Arguments
+///
+/// * `param` - Description of parameter
+///
+/// # Returns
+///
+/// Description of return value
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use prism_mcp_rs::prelude::*;
+///
+/// let result = function_name(param);
+/// assert_eq!(result, expected);
+/// ```
+///
+/// # Errors
+///
+/// Returns `McpError` if:
+/// - Condition that causes error
+pub fn function_name(param: Type) -> McpResult<ReturnType> {
+    // Implementation
+}
+```
+
+#### Testing
+
+Write tests for all new functionality:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_feature() {
+        // Arrange
+        let input = create_test_input();
+        
+        // Act
+        let result = function_under_test(input);
+        
+        // Assert
+        assert_eq!(result, expected_value);
+    }
+    
+    #[tokio::test]
+    async fn test_async_feature() {
+        let result = async_function().await;
+        assert!(result.is_ok());
+    }
+}
+```
+
+### 4. Commit Guidelines
 
 Use conventional commits:
+
 ```bash
-# Format: type(scope): description
-git commit -m "fix(transport): resolve websocket connection timeout"
+git commit -m "type(scope): description"
+```
+
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation only
+- `test` - Test additions/changes
+- `refactor` - Code refactoring
+- `perf` - Performance improvement
+- `chore` - Maintenance tasks
+
+**Examples:**
+```bash
+git commit -m "fix(transport): resolve websocket timeout issue"
 git commit -m "feat(plugin): add hot reload support"
 git commit -m "docs(readme): clarify installation steps"
 ```
 
-Types:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only
-- `test`: Test additions/changes
-- `refactor`: Code refactoring
-- `perf`: Performance improvement
-- `chore`: Maintenance tasks
+### 5. Pre-Push Checklist
 
-#### 5. Create pull request
+Run the full validation suite:
 
 ```bash
-git push origin issue-123-description
+make commit-ready
 ```
 
-PR title format: `type(scope): description (#issue-number)`
+Or manually:
 
-PR description template:
+```bash
+cargo fmt              # Format code
+cargo clippy           # Lint
+cargo test             # Run tests
+cargo test --doc       # Test documentation
+cargo doc --no-deps    # Build docs
+```
+
+## Pull Request Process
+
+### PR Title Format
+
+`type(scope): description (#issue-number)`
+
+Example: `fix(transport): resolve connection timeout (#123)`
+
+### PR Template
+
 ```markdown
 ## Summary
 Brief description of changes
@@ -258,183 +187,112 @@ Fixes #123
 - [ ] Code refactoring
 
 ## Testing
-- [ ] Tests pass locally (`make test-all`)
+- [ ] Tests pass locally (`cargo test`)
 - [ ] Added new tests for changes
-- [ ] Coverage maintained/improved
-
-## Checklist
-- [ ] Code follows project style (`make fmt`)
-- [ ] Clippy passes (`make clippy`)
 - [ ] Documentation updated
-- [ ] CHANGELOG.md entry added (if applicable)
+- [ ] Code follows style guidelines (`cargo fmt`, `cargo clippy`)
 ```
 
-#### 6. Address review feedback
+### Review Process
 
-- Respond to all comments
-- Push additional commits (don't force-push during review)
-- Request re-review when ready
+1. CI must pass (automated checks)
+2. Code review by maintainers
+3. Address feedback
+4. Approval and merge
 
-#### 7. Final steps
+## Testing
 
-Once approved:
-- Squash commits if requested
-- Ensure CI passes
-- Maintainer will merge
-
-## CI/CD and reporting
-
-### Automatic reports
-
-Our CI pipeline automatically generates:
-- **Coverage reports** (`reports/coverage-report.md`) - Code coverage metrics
-- **Benchmark reports** (`reports/benchmark-report.md`) - Performance metrics
-
-These reports are:
-- Generated on every PR as downloadable artifacts
-- Automatically committed to the repository on main branch pushes
-- Viewable directly on GitHub in markdown format
-
-### For contributors
-
-**No tokens or secrets needed!** All CI features work automatically:
-- ✅ Testing and validation
-- ✅ Coverage report generation
-- ✅ Benchmark execution
-- ✅ PR status checks
-
-The `GITHUB_TOKEN` used for committing reports is automatically provided by GitHub Actions for every workflow run.
-
-### For maintainers only
-
-**Publishing to crates.io** requires the `CRATES_IO_TOKEN` secret:
-- Only repository owners have this token
-- Contributors cannot publish releases
-- Fork owners need their own token to publish their fork
-
-### Running reports locally
+### Running Tests
 
 ```bash
-# Use Act to run GitHub Actions locally
-make local-ci     # Run sequential CI pipeline (recommended for local)
-make full         # Run full parallel CI pipeline
+# All tests
+cargo test
 
-# Or use Act directly for specific jobs
-act -j coverage   # Run coverage job from CI workflow
+# Specific module
+cargo test module_name::
 
-# Or if you have Rust tools installed locally
-make coverage     # Generate coverage report
-make bench        # Run benchmarks
+# With output
+cargo test -- --nocapture
+
+# Documentation tests only
+cargo test --doc
 ```
 
-Reports will be saved in the `reports/` directory.
+### Running CI Locally
 
-## Development guidelines
+Test CI pipeline locally using Act:
 
-### Code quality standards
+```bash
+# Install Act (see docs/DEVELOPMENT.md for platform-specific instructions)
+make local-ci
 
-| Requirement | Check command |
-|-------------|---------------|
-| Formatting | `make fmt` |
-| Linting | `make clippy` |
-| Tests pass | `make test-all` |
-| Coverage >65% | `make coverage` |
-| Documentation | `cargo doc` |
-
-### Testing requirements
-
-Every PR must include:
-- Unit tests for new functions
-- Integration tests for new features
-- Updated existing tests if behavior changes
-- Test coverage report showing >65% coverage
-
-Example test structure:
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_new_functionality() {
-        // Arrange
-        let input = TestData::new();
-        
-        // Act
-        let result = function_under_test(input);
-        
-        // Assert
-        assert_eq!(result, expected_value);
-    }
-}
+# Or specific job
+act -j test
 ```
 
-### Documentation requirements
+## What We're Looking For
 
-Update documentation for:
-- New public APIs (inline rustdoc)
-- Changed behavior (update existing docs)
-- New features (add to relevant guides)
-- Breaking changes (update migration guide)
+### High Priority Contributions
 
-## What we're looking for
+- Bug fixes with tests
+- Documentation improvements
+- Performance optimizations with benchmarks
+- Test coverage improvements
 
-### High-priority contributions
+### Requires Discussion First
 
-- **Bug fixes** with tests
-- **Documentation improvements** 
-- **Performance optimizations** with benchmarks
-- **Test coverage** increases
-- **Example code** for complex features
+- Architecture changes
+- New dependencies
+- Breaking API changes
+- Large features (>500 lines)
 
-### What benefits from discussion
+Please discuss in the issue before implementing.
 
-- **Architecture changes** - Post your design approach in the issue
-- **New dependencies** - Explain why they're needed
-- **Breaking changes** - Describe migration path
-- **Large features** - Share your implementation plan for feedback
+### Not Accepted
 
-### What we won't accept
-
-- Changes without issues
+- Changes without associated issues
 - Features without tests
 - Breaking changes without strong justification
 - Code using `unsafe` without exceptional reason
 - PRs that decrease test coverage
 
+## Code Style
+
+### Rust Guidelines
+
+- Follow standard Rust naming conventions
+- Use `rustfmt` defaults
+- Keep functions small and focused
+- Prefer composition over inheritance
+- Document all public APIs
+- Use semantic types over primitives
+
+### Error Handling
+
+- Use `Result<T, McpError>` for fallible operations
+- Provide context in error messages
+- Don't use `unwrap()` or `expect()` in library code
+- Use the `?` operator for error propagation
+
+### Performance
+
+- Benchmark performance-critical code
+- Use `async`/`await` for I/O operations
+- Minimize allocations in hot paths
+- Document performance characteristics
+
+## Getting Help
+
+- **Questions**: [GitHub Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
+- **Bugs**: [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
+- **Security**: Email security@prismworks.ai
+
 ## Recognition
 
-Contributors are recognized through:
-- GitHub contributors graph
-- Release notes mentions
-- CHANGELOG.md credits
-
-## Getting help
-
-If you need help:
-
-1. **Check documentation first:**
-   - [DEVELOPMENT.md](DEVELOPMENT.md) for setup
-   - [API docs](https://docs.rs/prism-mcp-rs) for usage
-   - [Examples](examples/) for patterns
-
-2. **Search existing issues:**
-   - Someone may have asked already
-   - Look at closed issues too
-
-3. **Create a question issue:**
-   - Use the `question` label
-   - Be specific about what you need
-
-## Code of conduct
-
-We follow the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct):
-- Be respectful and inclusive
-- Welcome newcomers and help them learn
-- Focus on constructive criticism
-- Assume good intentions
-
-Violations can be reported to the maintainers through GitHub Issues.
+Contributors are recognized in:
+- GitHub contributors page
+- Release notes
+- CHANGELOG.md for significant contributions
 
 ## License
 

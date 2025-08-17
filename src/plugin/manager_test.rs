@@ -6,8 +6,8 @@ mod tests {
     use crate::plugin::{PluginConfig, PluginError, PluginEvent, PluginManager, ToolRegistry};
     use serde_json::json;
     use std::path::Path;
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
 
     #[test]
     fn test_plugin_manager_creation() {

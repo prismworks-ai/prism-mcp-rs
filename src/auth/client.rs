@@ -9,12 +9,12 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::auth::{
-    AuthConfig,
-    discovery::{DiscoveryClient, validate_auth_server_for_mcp},
+    discovery::{validate_auth_server_for_mcp, DiscoveryClient},
     errors::AuthError,
-    pkce::{PkceParams, select_challenge_method},
-    token::{TokenManager, build_authorization_url, parse_callback_url},
+    pkce::{select_challenge_method, PkceParams},
+    token::{build_authorization_url, parse_callback_url, TokenManager},
     types::*,
+    AuthConfig,
 };
 use crate::core::error::{McpError, McpResult};
 
@@ -301,7 +301,7 @@ impl AuthorizationClient {
 
 /// Helper to add authorization header to HTTP requests
 pub fn add_auth_header(headers: &mut reqwest::header::HeaderMap, token: &str) {
-    use reqwest::header::{AUTHORIZATION, HeaderValue};
+    use reqwest::header::{HeaderValue, AUTHORIZATION};
 
     let value = format!("Bearer {token}");
     if let Ok(header_value) = HeaderValue::from_str(&value) {

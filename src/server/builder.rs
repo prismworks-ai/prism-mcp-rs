@@ -13,12 +13,12 @@ use crate::protocol::types::{
 use crate::server::{McpServer, ServerConfig};
 
 /// Builder for creating MCP servers with fluent API
-/// 
+///
 /// # Examples
-/// 
-/// ```rust,ignore
+///
+/// ```rust,no_run
 /// use prism_mcp_rs::server::ServerBuilder;
-/// 
+///
 /// let server = ServerBuilder::new()
 ///     .name("my-server")
 ///     .version("1.0.0")
@@ -122,11 +122,7 @@ impl ServerBuilder {
     }
 
     /// Add experimental capabilities
-    pub fn with_experimental<K: Into<String>>(
-        mut self,
-        key: K,
-        value: serde_json::Value,
-    ) -> Self {
+    pub fn with_experimental<K: Into<String>>(mut self, key: K, value: serde_json::Value) -> Self {
         if self.capabilities.experimental.is_none() {
             self.capabilities.experimental = Some(HashMap::new());
         }
@@ -192,9 +188,9 @@ impl ServerBuilder {
     }
 
     /// Build the MCP server
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if name or version are not set
     pub fn build(self) -> McpServer {
         let name = self.name.expect("Server name is required");
@@ -329,21 +325,21 @@ mod tests {
             .name("test-server")
             .version("1.0.0")
             .try_build();
-        
+
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_try_build_missing_name() {
         let result = ServerBuilder::new().version("1.0.0").try_build();
-        
+
         assert!(matches!(result, Err(ServerBuilderError::MissingName)));
     }
 
     #[test]
     fn test_try_build_missing_version() {
         let result = ServerBuilder::new().name("test-server").try_build();
-        
+
         assert!(matches!(result, Err(ServerBuilderError::MissingVersion)));
     }
 }

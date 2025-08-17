@@ -63,29 +63,30 @@ async fn main() -> McpResult<()> {
     println!("Method not found: {:?}", method_not_found.error.message);
 
     // Method not found with details
-    let method_error_detailed = 
+    let method_error_detailed =
         JsonRpcError::method_not_found_with_name(request_id.clone(), "unknown_method");
-    println!("Detailed method error: {:?}", method_error_detailed.error.message);
+    println!(
+        "Detailed method error: {:?}",
+        method_error_detailed.error.message
+    );
 
     // Invalid params with custom message
     let invalid_params = JsonRpcError::invalid_params_with_message(
         request_id.clone(),
-        "Field 'name' is required but was not provided"
+        "Field 'name' is required but was not provided",
     );
     println!("Invalid params: {:?}", invalid_params.error.message);
 
     // Internal error
-    let internal_error = JsonRpcError::internal_error_with_message(
-        request_id.clone(),
-        "Database connection failed"
-    );
+    let internal_error =
+        JsonRpcError::internal_error_with_message(request_id.clone(), "Database connection failed");
     println!("Internal error: {:?}", internal_error.error.message);
 
     // MCP-specific errors
     let tool_not_found = JsonRpcError::tool_not_found(request_id.clone(), "my_tool");
     println!("Tool not found: {:?}", tool_not_found.error.message);
 
-    let resource_not_found = 
+    let resource_not_found =
         JsonRpcError::resource_not_found(request_id.clone(), "file:///missing.txt");
     println!("Resource not found: {:?}", resource_not_found.error.message);
 
@@ -101,10 +102,12 @@ async fn main() -> McpResult<()> {
             "field": "email",
             "reason": "Invalid email format",
             "provided": "not-an-email"
-        })
+        }),
     );
-    println!("Custom error: {:?} with data: {:?}", 
-        custom_error.error.message, custom_error.error.data);
+    println!(
+        "Custom error: {:?} with data: {:?}",
+        custom_error.error.message, custom_error.error.data
+    );
 
     // ========================================================================
     // FEATURE 3: Converting Errors to JsonRpcMessage
@@ -141,9 +144,12 @@ async fn main() -> McpResult<()> {
         json!({
             "status": "ok",
             "data": "Hello, World!"
-        })
+        }),
     )?;
-    println!("✅ Success response created with result: {:?}", success_response.result);
+    println!(
+        "✅ Success response created with result: {:?}",
+        success_response.result
+    );
 
     // Using the infallible success_unchecked method
     let unchecked_response = JsonRpcResponse::success_unchecked(
@@ -151,9 +157,12 @@ async fn main() -> McpResult<()> {
         json!({
             "status": "completed",
             "count": 42
-        })
+        }),
     );
-    println!("✅ Unchecked success response: {:?}", unchecked_response.result);
+    println!(
+        "✅ Unchecked success response: {:?}",
+        unchecked_response.result
+    );
 
     // ========================================================================
     // FEATURE 5: Alternative Server Creation Methods
@@ -163,15 +172,22 @@ async fn main() -> McpResult<()> {
     // Method 1: Direct construction with fluent configuration
     let server_direct = McpServer::new("direct-server".to_string(), "1.0.0".to_string())
         .with_capabilities(ServerCapabilities {
-            prompts: Some(PromptsCapability { list_changed: Some(true) }),
+            prompts: Some(PromptsCapability {
+                list_changed: Some(true),
+            }),
             resources: Some(ResourcesCapability {
                 subscribe: Some(true),
                 list_changed: Some(true),
             }),
-            tools: Some(ToolsCapability { list_changed: Some(true) }),
+            tools: Some(ToolsCapability {
+                list_changed: Some(true),
+            }),
             ..Default::default()
         });
-    println!("✅ Server created directly with fluent API: {}", server_direct.name());
+    println!(
+        "✅ Server created directly with fluent API: {}",
+        server_direct.name()
+    );
 
     // Method 2: Using builder() static method
     let server_from_builder = McpServer::builder()
@@ -179,7 +195,10 @@ async fn main() -> McpResult<()> {
         .version("1.0.0")
         .with_tools()
         .build();
-    println!("✅ Server created via builder() method: {}", server_from_builder.name());
+    println!(
+        "✅ Server created via builder() method: {}",
+        server_from_builder.name()
+    );
 
     // Method 3: With custom config
     let custom_config = ServerConfig {
@@ -188,13 +207,16 @@ async fn main() -> McpResult<()> {
         validate_requests: false,
         enable_logging: true,
     };
-    
+
     let server_with_config = McpServer::with_config(
         "config-server".to_string(),
         "1.0.0".to_string(),
-        custom_config
+        custom_config,
     );
-    println!("✅ Server created with custom config: {}", server_with_config.name());
+    println!(
+        "✅ Server created with custom config: {}",
+        server_with_config.name()
+    );
 
     // ========================================================================
     // FEATURE 6: Using Error Codes Constants
@@ -217,11 +239,12 @@ async fn main() -> McpResult<()> {
     let custom_with_code = JsonRpcError::new(
         request_id.clone(),
         error_codes::METHOD_NOT_FOUND,
-        "The requested method is not available"
+        "The requested method is not available",
     );
-    println!("\n✅ Error created with constant: code={}, message={}",
-        custom_with_code.error.code,
-        custom_with_code.error.message);
+    println!(
+        "\n✅ Error created with constant: code={}, message={}",
+        custom_with_code.error.code, custom_with_code.error.message
+    );
 
     // ========================================================================
     // SUMMARY

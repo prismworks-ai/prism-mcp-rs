@@ -24,7 +24,7 @@ The Prism MCP SDK provides a plugin architecture that enables developers to crea
 
 ### Related Documentation
 
-- [Plugin Component Types Reference](PLUGIN_TYPES.md) - Detailed specifications for each component type
+- [Plugin Component Types Reference](plugin-types.md) - Detailed specifications for each component type
 - [API Documentation](https://docs.rs/prism-mcp-rs) - Complete API reference (available after publication to crates.io)
 - [Examples](../examples/README.md) - Working plugin examples
 

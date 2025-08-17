@@ -7,9 +7,9 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::LATEST_PROTOCOL_VERSION;
 use crate::protocol::discovery::*;
 use crate::protocol::types::{ServerCapabilities, ServerInfo};
+use crate::protocol::LATEST_PROTOCOL_VERSION;
 
 /// Handler for RPC discovery requests
 pub struct DiscoveryHandler {

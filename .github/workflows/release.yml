@@ -20,66 +20,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Validate version and prepare release
-  prepare:
-    name: Prepare Release
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Determine version
-        id: version
-        run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          else
-            VERSION="${{ github.event.inputs.version }}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Release version: $VERSION"
-      
-      - name: Validate Cargo.toml version
-        run: |
-          CARGO_VERSION=$(grep "^version" Cargo.toml | head -1 | cut -d'"' -f2)
-          if [[ "$CARGO_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
-            echo "Error: Cargo.toml version ($CARGO_VERSION) doesn't match release version (${{ steps.version.outputs.version }})"
-            exit 1
-          fi
-      
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          release_name: Release v${{ steps.version.outputs.version }}
-          draft: true
-          prerelease: false
-          body: |
-            ## Changes in v${{ steps.version.outputs.version }}
-            
-            ### Features
-            - 
-            
-            ### Bug Fixes
-            - 
-            
-            ### Documentation
-            - 
-            
-            ### Breaking Changes
-            - 
-            
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
-
   # Build release artifacts
   build:
     name: Build Release
-    needs: prepare
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -103,6 +46,27 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+        shell: bash
+      
+      - name: Validate Cargo.toml version
+        run: |
+          CARGO_VERSION=$(grep "^version" Cargo.toml | head -1 | cut -d'"' -f2)
+          if [[ "$CARGO_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
+            echo "Error: Cargo.toml version ($CARGO_VERSION) doesn't match release version (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+        shell: bash
       
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -133,20 +97,69 @@ jobs:
           cd ../../../
         shell: bash
       
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ needs.prepare.outputs.upload_url }}
-          asset_path: ./${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.zip' || '.tar.gz' }}
-          asset_name: ${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.zip' || '.tar.gz' }}
-          asset_content_type: ${{ matrix.os == 'windows-latest' && 'application/zip' || 'application/gzip' }}
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.zip' || '.tar.gz' }}
+
+  # Create release and upload assets
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: Display structure of downloaded files
+        run: ls -R ./artifacts
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          draft: true
+          prerelease: false
+          files: ./artifacts/**/*
+          body: |
+            ## Changes in v${{ steps.version.outputs.version }}
+            
+            ### Features
+            - 
+            
+            ### Bug Fixes
+            - 
+            
+            ### Documentation
+            - 
+            
+            ### Breaking Changes
+            - 
+            
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
 
   # Publish to crates.io
   publish:
     name: Publish to crates.io
-    needs: [prepare, build]
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -164,8 +177,12 @@ jobs:
   # Generate and publish documentation
   docs:
     name: Publish Documentation
-    needs: prepare
+    needs: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       

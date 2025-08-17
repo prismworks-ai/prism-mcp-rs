@@ -11,8 +11,8 @@ use prism_mcp_rs::core::{
     metrics::global_metrics,
     retry::{CircuitBreakerConfig, RetryConfig, RetryPolicy},
 };
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 use tracing::{error, info, warn};

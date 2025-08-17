@@ -14,6 +14,7 @@
 //! # Usage Patterns
 //!
 //! ## Simple Server
+
 //! ```no_run
 //! use prism_mcp_rs::server::McpServer;
 //!
@@ -25,6 +26,7 @@
 //! ```
 //!
 //! ## Using ServerBuilder
+
 //! ```
 //! use prism_mcp_rs::server::{ServerBuilder, ServerConfig};
 //! use prism_mcp_rs::core::{Tool, Resource, Prompt};
@@ -36,10 +38,10 @@
 //!     .with_resources()  // Enable resources capability
 //!     .with_prompts()  // Enable prompts capability
 //!     .config(ServerConfig {
-//!         max_concurrent_requests: Some(1000),
-//!         request_timeout_ms: Some(60000),
-//!         enable_request_validation: true,
-//!         enable_response_validation: false,
+//!         validate_requests: true,
+//!         enable_logging: false,
+//!         max_concurrent_requests: 100,
+//!         request_timeout_ms: 30000,
 //!     })
 //!     .build();
 //! ```

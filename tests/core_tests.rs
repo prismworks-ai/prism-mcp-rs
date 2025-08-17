@@ -12,7 +12,7 @@ use prism_mcp_rs::{
     protocol::types::{Content, ToolResult},
     utils::uri::*,
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::collections::HashMap;
 
 #[cfg(test)]

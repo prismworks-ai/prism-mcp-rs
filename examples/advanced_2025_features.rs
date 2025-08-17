@@ -14,7 +14,7 @@
 
 use prism_mcp_rs::core::completion::CompletionContext;
 use prism_mcp_rs::prelude::*;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::path::Path;
 use tokio::fs;

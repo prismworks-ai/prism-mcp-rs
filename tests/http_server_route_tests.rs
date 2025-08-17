@@ -9,18 +9,18 @@
 #![cfg(feature = "http")]
 
 use axum::{
-    Json, Router,
     extract::State,
     http::StatusCode,
     response::sse::Event,
     routing::{get, post},
+    Json, Router,
 };
 use prism_mcp_rs::protocol::types::{
-    JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse, error_codes,
+    error_codes, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{sync::Arc, time::Duration};
-use tokio::sync::{RwLock, broadcast};
+use tokio::sync::{broadcast, RwLock};
 
 #[cfg(feature = "http")]
 mod http_server_route_tests {
@@ -72,12 +72,10 @@ mod http_server_route_tests {
 
             assert_eq!(error_response.id, json!(1));
             assert_eq!(error_response.error.code, error_codes::METHOD_NOT_FOUND);
-            assert!(
-                error_response
-                    .error
-                    .message
-                    .contains("No request handler configured")
-            );
+            assert!(error_response
+                .error
+                .message
+                .contains("No request handler configured"));
         }
     }
 
@@ -281,7 +279,7 @@ mod http_server_route_tests {
     #[cfg(all(feature = "tokio-stream", feature = "futures"))]
     #[tokio::test]
     async fn test_sse_stream_processing() {
-        use tokio_stream::{StreamExt, wrappers::BroadcastStream};
+        use tokio_stream::{wrappers::BroadcastStream, StreamExt};
 
         let (notification_sender, receiver) = broadcast::channel(1000);
 
@@ -322,7 +320,7 @@ mod http_server_route_tests {
     #[tokio::test]
     async fn test_sse_serialization_error_handling() {
         // Test handling of serialization errors in SSE
-        use tokio_stream::{StreamExt, wrappers::BroadcastStream};
+        use tokio_stream::{wrappers::BroadcastStream, StreamExt};
 
         let (notification_sender, receiver) = broadcast::channel(1000);
 
@@ -509,12 +507,10 @@ mod http_server_route_tests {
             );
 
             assert_eq!(error_response.error.code, error_code);
-            assert!(
-                error_response
-                    .error
-                    .message
-                    .contains(&error_code.to_string())
-            );
+            assert!(error_response
+                .error
+                .message
+                .contains(&error_code.to_string()));
             assert!(error_response.error.data.is_some());
 
             // Test conversion to JsonRpcMessage

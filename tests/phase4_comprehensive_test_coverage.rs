@@ -24,7 +24,7 @@ use serde_json::json;
 use std::{sync::Arc, time::Instant};
 use tokio::{
     sync::Mutex,
-    time::{Duration, sleep, timeout},
+    time::{sleep, timeout, Duration},
 };
 
 /// complete error scenario testing

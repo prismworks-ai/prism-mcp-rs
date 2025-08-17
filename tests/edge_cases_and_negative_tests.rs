@@ -457,12 +457,10 @@ mod edge_cases_and_negative_tests {
                 } else if message.get("result").is_some() {
                     assert!(message["result"].is_object());
                 } else if message.get("method").is_some() {
-                    assert!(
-                        message["method"]
-                            .as_str()
-                            .unwrap()
-                            .starts_with("notifications/")
-                    );
+                    assert!(message["method"]
+                        .as_str()
+                        .unwrap()
+                        .starts_with("notifications/"));
                 }
             }
 
@@ -506,12 +504,10 @@ mod edge_cases_and_negative_tests {
             assert_eq!(request["method"], "tools/call");
             assert!(request["id"].as_str().unwrap().contains("concurrent"));
             assert_eq!(request["params"]["name"], "file_analyzer");
-            assert!(
-                request["params"]["arguments"]["path"]
-                    .as_str()
-                    .unwrap()
-                    .contains(".txt")
-            );
+            assert!(request["params"]["arguments"]["path"]
+                .as_str()
+                .unwrap()
+                .contains(".txt"));
 
             let progress_token = request["params"]["_meta"]["progressToken"]
                 .as_str()

@@ -10,12 +10,12 @@ use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
 
 use crate::core::{
-    PromptInfo, ResourceInfo, ToolInfo,
     completion::{CompletionContext, CompletionHandler},
     error::{McpError, McpResult},
     prompt::{Prompt, PromptHandler},
     resource::{Resource, ResourceHandler},
     tool::{Tool, ToolHandler},
+    PromptInfo, ResourceInfo, ToolInfo,
 };
 use crate::protocol::{error_codes::*, messages::*, methods, types::*, validation::*};
 use crate::transport::traits::ServerTransport;
@@ -79,23 +79,23 @@ impl Default for ServerConfig {
 }
 
 /// MCP Server implementation
-/// 
+///
 /// The main server struct that handles MCP protocol communication, manages
 /// resources, tools, and prompts, and processes client requests.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ## Basic Server Creation
 /// ```
 /// use prism_mcp_rs::server::McpServer;
-/// 
+///
 /// let server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
 /// ```
-/// 
+///
 /// ## Using ServerBuilder
 /// ```
 /// use prism_mcp_rs::server::ServerBuilder;
-/// 
+///
 /// let server = ServerBuilder::new()
 ///     .name("my-server")
 ///     .version("1.0.0")
@@ -103,21 +103,22 @@ impl Default for ServerConfig {
 ///     .with_resources()
 ///     .build();
 /// ```
-/// 
+///
 /// ## Adding Tools
 /// ```no_run
 /// use prism_mcp_rs::server::McpServer;
 /// use prism_mcp_rs::core::{Tool, ToolHandler};
+/// use prism_mcp_rs::core::error::McpError;
 /// use serde_json::{json, Value};
 /// use async_trait::async_trait;
 /// use std::collections::HashMap;
-/// 
+///
 /// struct MyTool;
-/// 
+///
 /// #[async_trait]
 /// impl ToolHandler for MyTool {
-///     async fn call(&self, _args: HashMap<String, Value>) 
-///         -> Result<prism_mcp_rs::protocol::ToolResult, Box<dyn std::error::Error + Send + Sync>> 
+///     async fn call(&self, _args: HashMap<String, Value>)
+///         -> Result<prism_mcp_rs::protocol::ToolResult, McpError>
 ///     {
 ///         Ok(prism_mcp_rs::protocol::ToolResult {
 ///             content: vec![],
@@ -127,20 +128,17 @@ impl Default for ServerConfig {
 ///         })
 ///     }
 /// }
-/// 
+///
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut server = McpServer::new("server".to_string(), "1.0.0".to_string());
-/// 
-/// let tool = Tool {
-///     info: prism_mcp_rs::protocol::ToolInfo {
-///         name: "my_tool".to_string(),
-///         description: Some("My custom tool".to_string()),
-///         input_schema: json!({}),
-///     },
-///     handler: Box::new(MyTool),
-/// };
-/// 
-/// server.add_tool(tool).await?;
+///
+/// // Add tool using the add_tool method directly
+/// server.add_tool(
+///     "my_tool",
+///     Some("My custom tool"),
+///     json!({}),
+///     MyTool
+/// ).await?;
 /// # Ok(())
 /// # }
 /// ```
@@ -1020,14 +1018,14 @@ impl McpServer {
     /// 4. smoothly shuts down the server
     ///
     /// # Example
-    /// ```rust,ignore
+    /// ```rust,no_run
     /// use prism_mcp_rs::prelude::*;
     ///
     /// #[tokio::main]
     /// async fn main() -> McpResult<()> {
-    /// let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
-    /// // . add tools, resources, prompts ...
-    /// server.run_with_stdio().await
+    ///     let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
+    ///     // . add tools, resources, prompts ...
+    ///     server.run_with_stdio().await
     /// }
     /// ```
     #[cfg(feature = "stdio")]
@@ -1059,16 +1057,17 @@ impl McpServer {
     /// * `transport` - The transport to use for communication
     ///
     /// # Example
-    /// ```rust,ignore
+    /// ```rust,no_run
     /// use prism_mcp_rs::prelude::*;
+    /// use prism_mcp_rs::transport::stdio::StdioServerTransport;
     ///
     /// #[tokio::main]
     /// async fn main() -> McpResult<()> {
-    /// let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
-    /// // . add tools, resources, prompts ...
+    ///     let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
+    ///     // . add tools, resources, prompts ...
     ///
-    /// let transport = StdioServerTransport::new();
-    /// server.run_with_transport(transport).await
+    ///     let transport = StdioServerTransport::new();
+    ///     server.run_with_transport(transport).await
     /// }
     /// ```
     pub async fn run_with_transport<T>(mut self, transport: T) -> McpResult<()>

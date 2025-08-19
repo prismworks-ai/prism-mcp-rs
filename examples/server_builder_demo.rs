@@ -5,7 +5,6 @@
 
 use prism_mcp_rs::prelude::*;
 use serde_json::json;
-use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() -> McpResult<()> {

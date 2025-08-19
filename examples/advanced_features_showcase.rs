@@ -654,17 +654,18 @@ async fn demo_streaming_http_transport() -> McpResult<()> {
 
         // Custom configuration
         println!("\n3. Custom Configuration:");
-        #[cfg(feature = "streaming-compression")]
-        let custom_config = StreamingConfig {
-            chunk_threshold: 16384,
-            chunk_size: 32768,
-            enable_compression: true,
-            compression_type: CompressionType::Brotli,
-            enable_http2_server_push: true,
-            adaptive_chunk_sizing: true,
-            ..StreamingConfig::default()
-        };
-        #[cfg(not(feature = "streaming-compression"))]
+        // NOTE: streaming-compression feature doesn't exist yet
+        // #[cfg(feature = "streaming-compression")]
+        // let custom_config = StreamingConfig {
+        //     chunk_threshold: 16384,
+        //     chunk_size: 32768,
+        //     enable_compression: true,
+        //     compression_type: CompressionType::Brotli,
+        //     enable_http2_server_push: true,
+        //     adaptive_chunk_sizing: true,
+        //     ..StreamingConfig::default()
+        // };
+        // #[cfg(not(feature = "streaming-compression"))]
         let custom_config = StreamingConfig {
             chunk_threshold: 16384,
             chunk_size: 32768,

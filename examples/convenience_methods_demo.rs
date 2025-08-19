@@ -98,8 +98,9 @@ impl ResourceHandler for StatusResourceHandler {
 #[tokio::main]
 async fn main() -> McpResult<()> {
     // Initialize logging
-    #[cfg(feature = "tracing-subscriber")]
-    tracing_subscriber::fmt::init();
+    // NOTE: tracing-subscriber feature doesn't exist in the crate yet
+    // #[cfg(feature = "tracing-subscriber")]
+    // tracing_subscriber::fmt::init();
 
     // Parse command line arguments
     let args: Vec<String> = env::args().collect();

@@ -172,12 +172,14 @@ async fn demo_performance_improved() -> McpResult<()> {
             config.max_concurrent_chunks
         );
 
-        #[cfg(feature = "streaming-compression")]
-        println!(
-            "  • complete compression: {:?} (Brotli for best ratio)",
-            config.compression_type
-        );
-        #[cfg(not(feature = "streaming-compression"))]
+        // NOTE: streaming-compression feature doesn't exist yet
+        // #[cfg(feature = "streaming-compression")]
+        // println!(
+        //     "  • complete compression: {:?} (Brotli for best ratio)",
+        //     config.compression_type
+        // );
+        // NOTE: Show message about compression when feature is not enabled
+        // #[cfg(not(feature = "streaming-compression"))]
         println!(
             "  • Compression: {:?} (enable streaming-compression for Brotli/Zstd)",
             config.compression_type
@@ -229,27 +231,28 @@ async fn demo_custom_configuration() -> McpResult<()> {
         );
 
         // Example 2: complete compression
-        #[cfg(feature = "streaming-compression")]
-        {
-            println!("\n2. complete Compression:");
-            let config2 = StreamingConfig {
-                enable_compression: true,
-                compression_type: CompressionType::Brotli,
-                ..StreamingConfig::default()
-            };
-            println!("   • Using Brotli compression for maximum efficiency");
-
-            let config3 = StreamingConfig {
-                enable_compression: true,
-                compression_type: CompressionType::Zstd,
-                ..StreamingConfig::default()
-            };
-            println!("   • Using Zstd compression for balanced speed/ratio");
-        }
+        // NOTE: streaming-compression feature doesn't exist yet
+        // #[cfg(feature = "streaming-compression")]
+        // {
+        //     println!("\n2. complete Compression:");
+        //     let config2 = StreamingConfig {
+        //         enable_compression: true,
+        //         compression_type: CompressionType::Brotli,
+        //         ..StreamingConfig::default()
+        //     };
+        //     println!("   • Using Brotli compression for maximum efficiency");
+        //
+        //     let config3 = StreamingConfig {
+        //         enable_compression: true,
+        //         compression_type: CompressionType::Zstd,
+        //         ..StreamingConfig::default()
+        //     };
+        //     println!("   • Using Zstd compression for balanced speed/ratio");
+        // }
 
         // Example 3: Flow control
         println!("\n3. Flow Control:");
-        let config4 = StreamingConfig {
+        let _config4 = StreamingConfig {
             max_concurrent_chunks: 5,
             backpressure_threshold: 256 * 1024, // 256KB
             adaptive_chunk_sizing: true,
@@ -380,6 +383,9 @@ async fn demo_compression_showcase() -> McpResult<()> {
     println!("🗜️ Demo 6: Compression Effectiveness");
     println!("===================================\n");
 
+    // NOTE: streaming-compression feature doesn't exist yet
+    // This entire demo is commented out
+    /*
     #[cfg(feature = "streaming-compression")]
     {
         use prism_mcp_rs::transport::streaming_http::StreamingCompressor;
@@ -463,17 +469,19 @@ async fn demo_compression_showcase() -> McpResult<()> {
         println!("  • Up to 75% size reduction for text content");
         println!("  • Entropy-based compression ratio estimation\n");
     }
+    */
 
-    #[cfg(not(feature = "streaming-compression"))]
-    {
+    // #[cfg(not(feature = "streaming-compression"))]
+    // {
         println!("Warning:  complete compression features not enabled");
         println!("   Enable with: --features streaming-compression\n");
-    }
+    // }
 
     Ok(())
 }
 
 /// Create test payloads of different sizes for demonstration
+#[allow(dead_code)]
 fn create_test_payload(
     size_bytes: usize,
     payload_type: &str,
@@ -541,6 +549,7 @@ fn create_test_payload(
 }
 
 /// Simulate performance benchmarking
+#[allow(dead_code)]
 async fn simulate_request_with_timing(payload_size: usize, transport_type: &str) -> Duration {
     let start = Instant::now();
 

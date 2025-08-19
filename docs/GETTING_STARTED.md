@@ -1,368 +1,478 @@
-# Getting Started with Prism MCP SDK
-
-This guide walks you through installing the Prism MCP SDK, setting up your development environment, and building your first MCP application.
-
-## Table of Contents
-
-1. [Prerequisites](#prerequisites)
-2. [Installation](#installation)
-3. [Your First MCP Server](#your-first-mcp-server)
-4. [Your First MCP Client](#your-first-mcp-client)
-5. [Understanding the Core Concepts](#understanding-the-core-concepts)
-6. [Next Steps](#next-steps)
+# Getting Started
 
 ## Prerequisites
 
-Before you begin, ensure you have:
+### System Requirements
 
-- **Rust 1.85 or later** - Install from [rustup.rs](https://rustup.rs/)
-- **Cargo** - Included with Rust installation
-- **Basic Rust knowledge** - Familiarity with async/await and trait concepts
+- **Rust** 1.85.0 or later (MSRV)
+- **Operating System** - Linux, macOS, Windows
+- **Memory** - Minimum 512MB RAM
+- **Network** - Required for HTTP/WebSocket transports
+
+### Development Environment
+
+```bash
+# Install Rust toolchain
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Verify installation
+rustc --version  # Should show 1.85.0 or later
+cargo --version
+```
 
 ## Installation
 
 ### Creating a New Project
 
-1. Create a new Rust project:
-
 ```bash
-mkdir my-mcp-project
-cd my-mcp-project
-cargo init
+cargo new mcp-application
+cd mcp-application
 ```
 
-2. Add the Prism MCP SDK to your `Cargo.toml`:
+### Adding Dependencies
+
+#### Minimal Configuration
 
 ```toml
+# Cargo.toml
 [dependencies]
 prism-mcp-rs = "0.1.0"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.34", features = ["rt-multi-thread", "macros"] }
 serde_json = "1.0"
 async-trait = "0.1"
 ```
 
-For additional features like WebSocket or HTTP transport:
+#### Production Configuration
 
 ```toml
+# Cargo.toml
 [dependencies]
-prism-mcp-rs = {
+prism-mcp-rs = { 
     version = "0.1.0",
-    features = ["websocket", "http"]
+    features = ["http2", "compression", "auth", "tls", "plugin"]
 }
+tokio = { version = "1.34", features = ["full"] }
+serde_json = "1.0"
+async-trait = "0.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1.0"
 ```
 
-## Your First MCP Server
+## Building Your First Server
 
-Let's create a simple MCP server that provides a "hello" tool.
-
-### Step 1: Create the Tool Handler
-
-Create `src/main.rs`:
+### Basic Implementation
 
 ```rust
+// src/main.rs
 use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::server::McpServer;
 use async_trait::async_trait;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-// Define a handler for our "hello" tool
-struct HelloHandler;
+// Define a tool handler
+struct EchoHandler;
 
 #[async_trait]
-impl ToolHandler for HelloHandler {
-    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        // Get the name argument, or use "World" as default
-        let name = arguments
-            .get("name")
+impl ToolHandler for EchoHandler {
+    async fn call(
+        &self,
+        arguments: HashMap<String, Value>
+    ) -> McpResult<ToolResult> {
+        let message = arguments
+            .get("message")
             .and_then(|v| v.as_str())
-            .unwrap_or("World");
+            .unwrap_or("No message provided");
         
-        // Return a greeting
-        Ok(ToolResult::text(format!("Hello, {}!", name)))
+        Ok(ToolResult::text(message.to_string()))
     }
 }
-```
 
-### Step 2: Create and Configure the Server
-
-Add to your `main.rs`:
-
-```rust
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    // Create a new MCP server
+    // Initialize logging
+    tracing_subscriber::fmt()
+        .with_env_filter("info")
+        .init();
+    
+    // Create server instance
     let mut server = McpServer::new(
-        "hello-server".to_string(),
+        "echo-server".to_string(),
         "1.0.0".to_string()
     );
     
-    // Register the "hello" tool
+    // Register tool
     server.add_tool(
-        "hello".to_string(),
-        Some("Greets a user by name".to_string()),
+        "echo".to_string(),
+        Some("Echoes the provided message".to_string()),
         json!({
             "type": "object",
             "properties": {
-                "name": {
+                "message": {
                     "type": "string",
-                    "description": "The name to greet"
+                    "description": "Message to echo"
                 }
             },
-            "required": []
+            "required": ["message"]
         }),
-        HelloHandler,
+        EchoHandler,
     ).await?;
     
-    // Start the server with STDIO transport
-    println!("Starting Hello MCP Server...");
+    // Start server with STDIO transport
+    tracing::info!("Starting MCP server on STDIO");
     server.run_with_stdio().await
 }
 ```
 
-### Step 3: Run the Server
+### Running the Server
 
 ```bash
+# Build the application
+cargo build --release
+
+# Run the server
 cargo run
+
+# Or run the compiled binary
+./target/release/mcp-application
 ```
 
-Your server is now running and listening for MCP commands via standard input/output!
+## Building Your First Client
 
-## Your First MCP Client
-
-Now let's create a client that can connect to and interact with MCP servers.
-
-### Step 1: Create a Client Application
-
-Create a new file `src/bin/client.rs`:
+### Client Implementation
 
 ```rust
-use prism_mcp_rs::prelude::*;
+// examples/client.rs
 use prism_mcp_rs::client::ClientSession;
 use prism_mcp_rs::transport::stdio::StdioClientTransport;
 use serde_json::json;
 use std::collections::HashMap;
 
 #[tokio::main]
-async fn main() -> McpResult<()> {
-    // Create a transport to connect to the server
-    // Replace "path/to/server" with the actual server executable path
-    let transport = StdioClientTransport::new_with_command("./target/debug/my-mcp-project");
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Create transport connected to server process
+    let transport = StdioClientTransport::new_with_command(
+        "./target/release/mcp-application"
+    );
     
-    // Create a client session
+    // Initialize client session
     let mut session = ClientSession::new(transport);
     
-    // Initialize the connection
-    session.initialize(
-        "hello-client".to_string(),
-        "1.0.0".to_string(),
+    // Connect and initialize
+    let init_result = session.initialize(
+        "test-client".to_string(),
+        "1.0.0".to_string()
     ).await?;
     
-    println!("Connected to server!");
+    println!("Connected to: {}", init_result.server_info.name);
+    println!("Server version: {}", init_result.server_info.version);
     
     // List available tools
     let tools = session.list_tools().await?;
-    println!("Available tools:");
     for tool in &tools.tools {
-        println!("  - {}: {:?}", tool.name, tool.description);
+        println!("Available tool: {}", tool.name);
+        if let Some(desc) = &tool.description {
+            println!("  Description: {}", desc);
+        }
     }
     
-    // Call the hello tool
-    let result = session.call_tool(
-        "hello",
-        Some(HashMap::from([
-            ("name".to_string(), json!("Alice")),
-        ])),
-    ).await?;
+    // Call the echo tool
+    let arguments = HashMap::from([
+        ("message".to_string(), json!("Hello, MCP!"))
+    ]);
     
-    println!("Server response: {:?}", result);
+    let result = session.call_tool("echo", Some(arguments)).await?;
+    println!("Echo response: {:?}", result);
     
     Ok(())
 }
 ```
 
-### Step 2: Run the Client
+## Transport Configuration
 
-Add a binary target to your `Cargo.toml`:
-
-```toml
-[[bin]]
-name = "client"
-path = "src/bin/client.rs"
-```
-
-Then run:
-
-```bash
-cargo run --bin client
-```
-
-## Understanding the Core Concepts
-
-### Tools
-
-**Tools** are executable functions that perform operations. They:
-- Accept typed arguments (as JSON)
-- Return results or errors
-- Can be synchronous or asynchronous
-- Are the primary way to expose functionality
-
-### Resources
-
-**Resources** provide access to data through URI-based addressing:
-- Read-only access to content
-- Support parameterized queries
-- Return structured or unstructured data
-
-Example resource handler:
+### HTTP Transport
 
 ```rust
-use prism_mcp_rs::core::ResourceHandler;
+use prism_mcp_rs::transport::http::{HttpServerTransport, HttpClientTransport};
 
-struct FileResource;
+// Server configuration
+let server_transport = HttpServerTransport::new("127.0.0.1:8080").await?;
+server.run_with_transport(server_transport).await?;
 
-#[async_trait]
-impl ResourceHandler for FileResource {
-    async fn read(
-        &self,
-        uri: &str,
-        params: &HashMap<String, String>,
-    ) -> McpResult<Vec<ResourceContents>> {
-        // Implementation to read file content
-        if let Some(path) = uri.strip_prefix("file://") {
-            let content = tokio::fs::read_to_string(path).await?;
-            Ok(vec![ResourceContents::Text {
-                uri: uri.to_string(),
-                mime_type: Some("text/plain".to_string()),
-                text: content,
-                meta: None,
-            }])
-        } else {
-            Err(McpError::ResourceNotFound(uri.to_string()))
-        }
-    }
-}
+// Client configuration
+let client_transport = HttpClientTransport::new("http://localhost:8080").await?;
+let mut session = ClientSession::new(client_transport);
 ```
 
-### Prompts
+### WebSocket Transport
 
-**Prompts** generate message templates for LLM interactions:
-- Create structured conversation contexts
-- Support dynamic parameter substitution
-- Return role-based message sequences
+```rust
+use prism_mcp_rs::transport::websocket::{WebSocketServerTransport, WebSocketClientTransport};
 
-### Transports
+// Server configuration
+let server_transport = WebSocketServerTransport::new("127.0.0.1:9000").await?;
+server.run_with_transport(server_transport).await?;
 
-The SDK supports multiple transport mechanisms:
+// Client configuration
+let client_transport = WebSocketClientTransport::new("ws://localhost:9000").await?;
+let mut session = ClientSession::new(client_transport);
+```
 
-- **STDIO** (default) - Communication via standard input/output
-- **WebSocket** - Real-time bidirectional communication
-- **HTTP/SSE** - HTTP with Server-Sent Events for streaming
+## Advanced Features
+
+### Enabling Resilience
+
+```rust
+use prism_mcp_rs::client::SessionConfig;
+use prism_mcp_rs::core::retry::{RetryConfig, CircuitBreakerConfig};
+use std::time::Duration;
+
+let config = SessionConfig {
+    retry_config: RetryConfig {
+        max_attempts: 3,
+        initial_delay_ms: 100,
+        max_delay_ms: 5000,
+        exponential_base: 2.0,
+        jitter: true,
+        ..Default::default()
+    },
+    enable_circuit_breaker: true,
+    circuit_breaker_config: CircuitBreakerConfig {
+        failure_threshold: 5,
+        recovery_timeout: Duration::from_secs(30),
+        half_open_max_requests: 3,
+    },
+    ..Default::default()
+};
+
+let mut session = ClientSession::new_with_config(transport, config);
+```
+
+### Adding Authentication
+
+```rust
+use prism_mcp_rs::auth::{AuthConfig, TokenValidator};
+
+let auth_config = AuthConfig {
+    require_auth: true,
+    token_header: "Authorization".to_string(),
+    token_prefix: "Bearer ".to_string(),
+};
+
+server.set_auth_config(auth_config);
+server.set_token_validator(Box::new(MyTokenValidator));
+```
+
+### Implementing Resources
+
+```rust
+use prism_mcp_rs::core::resource::{Resource, ResourceHandler};
+
+#[async_trait]
+impl ResourceHandler for FileResourceHandler {
+    async fn read(
+        &self,
+        uri: &str
+    ) -> McpResult<ResourceContents> {
+        let path = uri.strip_prefix("file://")
+            .ok_or_else(|| McpError::invalid_params("Invalid URI"))?;
+        
+        let content = tokio::fs::read_to_string(path).await
+            .map_err(|e| McpError::internal(format!("Failed to read file: {}", e)))?;
+        
+        Ok(ResourceContents::Text(TextContent {
+            text: content,
+            mime_type: Some("text/plain".to_string()),
+        }))
+    }
+}
+
+// Register resource handler
+server.add_resource(
+    "file".to_string(),
+    Some("File system resource".to_string()),
+    FileResourceHandler,
+).await?;
+```
 
 ## Error Handling
 
-The SDK provides comprehensive error handling:
+### Structured Error Management
 
 ```rust
-use prism_mcp_rs::McpError;
+use prism_mcp_rs::core::error::{McpError, McpResult};
 
 #[async_trait]
-impl ToolHandler for MyHandler {
-    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        // Validate required parameters
-        let required = arguments.get("required_field")
-            .ok_or_else(|| McpError::InvalidParams {
-                message: "Missing required_field".to_string(),
-            })?;
+impl ToolHandler for ValidatedHandler {
+    async fn call(
+        &self,
+        arguments: HashMap<String, Value>
+    ) -> McpResult<ToolResult> {
+        // Input validation
+        let value = arguments
+            .get("value")
+            .and_then(|v| v.as_f64())
+            .ok_or_else(|| McpError::invalid_params("Missing or invalid 'value' parameter"))?;
         
-        // Handle operation errors
-        match perform_operation(required) {
-            Ok(result) => Ok(ToolResult::text(result)),
-            Err(e) => Ok(ToolResult::error(format!("Operation failed: {}", e)))
+        // Business logic validation
+        if value < 0.0 {
+            return Err(McpError::invalid_params("Value must be non-negative"));
+        }
+        
+        // Operation that might fail
+        let result = self.process_value(value)
+            .await
+            .map_err(|e| McpError::internal(format!("Processing failed: {}", e)))?;
+        
+        Ok(ToolResult::text(format!("Result: {}", result)))
+    }
+}
+```
+
+## Testing
+
+### Unit Testing
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio;
+
+    #[tokio::test]
+    async fn test_echo_handler() {
+        let handler = EchoHandler;
+        let mut args = HashMap::new();
+        args.insert("message".to_string(), json!("test"));
+        
+        let result = handler.call(args).await.unwrap();
+        
+        match result {
+            ToolResult::Text(text) => assert_eq!(text.text, "test"),
+            _ => panic!("Expected text result"),
         }
     }
 }
 ```
 
-## Configuration
-
-### Transport Selection
-
-Configure transport based on your deployment needs:
+### Integration Testing
 
 ```rust
-use prism_mcp_rs::server::McpServer;
-
-#[tokio::main]
-async fn main() -> McpResult<()> {
-    let server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
+#[tokio::test]
+async fn test_server_client_integration() {
+    // Start server in background
+    let server_handle = tokio::spawn(async {
+        let mut server = create_test_server();
+        server.run_with_stdio().await
+    });
     
-    // Choose transport based on environment
-    match std::env::var("MCP_TRANSPORT").as_deref() {
-        Ok("websocket") => {
-            #[cfg(feature = "websocket")]
-            server.run_with_websocket("127.0.0.1:8080").await?
-        }
-        Ok("http") => {
-            #[cfg(feature = "http")]
-            server.run_with_http("127.0.0.1:3000").await?
-        }
-        _ => server.run_with_stdio().await?
-    }
+    // Give server time to start
+    tokio::time::sleep(Duration::from_millis(100)).await;
     
-    Ok(())
+    // Connect client
+    let transport = StdioClientTransport::new_with_command("./test-server");
+    let mut session = ClientSession::new(transport);
+    
+    // Test initialization
+    let init = session.initialize("test".to_string(), "1.0".to_string()).await;
+    assert!(init.is_ok());
+    
+    // Cleanup
+    server_handle.abort();
 }
 ```
 
-### Logging
+## Performance Optimization
 
-Enable logging for debugging:
+### Connection Pooling
 
 ```rust
-use env_logger;
+use prism_mcp_rs::transport::http::HttpClientTransportBuilder;
 
-fn main() {
-    env_logger::init();
-    // Your application code
-}
+let transport = HttpClientTransportBuilder::new()
+    .base_url("http://localhost:8080")
+    .connection_pool_size(10)
+    .timeout(Duration::from_secs(30))
+    .build()
+    .await?;
 ```
 
-Run with logging:
+### Request Batching
+
+```rust
+use prism_mcp_rs::protocol::batch::{BatchRequest, BatchOperation};
+
+let batch = BatchRequest {
+    operations: vec![
+        BatchOperation {
+            id: "1".to_string(),
+            method: "tools/call".to_string(),
+            params: json!({"name": "tool1", "arguments": {}}),
+        },
+        BatchOperation {
+            id: "2".to_string(),
+            method: "tools/call".to_string(),
+            params: json!({"name": "tool2", "arguments": {}}),
+        },
+    ],
+};
+
+let results = session.execute_batch(batch).await?;
+```
+
+## Deployment
+
+### Building for Production
 
 ```bash
-RUST_LOG=debug cargo run
+# Optimized release build
+cargo build --release --features production
+
+# Strip debug symbols
+strip target/release/mcp-application
+
+# Verify binary
+ldd target/release/mcp-application  # Linux
+otool -L target/release/mcp-application  # macOS
+```
+
+### Docker Deployment
+
+```dockerfile
+# Dockerfile
+FROM rust:1.85 AS builder
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --release --features production
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/mcp-application /usr/local/bin/
+EXPOSE 8080
+CMD ["mcp-application"]
 ```
 
 ## Next Steps
 
-### Explore Advanced Features
+### Recommended Reading
 
-1. **Plugin Development** - See [docs/guides/plugins.md](guides/plugins.md)
-2. **Authentication** - See [docs/guides/authentication.md](guides/authentication.md)
-3. **Error Handling** - See [docs/guides/error-handling.md](guides/error-handling.md)
-4. **Performance** - See [docs/guides/performance.md](guides/performance.md)
+1. [Architecture Guide](ARCHITECTURE.md) - System design and components
+2. [Performance Guide](guides/performance.md) - Optimization techniques
+3. [Plugin Development](guides/plugins.md) - Creating extensions
+4. [Authentication Guide](guides/authentication.md) - Security implementation
 
-### Example Projects
+### Advanced Topics
 
-Explore the [examples directory](../examples/) for complete implementations:
-
-- `async_server.rs` - Async server with multiple handlers
-- `bidirectional.rs` - Bidirectional client-server communication
-- `custom_transport.rs` - Implementing custom transports
-- `server_builder_demo.rs` - Advanced server configuration
-
-### API Documentation
-
-For detailed API documentation:
-
-```bash
-cargo doc --open
-```
-
-Or visit [docs.rs/prism-mcp-rs](https://docs.rs/prism-mcp-rs) after the crate is published.
+- Schema introspection for dynamic discovery
+- Custom transport implementation
+- Distributed deployment patterns
+- Monitoring and observability setup
 
 ### Community Resources
 
-- [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues) - Report bugs or request features
-- [GitHub Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions) - Ask questions and share ideas
-- [Contributing Guide](../CONTRIBUTING.md) - Learn how to contribute to the project
+- [GitHub Repository](https://github.com/prismworks-ai/prism-mcp-rs)
+- [API Documentation](https://docs.rs/prism-mcp-rs)
+- [Discord Community](https://discord.gg/prismworks)
+- [Example Applications](https://github.com/prismworks-ai/prism-mcp-rs/tree/main/examples)

@@ -12,11 +12,8 @@
 // ! Run with: cargo run --example sse_showcase --features sse
 
 use prism_mcp_rs::prelude::*;
-use prism_mcp_rs::transport::{HttpClientTransport, HttpServerTransport, Transport};
-use serde_json::json;
-use std::sync::Arc;
+use prism_mcp_rs::transport::HttpClientTransport;
 use std::time::Duration;
-use tokio::sync::RwLock;
 use tokio::time::sleep;
 use tracing::{error, info, warn};
 
@@ -67,7 +64,7 @@ async fn demo_server_setup() {
     info!("  - heartbeat   : Keep-alive signals");
 }
 
-async fn demo_sse_client(client: HttpClientTransport) -> McpResult<()> {
+async fn demo_sse_client(_client: HttpClientTransport) -> McpResult<()> {
     info!("\n🔌 SSE Client Operations:");
     info!("==============================");
 

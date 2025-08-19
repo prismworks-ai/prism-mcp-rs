@@ -178,7 +178,7 @@ async fn main() -> McpResult<()> {
     println!("✅ Server configured with echo tool");
 
     // Create custom transport
-    let mut transport = MemoryTransport::new();
+    let transport = MemoryTransport::new();
 
     // Start server with custom transport
     server.start(transport.clone()).await?;

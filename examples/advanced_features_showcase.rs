@@ -645,8 +645,9 @@ async fn demo_streaming_http_transport() -> McpResult<()> {
             "   • HTTP/2 Server Push: {}",
             perf_config.enable_http2_server_push
         );
-        #[cfg(feature = "streaming-compression")]
-        println!(
+        // NOTE: streaming-compression feature doesn't exist yet
+        // #[cfg(feature = "streaming-compression")]
+        // println!(
             "   • complete compression: {:?}",
             perf_config.compression_type
         );

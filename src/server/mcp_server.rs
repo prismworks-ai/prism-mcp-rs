@@ -1058,7 +1058,7 @@ impl McpServer {
     /// # Example
     /// ```rust,no_run
     /// use prism_mcp_rs::prelude::*;
-    /// 
+    ///
     /// #[cfg(feature = "stdio")]
     /// use prism_mcp_rs::transport::stdio::StdioServerTransport;
     ///

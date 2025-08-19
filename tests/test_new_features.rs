@@ -162,20 +162,20 @@ fn test_progress_token_in_metadata() {
 // #[test]
 // fn test_streaming_http_exists() {
 //     use prism_mcp_rs::transport::streaming_http::*;
-// 
+//
 //     // Test that streaming config exists
 //     let config = StreamingConfig::default();
 //     assert!(config.enable_chunked_transfer);
 //     assert_eq!(config.chunk_threshold, 8192);
-// 
+//
 //     // Test memory improved config
 //     let mem_config = StreamingConfig::memory_improved();
 //     assert_eq!(mem_config.chunk_threshold, 4096);
-// 
+//
 //     // Test performance improved config
 //     let perf_config = StreamingConfig::performance_improved();
 //     assert_eq!(perf_config.chunk_threshold, 32768);
-// 
+//
 //     // Test content analyzer
 //     let analyzer = ContentAnalyzer::new();
 //     assert_eq!(analyzer.streaming_threshold(), 8192);

@@ -648,9 +648,9 @@ async fn demo_streaming_http_transport() -> McpResult<()> {
         // NOTE: streaming-compression feature doesn't exist yet
         // #[cfg(feature = "streaming-compression")]
         // println!(
-            "   • complete compression: {:?}",
-            perf_config.compression_type
-        );
+        //     "   • complete compression: {:?}",
+        //     perf_config.compression_type
+        // );
 
         // Custom configuration
         println!("\n3. Custom Configuration:");

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 MCP Rust Contributors
+// Copyright (c) 2025 Prismworks AI Inc.
 // SPDX-License-Identifier: MIT
 
 //! # MCP Rust SDK (2025-06-18)

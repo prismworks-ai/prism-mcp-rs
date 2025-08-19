@@ -284,7 +284,7 @@ mod tests {
     // Test utilities are now in a separate crate
     // Add to your Cargo.toml:
     // [dev-dependencies]
-    // prism-test-utils = { git = "https://github.com/prismworks-ai/mcp-rs-dev" }
+    // prism-test-utils = { git = "https://github.com/prismworks-ai/prism-mcp-tools" }
     use prism_test_utils::*;
     
     #[test]

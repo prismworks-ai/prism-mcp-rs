@@ -43,6 +43,38 @@ prism-mcp-rs = "0.1.0"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 async-trait = "0.1"
+
+# For development tools (CLI, macros, testing, etc.)
+[dev-dependencies]
+prism-mcp-rs-dev = "0.1"
+```
+
+#### For Procedural Macros (Zero Boilerplate!)
+
+If you want to use the `#[tool]` macros in production:
+
+```toml
+[dependencies]
+prism-mcp-rs = "0.1.0"
+prism-mcp-rs-dev = { version = "0.1", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+serde_json = "1.0"
+async-trait = "0.1"
+```
+
+#### Install CLI Tools (Highly Recommended!)
+
+```bash
+cargo install prism-mcp-rs-dev
+```
+
+This gives you the `prism-mcp` command with powerful development tools:
+- `prism-mcp init` - Create new projects with templates
+- `prism-mcp generate` - Generate tools and handlers
+- `prism-mcp dev` - Development server with hot reload
+- `prism-mcp test` - Test your tools interactively
+- `prism-mcp build` - Build optimized binaries
+- `prism-mcp deploy` - Deploy to MCP registry
 ```
 
 ### Hello World Server
@@ -107,6 +139,46 @@ async fn main() -> McpResult<()> {
     Ok(())
 }
 ```
+
+
+## 🛠️ Development Toolkit
+
+For a complete development experience, use **[prism-mcp-rs-dev](https://github.com/prismworks-ai/prism-mcp-rs-dev)**:
+
+### Features
+- **CLI Tool**: Project scaffolding, code generation, testing
+- **Procedural Macros**: Zero-boilerplate tool creation with `#[tool]`
+- **Dev Server**: Hot reload, web UI, request logging
+- **Testing Framework**: Specialized utilities for MCP tools
+- **Profiler**: Performance analysis and optimization
+- **Schema Tools**: JSON schema generation and validation
+
+### Quick Example with Macros
+
+```rust
+use prism_mcp_rs_dev::tool;
+
+#[tool(
+    description = "Calculate loan payment",
+    cacheable = true
+)]
+async fn calculate_payment(
+    #[min(1000)] #[max(1000000)] principal: f64,
+    #[min(0.1)] #[max(30.0)] annual_rate: f64,
+    #[min(1)] #[max(360)] months: u32,
+) -> Result<f64, String> {
+    // Automatic validation of all parameters!
+    let monthly_rate = annual_rate / 100.0 / 12.0;
+    let payment = principal * monthly_rate * 
+        (1.0 + monthly_rate).powi(months as i32) /
+        ((1.0 + monthly_rate).powi(months as i32) - 1.0);
+    Ok(payment)
+}
+
+// That's it! No boilerplate needed!
+```
+
+Compare this to 89+ lines of traditional code!
 
 ## Features
 
@@ -182,9 +254,9 @@ make coverage           # Generate coverage report
 
 ## Related Projects
 
-- [mcp-rs-dev](https://github.com/prismworks-ai/mcp-rs-dev) - Production tools and utilities
-- [mcp-rs-plugins](https://github.com/prismworks-ai/mcp-rs-plugins) - Community plugin collection
-- [mcp-rs-registry](https://github.com/prismworks-ai/mcp-rs-registry) - Plugin registry
+- [prism-mcp-tools](https://github.com/prismworks-ai/prism-mcp-tools) - Production tools and utilities
+- [prism-mcp-plugins](https://github.com/prismworks-ai/prism-mcp-plugins) - Community plugin collection
+- [prism-mcp-registry](https://github.com/prismworks-ai/prism-mcp-registry) - Plugin registry
 
 ## Support
 

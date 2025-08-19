@@ -157,10 +157,6 @@ name = "bidirectional_communication_demo"
 path = "examples/bidirectional_communication_demo.rs"
 required-features = ["stdio"]
 
-[[example]]
-name = "complete_workflow"
-path = "examples/complete_workflow.rs"
-required-features = ["stdio"]
 
 [[example]]
 name = "convenience_methods_demo"
@@ -170,31 +166,6 @@ required-features = ["stdio"]
 [[example]]
 name = "custom_transport"
 path = "examples/custom_transport.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "error_recovery"
-path = "examples/error_recovery.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "performance_benchmarks"
-path = "examples/performance_benchmarks.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "plugin_integration"
-path = "examples/plugin_integration.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "production_error_handling_demo"
-path = "examples/production_error_handling_demo.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "server_builder_demo"
-path = "examples/server_builder_demo.rs"
 required-features = ["stdio"]
 
 [[example]]

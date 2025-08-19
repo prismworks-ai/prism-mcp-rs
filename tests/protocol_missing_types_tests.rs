@@ -452,7 +452,7 @@ mod signal_handling_tests {
 
     #[test]
     fn test_shutdown_signal_handler_default() {
-        let handler = ShutdownSignalHandler::default();
+        let _handler = ShutdownSignalHandler::default();
         // Default handler has no signals
     }
 }
@@ -563,7 +563,7 @@ mod metrics_tests {
 
     #[test]
     fn test_server_metrics_default() {
-        let metrics = ServerMetrics::default();
+        let _metrics = ServerMetrics::default();
         // Metrics initialized
     }
 
@@ -618,7 +618,7 @@ mod configuration_management_tests {
 
     #[test]
     fn test_configuration_manager_default() {
-        let manager = ConfigurationManager::default();
+        let _manager = ConfigurationManager::default();
         // Manager initialized without config
     }
 }
@@ -665,7 +665,7 @@ mod state_persistence_tests {
 
     #[test]
     fn test_state_persistence_manager_default() {
-        let manager = StatePersistenceManager::default();
+        let _manager = StatePersistenceManager::default();
         // Manager initialized without state
     }
 }

@@ -29,7 +29,7 @@ mod protocol_types_tests {
 
     #[test]
     fn test_jsonrpc_message_creation() {
-        let request = JsonRpcRequest::with_params(
+        let request = JsonRpcRequest::new(
             json!("test-123"),
             "tools/list".to_string(),
             Some(json!({"cursor": null})),

@@ -71,8 +71,10 @@
 //!         EchoHandler,
 //!     ).await?;
 //!
-//!     // Convenience method to run server with STDIO transport
-//!     server.run_with_stdio().await
+//!     #[cfg(feature = "stdio")]
+//!     server.run_with_stdio().await?;
+//!     
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -80,31 +82,33 @@
 //!
 //! ```rust,no_run
 //! use prism_mcp_rs::prelude::*;
-//! use prism_mcp_rs::transport::stdio::StdioTransport;
-//! use serde_json::json;
+//! use std::collections::HashMap;
+//! use serde_json::{json, Value};
 //!
 //! #[tokio::main]
 //! async fn main() -> McpResult<()> {
 //!     // Create a client
 //!     let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
 //!     
-//!     // Set up transport
-//!     let transport = StdioTransport::new();
-//!     client.connect(Box::new(transport)).await?;
+//!     // Set up transport (stdio feature required)
+//!     #[cfg(feature = "stdio")]
+//!     {
+//!         use prism_mcp_rs::transport::StdioClientTransport;
+//!         let transport = StdioClientTransport::new("server-command", vec!["arg1"]).await?;
+//!         client.connect(transport).await?;
+//!     }
 //!     
-//!     // Initialize the connection
-//!     client.initialize().await?;
-//!     
-//!     // List available tools
+//!     // List available tools  
 //!     let tools = client.list_tools(None).await?;
 //!     println!("Available tools: {:?}", tools);
 //!     
 //!     // Call a tool
+//!     let mut args = HashMap::new();
+//!     args.insert("message".to_string(), json!("Hello from client!"));
+//!     
 //!     let result = client.call_tool(
-//!         "echo",
-//!         json!({
-//!             "message": "Hello from client!"
-//!         })
+//!         "echo".to_string(),
+//!         Some(args)
 //!     ).await?;
 //!     
 //!     println!("Tool result: {:?}", result);

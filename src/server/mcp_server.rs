@@ -1058,6 +1058,8 @@ impl McpServer {
     /// # Example
     /// ```rust,no_run
     /// use prism_mcp_rs::prelude::*;
+    /// 
+    /// #[cfg(feature = "stdio")]
     /// use prism_mcp_rs::transport::stdio::StdioServerTransport;
     ///
     /// #[tokio::main]
@@ -1065,8 +1067,13 @@ impl McpServer {
     ///     let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
     ///     // . add tools, resources, prompts ...
     ///
-    ///     let transport = StdioServerTransport::new();
-    ///     server.run_with_transport(transport).await
+    ///     #[cfg(feature = "stdio")]
+    ///     {
+    ///         let transport = StdioServerTransport::new();
+    ///         server.run_with_transport(transport).await?;
+    ///     }
+    ///     
+    ///     Ok(())
     /// }
     /// ```
     pub async fn run_with_transport<T>(mut self, transport: T) -> McpResult<()>

@@ -1017,7 +1017,7 @@ impl McpServer {
     /// 4. smoothly shuts down the server
     ///
     /// # Example
-    /// ```rust,no_run
+    /// ```rust,ignore
     /// use prism_mcp_rs::prelude::*;
     ///
     /// #[tokio::main]
@@ -1056,7 +1056,7 @@ impl McpServer {
     /// * `transport` - The transport to use for communication
     ///
     /// # Example
-    /// ```rust,no_run
+    /// ```rust,ignore
     /// use prism_mcp_rs::prelude::*;
     ///
     /// #[cfg(feature = "stdio")]

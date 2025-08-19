@@ -94,7 +94,7 @@ jobs:
       
       - name: Check licenses
         run: cargo deny check licenses
-        continue-on-error: true
+        continue-on-error: false
   
   # Supply chain security
   supply-chain:
@@ -113,7 +113,7 @@ jobs:
       
       - name: Check supply chain
         run: cargo vet --locked
-        continue-on-error: true
+        continue-on-error: false
   
   # SARIF upload for GitHub Security tab
   sarif:
@@ -145,13 +145,13 @@ jobs:
           }
           print(json.dumps(sarif))
           " > audit.sarif
-        continue-on-error: true
+        continue-on-error: false
       
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: audit.sarif
-        continue-on-error: true
+        continue-on-error: false
   
   # Dependency review for PRs
   dependency-review:

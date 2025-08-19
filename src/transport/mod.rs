@@ -35,10 +35,10 @@
 //! ```no_run
 //! # #[cfg(feature = "http")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! use prism_mcp_rs::transport::{HttpServerTransport, HttpEndpoints};
+//! use prism_mcp_rs::transport::HttpServerTransport;
 //!
-//! let endpoints = HttpEndpoints::new("http://localhost:8080");
-//! let transport = HttpServerTransport::new(endpoints)?;
+//! // HttpServerTransport takes a bind address directly
+//! let transport = HttpServerTransport::new("127.0.0.1:8080");
 //! # Ok(())
 //! # }
 //! ```
@@ -50,7 +50,8 @@
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use prism_mcp_rs::transport::WebSocketServerTransport;
 //!
-//! let transport = WebSocketServerTransport::bind("127.0.0.1:9000").await?;
+//! // WebSocketServerTransport uses new() method, not bind()
+//! let transport = WebSocketServerTransport::new("127.0.0.1:9000");
 //! # Ok(())
 //! # }
 //! ```

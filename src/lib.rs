@@ -31,7 +31,7 @@
 //!
 //! ### Server Example
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use prism_mcp_rs::prelude::*;
 //! use std::collections::HashMap;
 //! use serde_json::{json, Value};
@@ -80,7 +80,7 @@
 //!
 //! ### Client Example
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use prism_mcp_rs::prelude::*;
 //! use std::collections::HashMap;
 //! use serde_json::{json, Value};

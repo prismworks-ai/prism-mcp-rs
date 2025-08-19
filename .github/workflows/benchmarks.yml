@@ -67,7 +67,7 @@ jobs:
           alert-threshold: '150%'
           comment-always: false
           benchmark-data-dir-path: 'benchmarks'
-        continue-on-error: true
+        continue-on-error: false
   
   compile-time:
     name: Compile Time Benchmark

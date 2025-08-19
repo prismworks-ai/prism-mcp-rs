@@ -172,7 +172,7 @@ jobs:
       
       - name: Publish to crates.io
         run: cargo publish --all-features
-        continue-on-error: true
+        continue-on-error: false
 
   # Generate and publish documentation
   docs:

@@ -258,11 +258,11 @@ jobs:
         run: |
           chmod +x scripts/ci/run-benchmarks.sh
           ./scripts/ci/run-benchmarks.sh
-        continue-on-error: true  # Don't fail CI if benchmarks have issues
+        continue-on-error: false  # Fail CI if benchmarks have issues
       
       - name: Upload benchmark report
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-report
           path: reports/benchmark-report.md
-        continue-on-error: true
+        continue-on-error: false

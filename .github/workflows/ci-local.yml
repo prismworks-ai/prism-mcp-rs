@@ -177,7 +177,7 @@ jobs:
             cargo audit
           fi
           echo "✅ Security audit complete"
-        continue-on-error: true
+        continue-on-error: false
       
       # Step 18: Coverage Report (Optional)
       - name: "[18/18] Generate Coverage Report"
@@ -189,7 +189,7 @@ jobs:
           else
             echo "⚠️  Coverage tool not installed. Install with: cargo install cargo-llvm-cov"
           fi
-        continue-on-error: true
+        continue-on-error: false
       
       # Final Summary
       - name: "📊 CI Pipeline Summary"

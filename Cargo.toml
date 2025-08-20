@@ -139,6 +139,7 @@ minimal = []
 
 # Development features
 dev = ["dep:color-eyre"]
+bench = []  # Benchmarking feature
 
 # Examples
 [[example]]

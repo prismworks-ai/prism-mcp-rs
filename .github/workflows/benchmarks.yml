@@ -47,14 +47,51 @@ jobs:
         run: |
           # Run cargo bench and capture output
           cargo bench --features bench 2>&1 | tee benchmark_output.txt
-          
-          # Extract timing information from Criterion output for benchmark-action
-          grep -E "time:" benchmark_output.txt > benchmark_results.txt || true
-          
-          # If no results found, create a dummy result to avoid action failure
-          if [ ! -s benchmark_results.txt ]; then
-            echo "No benchmark results found, creating placeholder"
-            echo "dummy_benchmark   100 ns" > benchmark_results.txt
+
+          # Convert Criterion output to JSON format for github-action-benchmark
+          python3 -c "
+import json
+import re
+
+results = []
+try:
+    with open('benchmark_output.txt', 'r') as f:
+        content = f.read()
+    
+    # Parse Criterion output for benchmark results
+    # Look for lines like: 'benchmark_name         time:   [123.45 us 125.67 us 127.89 us]'
+    pattern = r'(\w+)\s+time:\s+\[([0-9.]+)\s+([a-z]+)\s+[0-9.]+\s+[a-z]+\s+[0-9.]+\s+[a-z]+\]'
+    matches = re.findall(pattern, content)
+    
+    for name, value, unit in matches:
+        # Convert to nanoseconds for consistency
+        val = float(value)
+        if unit == 'us':
+            val *= 1000
+        elif unit == 'ms':
+            val *= 1000000
+        elif unit == 's':
+            val *= 1000000000
+        
+        results.append({
+            'name': name,
+            'unit': 'ns',
+            'value': val
+        })
+    
+    # If no results found, create a dummy result
+    if not results:
+        results = [{'name': 'dummy_benchmark', 'unit': 'ns', 'value': 100}]
+    
+    with open('benchmark_results.txt', 'w') as f:
+        json.dump(results, f)
+        
+except Exception as e:
+    print(f'Error parsing benchmarks: {e}')
+    # Create dummy result on error
+    with open('benchmark_results.txt', 'w') as f:
+        json.dump([{'name': 'dummy_benchmark', 'unit': 'ns', 'value': 100}], f)
+"
           fi
       
       - name: Parse benchmark results

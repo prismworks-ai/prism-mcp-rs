@@ -200,3 +200,173 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Publish to crates.io
+  publish:
+    name: Publish to crates.io
+    needs: [validate, release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Verify version consistency
+        run: |
+          CARGO_VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          RELEASE_VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "📦 Cargo.toml version: $CARGO_VERSION"
+          echo "🏷️  Release version: $RELEASE_VERSION"
+          
+          if [[ "$CARGO_VERSION" != "$RELEASE_VERSION" ]]; then
+            echo "❌ Version mismatch: Cargo.toml ($CARGO_VERSION) != Release tag ($RELEASE_VERSION)"
+            echo "💡 Please update Cargo.toml version to match the release tag"
+            exit 1
+          fi
+          
+          echo "✅ Version consistency verified"
+
+      - name: Verify package integrity
+        run: |
+          echo "🔍 Running package verification..."
+          cargo package --no-verify
+          echo "✅ Package verification completed"
+
+      - name: Check if version already published
+        id: check_published
+        run: |
+          echo "🔍 Checking if version ${{ steps.version.outputs.version }} is already published..."
+          
+          if cargo search prism-mcp-rs | grep -q "prism-mcp-rs = \"${{ steps.version.outputs.version }}\""; then
+            echo "ℹ️  Version ${{ steps.version.outputs.version }} already published to crates.io"
+            echo "already_published=true" >> $GITHUB_OUTPUT
+          else
+            echo "📦 Version ${{ steps.version.outputs.version }} not yet published"
+            echo "already_published=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to crates.io
+        if: steps.check_published.outputs.already_published == 'false'
+        run: |
+          echo "🚀 Publishing prism-mcp-rs v${{ steps.version.outputs.version }} to crates.io..."
+          
+          # Set the API token
+          cargo login ${{ secrets.CRATES_IO_TOKEN }}
+          
+          # Publish the crate
+          cargo publish --no-verify
+          
+          echo "✅ Successfully published to crates.io!"
+          echo "📦 Package: https://crates.io/crates/prism-mcp-rs"
+          echo "📚 Docs: https://docs.rs/prism-mcp-rs/${{ steps.version.outputs.version }}"
+        
+      - name: Skip publication
+        if: steps.check_published.outputs.already_published == 'true'
+        run: |
+          echo "⏭️  Skipping publication - version already published"
+          echo "📦 Package: https://crates.io/crates/prism-mcp-rs"
+          echo "📚 Docs: https://docs.rs/prism-mcp-rs/${{ steps.version.outputs.version }}"
+
+      - name: Post-publication verification
+        if: steps.check_published.outputs.already_published == 'false'
+        run: |
+          echo "🔍 Waiting for crates.io to process the new version..."
+          sleep 30
+          
+          # Verify the package is available
+          for i in {1..10}; do
+            if cargo search prism-mcp-rs | grep -q "prism-mcp-rs = \"${{ steps.version.outputs.version }}\""; then
+              echo "✅ Version ${{ steps.version.outputs.version }} confirmed available on crates.io"
+              break
+            else
+              echo "⏳ Attempt $i: Version not yet visible on crates.io, waiting..."
+              sleep 30
+            fi
+          done
+
+  # Release summary
+  summary:
+    name: Release Summary
+    needs: [validate, release, docs, publish]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Release Summary
+        run: |
+          echo "# 🚀 Release Summary: prism-mcp-rs v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Platform validation
+          if [[ "${{ needs.validate.result }}" == "success" ]]; then
+            echo "✅ **Platform Validation**: All platforms validated successfully" >> $GITHUB_STEP_SUMMARY
+            echo "   - Linux (x86_64, ARM64)" >> $GITHUB_STEP_SUMMARY  
+            echo "   - macOS (Intel, Apple Silicon)" >> $GITHUB_STEP_SUMMARY
+            echo "   - Windows (x86_64)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Platform Validation**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # GitHub release
+          if [[ "${{ needs.release.result }}" == "success" ]]; then
+            echo "✅ **GitHub Release**: Created successfully" >> $GITHUB_STEP_SUMMARY
+            echo "   - 📦 [Release Page](https://github.com/prismworks-ai/prism-mcp-rs/releases/tag/v${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "   - 📄 Source tarball attached" >> $GITHUB_STEP_SUMMARY
+            echo "   - 📦 Crate package attached" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **GitHub Release**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Documentation
+          if [[ "${{ needs.docs.result }}" == "success" ]]; then
+            echo "✅ **Documentation**: Deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
+            echo "   - 📚 [API Documentation](https://prismworks-ai.github.io/prism-mcp-rs/)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Documentation**: Deployment failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Crates.io publication
+          if [[ "${{ needs.publish.result }}" == "success" ]]; then
+            echo "✅ **Crates.io Publication**: Published successfully" >> $GITHUB_STEP_SUMMARY
+            echo "   - 📦 [Package Page](https://crates.io/crates/prism-mcp-rs)" >> $GITHUB_STEP_SUMMARY
+            echo "   - 📚 [docs.rs](https://docs.rs/prism-mcp-rs/${{ steps.version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "   - \`cargo add prism-mcp-rs@${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Crates.io Publication**: Failed or skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall status
+          if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.release.result }}" == "success" && "${{ needs.docs.result }}" == "success" && "${{ needs.publish.result }}" == "success" ]]; then
+            echo "🎉 **Overall Status**: Release completed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Overall Status**: Release completed with some issues" >> $GITHUB_STEP_SUMMARY
+          fi

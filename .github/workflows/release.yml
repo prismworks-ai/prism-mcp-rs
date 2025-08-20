@@ -46,7 +46,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Determine version
         id: version
         run: |
@@ -68,6 +68,10 @@ jobs:
           fi
         shell: bash
       
+      - name: Install OpenSSL dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -164,6 +168,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+
+
+      - name: Install OpenSSL dependencies
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
       
@@ -186,6 +195,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+
+
+      - name: Install OpenSSL dependencies
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
       

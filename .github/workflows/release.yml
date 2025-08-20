@@ -154,13 +154,18 @@ jobs:
       - name: Create Release
         run: |
           echo "🚀 Creating GitHub release..."
-          gh release create v${{ steps.version.outputs.version }} \
-            --title "prism-mcp-rs v${{ steps.version.outputs.version }}" \
-            --notes-file release_notes.txt \
-            --verify-tag \
-            prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz \
-            prism-mcp-rs-${{ steps.version.outputs.version }}.crate
-          echo "✅ GitHub release created successfully!"
+          if gh release view v${{ steps.version.outputs.version }} >/dev/null 2>&1; then
+            echo "ℹ️  Release v${{ steps.version.outputs.version }} already exists, skipping creation"
+            echo "✅ GitHub release already available!"
+          else
+            gh release create v${{ steps.version.outputs.version }} \
+              --title "prism-mcp-rs v${{ steps.version.outputs.version }}" \
+              --notes-file release_notes.txt \
+              --verify-tag \
+              prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz \
+              prism-mcp-rs-${{ steps.version.outputs.version }}.crate
+            echo "✅ GitHub release created successfully!"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

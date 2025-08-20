@@ -113,14 +113,12 @@ jobs:
 
       - name: Create source tarball
         run: |
-          # Create clean source distribution
-          git archive --format=tar.gz --prefix=prism-mcp-rs-${{ steps.version.outputs.version }}/ HEAD > prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz
-          
-          # Also create a crate package (what would be published to crates.io)
+          # First create a crate package (what would be published to crates.io)
           cargo package --no-verify
           cp target/package/prism-mcp-rs-${{ steps.version.outputs.version }}.crate ./
-        shell: bash
-
+          
+          # Then create clean source distribution (after cargo package to avoid dirty working dir)
+          git archive --format=tar.gz --prefix=prism-mcp-rs-${{ steps.version.outputs.version }}/ HEAD > prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz
       - name: Extract release notes
         id: extract_notes
         run: |
@@ -175,9 +173,6 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       

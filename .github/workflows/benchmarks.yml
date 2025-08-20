@@ -120,6 +120,77 @@ jobs:
           comment-always: false
           benchmark-data-dir-path: 'benchmarks'
         continue-on-error: false
+
+      - name: Create benchmark badge
+        if: github.event_name == 'push'
+        run: |
+          # Create benchmarks directory structure for GitHub Pages
+          mkdir -p benchmarks
+          
+          # Extract latest benchmark value for badge
+          LATEST_TIME=$(python3 << 'EOF'
+          import json
+          try:
+              with open('benchmark_results.txt', 'r') as f:
+                  data = json.load(f)
+              if data:
+                  # Get the first benchmark result
+                  value = data[0]['value']
+                  if value < 1000:
+                      print(f"{value:.1f}ns")
+                  elif value < 1000000:
+                      print(f"{value/1000:.1f}μs")
+                  else:
+                      print(f"{value/1000000:.1f}ms")
+              else:
+                  print("N/A")
+          except:
+              print("N/A")
+          EOF
+          )
+          
+          # Create a simple performance badge using shields.io format
+          curl -s "https://img.shields.io/badge/Performance-${LATEST_TIME}-brightgreen" > benchmarks/badge.svg
+          
+          # Create a simple index.html for the benchmarks page
+          cat > benchmarks/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Prism MCP RS - Performance Benchmarks</title>
+              <meta charset="utf-8">
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+                  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+                  .header { text-align: center; margin-bottom: 40px; }
+                  .benchmark-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>Prism MCP RS - Performance Benchmarks</h1>
+                      <p>Enterprise-grade Rust implementation of the Model Context Protocol (MCP) SDK</p>
+                  </div>
+                  <div class="benchmark-info">
+                      <h2>Benchmark Results</h2>
+                      <p>Latest benchmark results are automatically generated and updated by our CI/CD pipeline.</p>
+                      <p><strong>Repository:</strong> <a href="https://github.com/prismworks-ai/prism-mcp-rs">prismworks-ai/prism-mcp-rs</a></p>
+                      <p><strong>View Full Benchmark Data:</strong> <a href="data.js">data.js</a></p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+      - name: Deploy benchmarks to GitHub Pages
+        if: github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./benchmarks
+          destination_dir: benchmarks
+          keep_files: true
   
   compile-time:
     name: Compile Time Benchmark

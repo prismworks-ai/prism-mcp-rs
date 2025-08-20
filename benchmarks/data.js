@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755732247809,
+  "lastUpdate": 1755732447151,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -139,6 +139,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/8ba7c3c402d132849b2909614fe49c33c5c6a1f7"
         },
         "date": 1755732246796,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "dummy_benchmark",
+            "value": 100,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "cb558e200b9f0b8bb3ee93e90edb4eae1009e9f1",
+          "message": "📚 Enhance README with comprehensive documentation structure\n\n**Added Additional Documentation Links**:\n✅ Quick Start Guide - Installation and setup instructions\n✅ Plugin Types Reference - Detailed component specifications\n✅ Error Handling Guide - Comprehensive error management patterns\n✅ Development Setup - Development environment and workflows\n✅ Migration Guide - Migrating from other MCP implementations\n✅ Changelog - Version history and breaking changes\n✅ Security Policy - Vulnerability reporting procedures\n✅ Contributors - Recognition for project contributors\n\n**Improved Organization**:\n- Categorized documentation into logical sections with emojis\n- Added descriptive subtitles for better navigation\n- Enhanced Contributing section with Contributors link\n- Professional structure matching enterprise documentation standards\n\n**Impact**:\n- From 5 documentation links → 12 comprehensive guides\n- Better developer onboarding experience\n- Complete coverage of development lifecycle\n- Enterprise-grade documentation presentation\n\nAll links verified to point to existing, well-maintained files.",
+          "timestamp": "2025-08-20T19:24:58-04:00",
+          "tree_id": "eead24017267f3f657745524a9875efa4157d63c",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/cb558e200b9f0b8bb3ee93e90edb4eae1009e9f1"
+        },
+        "date": 1755732446644,
         "tool": "customSmallerIsBetter",
         "benches": [
           {

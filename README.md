@@ -378,15 +378,31 @@ for method in &introspection.methods.methods {
 
 ## Documentation
 
+### **📚 Getting Started**
+- [Quick Start Guide](docs/GETTING_STARTED.md) - Installation, setup, and first steps
 - [API Reference](https://docs.rs/prism-mcp-rs) - Complete API documentation
+
+### **🏗️ Development Guides**
 - [Architecture Guide](docs/ARCHITECTURE.md) - System design and components
 - [Plugin Development](docs/guides/plugins.md) - Building custom plugins
+- [Plugin Types Reference](docs/guides/plugin-types.md) - Detailed component specifications
+- [Error Handling](docs/guides/error-handling.md) - Comprehensive error management patterns
 - [Performance Tuning](docs/guides/performance.md) - Optimization strategies
 - [Authentication Guide](docs/guides/authentication.md) - Authentication and authorization
+- [Development Setup](docs/DEVELOPMENT.md) - Development environment and workflows
+
+### **🔄 Migration & Updates**
+- [Migration Guide](docs/guides/migration.md) - Migrating from other MCP implementations
+- [Changelog](CHANGELOG.md) - Version history and breaking changes
+
+### **🔒 Security & Policies**
+- [Security Policy](SECURITY.md) - Vulnerability reporting and security practices
 
 ## Contributing
 
-Contributions are welcome. Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions are welcome! Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
+
+See our [Contributors](CONTRIBUTORS.md) for a list of everyone who has contributed to this project.
 
 ## License
 

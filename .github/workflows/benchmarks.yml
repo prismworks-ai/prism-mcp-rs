@@ -44,7 +44,7 @@ jobs:
           key: ${{ runner.os }}-cargo-build-bench-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Run benchmarks
-        run: cargo bench --all-features --no-fail-fast | tee benchmark_results.txt
+        run: cargo bench --features bench | tee benchmark_results.txt
       
       - name: Parse benchmark results
         if: github.event_name == 'pull_request'
@@ -59,10 +59,11 @@ jobs:
         uses: benchmark-action/github-action-benchmark@v1
         if: github.event_name == 'push'
         with:
-          tool: 'cargo'
+          tool: 'criterion'
           output-file-path: benchmark_results.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: false
+          auto-push: true
+          # Push benchmark data to gh-pages branch for badge generation
           comment-on-alert: true
           alert-threshold: '150%'
           comment-always: false

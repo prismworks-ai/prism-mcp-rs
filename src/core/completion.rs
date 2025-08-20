@@ -480,7 +480,7 @@ impl CompositeCompletionHandler {
     /// # Arguments
     /// * `reference_type` - The reference type this handler supports (e.g., "ref/prompt")
     /// * `handler` - The completion handler
-    pub fn add_handler<H>(&mut self, reference_type: String, handler: H)
+    pub fn add_handler<H>(&mut self, reference_type: String, handler: H) -> &mut Self
     where
         H: CompletionHandler + 'static,
     {
@@ -490,6 +490,26 @@ impl CompositeCompletionHandler {
             "ref/tool" => self.tool_handler = Some(Box::new(handler)),
             _ => {} // Ignore unknown types
         }
+        self
+    }
+
+    /// Add a handler for a specific reference type (builder pattern)
+    ///
+    /// # Arguments
+    /// * `reference_type` - The reference type this handler supports (e.g., "ref/prompt")
+    /// * `handler` - The completion handler
+    pub fn with_handler<H>(mut self, reference_type: impl Into<String>, handler: H) -> Self
+    where
+        H: CompletionHandler + 'static,
+    {
+        let ref_type = reference_type.into();
+        match ref_type.as_str() {
+            "ref/prompt" => self.prompt_handler = Some(Box::new(handler)),
+            "ref/resource" => self.resource_handler = Some(Box::new(handler)),
+            "ref/tool" => self.tool_handler = Some(Box::new(handler)),
+            _ => {} // Ignore unknown reference types
+        }
+        self
     }
 
     /// Set the prompt completion handler
@@ -508,6 +528,16 @@ impl CompositeCompletionHandler {
     pub fn with_tool_handler<H: CompletionHandler + 'static>(mut self, handler: H) -> Self {
         self.tool_handler = Some(Box::new(handler));
         self
+    }
+}
+
+impl std::fmt::Debug for CompositeCompletionHandler {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CompositeCompletionHandler")
+            .field("prompt_handler", &self.prompt_handler.is_some())
+            .field("resource_handler", &self.resource_handler.is_some())
+            .field("tool_handler", &self.tool_handler.is_some())
+            .finish()
     }
 }
 

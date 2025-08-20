@@ -12,7 +12,7 @@
 // ! This example creates a complete "Smart Project Assistant" that showcases
 // ! real-world usage of these complete features.
 
-use prism_mcp_rs::core::completion::CompletionContext;
+use prism_mcp_rs::core::completion::{CompletionContext, CompositeCompletionHandler};
 use prism_mcp_rs::prelude::*;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -424,7 +424,7 @@ impl ResourceHandler for ProjectFileHandler {
 // ============================================================================
 
 /// Create project-specific completion handlers
-fn create_completion_handlers(project_root: &str) -> completeCompositeCompletionHandler {
+fn create_completion_handlers(project_root: &str) -> CompositeCompletionHandler {
     // File system completion for project files
     let fs_handler = FileSystemCompletionHandler::new(project_root)
         .with_extensions(vec!["rs", "py", "js", "ts", "json", "md", "toml", "yaml"])
@@ -520,17 +520,17 @@ fn create_completion_handlers(project_root: &str) -> completeCompositeCompletion
     let schema_handler = SchemaCompletionHandler::new(param_schema);
 
     // Composite handler that routes to appropriate sub-handlers
-    completeCompositeCompletionHandler::new()
-        .add_handler("files", fs_handler)
-        .add_handler("templates", template_handler1)
-        .add_handler("analysis", analysis_handler1)
-        .add_handler("languages", language_handler)
-        .add_handler("tool_analyze_project_type", analysis_handler2)
-        .add_handler("tool_generate_code_template", template_handler2)
-        .add_handler("parameters", schema_handler)
-        .with_default(FuzzyCompletionHandler::new(vec![
-            "help", "info", "status", "version", "config", "settings",
-        ]))
+    let mut composite_handler = CompositeCompletionHandler::new();
+    composite_handler.add_handler("files".to_string(), fs_handler);
+    composite_handler.add_handler("templates".to_string(), template_handler1);
+    composite_handler.add_handler("analysis".to_string(), analysis_handler1);
+    composite_handler.add_handler("languages".to_string(), language_handler);
+    composite_handler.add_handler("tool_analyze_project_type".to_string(), analysis_handler2);
+    composite_handler.add_handler("tool_generate_code_template".to_string(), template_handler2);
+    composite_handler.add_handler("parameters".to_string(), schema_handler);
+    
+    // Return the composite handler
+    composite_handler
 }
 
 // ============================================================================

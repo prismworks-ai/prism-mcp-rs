@@ -73,7 +73,7 @@ db-urls = ["https://github.com/rustsec/advisory-db"]
 vulnerability = "deny"
 
 # The lint level for unmaintained crates
-unmaintained = "warn"
+unmaintained = "workspace"
 
 # The lint level for crates with security notices
 notice = "warn"

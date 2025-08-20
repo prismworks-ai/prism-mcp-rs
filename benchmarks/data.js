@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755729308398,
+  "lastUpdate": 1755732247809,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -110,6 +110,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/fbfd7c4aa272f3ad2c865a7efb2eef8b21437996"
         },
         "date": 1755729307699,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "dummy_benchmark",
+            "value": 100,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "8ba7c3c402d132849b2909614fe49c33c5c6a1f7",
+          "message": "📝 Fix broken documentation link in README\n\n- Change 'Security Guide' link from docs/guides/security.md to docs/guides/authentication.md\n- The security.md file doesn't exist; authentication.md contains the auth/security content\n- All documentation links now point to existing files\n- Resolves broken link at bottom of README",
+          "timestamp": "2025-08-20T19:21:35-04:00",
+          "tree_id": "cc177b59aa492a9dc4345a24269807f1690e1983",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/8ba7c3c402d132849b2909614fe49c33c5c6a1f7"
+        },
+        "date": 1755732246796,
         "tool": "customSmallerIsBetter",
         "benches": [
           {

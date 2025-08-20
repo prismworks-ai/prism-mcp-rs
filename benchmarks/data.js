@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755732447151,
+  "lastUpdate": 1755733667315,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -173,6 +173,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "dummy_benchmark",
             "value": 100,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "d06262673d2f33333b77c1c068531000e6283d9b",
+          "message": "🚀 Add automatic crates.io publication to release workflow\n\n**New Features Added**:\n✅ Automatic crates.io publication on successful releases\n✅ Version consistency verification between Cargo.toml and release tag\n✅ Duplicate publication prevention with version checking\n✅ Post-publication verification with retry logic\n✅ Comprehensive release summary with status for all components\n\n**Workflow Enhancements**:\n- Added 'publish' job that runs after validate and release jobs\n- Uses existing CRATES_IO_TOKEN secret for authentication\n- Includes robust error handling and status reporting\n- Added 'summary' job providing complete release overview\n\n**Benefits**:\n- No more manual crates.io publication required\n- Automatic verification ensures reliability\n- Clear status reporting for all release components\n- Idempotent: safe to re-run without duplicate publications\n\n**Next Release Flow**:\n1. Tag release → 2. Platform validation → 3. GitHub release → 4. Documentation → 5. Crates.io publication → 6. Summary report",
+          "timestamp": "2025-08-20T19:37:35-04:00",
+          "tree_id": "adf240155bcfaefbb25bdef004103c501162b790",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/d06262673d2f33333b77c1c068531000e6283d9b"
+        },
+        "date": 1755733666357,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 86.986,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 123.97,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 104.88,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 430.28,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 238.73,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 34.102,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 346.64,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.432,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.098,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 21.86,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.376,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 116.48,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 434.58,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 107.19,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 186.35,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 191.82,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 147.2,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 466.03,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.3772,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.574,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 209.91,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 215.39,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 623.84,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 912.9,
             "unit": "ns"
           }
         ]

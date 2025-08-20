@@ -528,7 +528,7 @@ fn create_completion_handlers(project_root: &str) -> CompositeCompletionHandler 
     composite_handler.add_handler("tool_analyze_project_type".to_string(), analysis_handler2);
     composite_handler.add_handler("tool_generate_code_template".to_string(), template_handler2);
     composite_handler.add_handler("parameters".to_string(), schema_handler);
-    
+
     // Return the composite handler
     composite_handler
 }

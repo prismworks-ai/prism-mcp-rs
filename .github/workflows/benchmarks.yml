@@ -59,7 +59,7 @@ jobs:
         uses: benchmark-action/github-action-benchmark@v1
         if: github.event_name == 'push'
         with:
-          tool: 'criterion'
+          tool: 'cargo'
           output-file-path: benchmark_results.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true

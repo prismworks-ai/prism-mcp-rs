@@ -9,7 +9,7 @@ repository = "https://github.com/prismworks-ai/prism-mcp-rs"
 homepage = "https://github.com/prismworks-ai/prism-mcp-rs"
 documentation = "https://docs.rs/prism-mcp-rs"
 readme = "README.md"
-keywords = ["mcp", "model-context-protocol", "ai", "llm", "enterprise"]
+keywords = ["mcp", "protocol", "ai", "llm", "enterprise"]
 categories = ["api-bindings", "asynchronous", "network-programming", "development-tools"]
 exclude = [
     ".github/",

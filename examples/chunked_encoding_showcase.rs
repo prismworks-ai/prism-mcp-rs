@@ -473,8 +473,8 @@ async fn demo_compression_showcase() -> McpResult<()> {
 
     // #[cfg(not(feature = "streaming-compression"))]
     // {
-        println!("Warning:  complete compression features not enabled");
-        println!("   Enable with: --features streaming-compression\n");
+    println!("Warning:  complete compression features not enabled");
+    println!("   Enable with: --features streaming-compression\n");
     // }
 
     Ok(())

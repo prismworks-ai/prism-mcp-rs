@@ -382,7 +382,7 @@ for method in &introspection.methods.methods {
 - [Architecture Guide](docs/ARCHITECTURE.md) - System design and components
 - [Plugin Development](docs/guides/plugins.md) - Building custom plugins
 - [Performance Tuning](docs/guides/performance.md) - Optimization strategies
-- [Security Guide](docs/guides/security.md) - Authentication and authorization
+- [Authentication Guide](docs/guides/authentication.md) - Authentication and authorization
 
 ## Contributing
 

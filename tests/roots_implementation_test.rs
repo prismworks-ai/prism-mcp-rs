@@ -159,11 +159,13 @@ mod integration_tests {
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
+    #[allow(dead_code)]
     struct TestRootsHandler {
         roots: Arc<Mutex<Vec<Root>>>,
     }
 
     impl TestRootsHandler {
+        #[allow(dead_code)]
         fn new() -> Self {
             Self {
                 roots: Arc::new(Mutex::new(vec![

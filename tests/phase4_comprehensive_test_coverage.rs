@@ -33,7 +33,7 @@ mod error_scenario_tests {
 
     #[tokio::test]
     async fn test_malformed_json_handling() {
-        let client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        let _client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
 
         // Test various malformed JSON scenarios
         let malformed_inputs = vec![
@@ -481,7 +481,7 @@ mod cross_transport_tests {
     #[tokio::test]
     async fn test_stdio_transport_protocol_compliance() {
         // Test that STDIO transport maintains protocol compliance
-        let transport = StdioClientTransport::new("echo", vec!["test"])
+        let _transport = StdioClientTransport::new("echo", vec!["test"])
             .await
             .unwrap();
 
@@ -741,7 +741,7 @@ mod protocol_compliance_tests {
             ("", -32600),               // Invalid request
         ];
 
-        for (method, expected_code) in error_requests {
+        for (method, _expected_code) in error_requests {
             let request = JsonRpcRequest {
                 jsonrpc: "2.0".to_string(),
                 id: json!("error-test"),
@@ -768,7 +768,9 @@ mod protocol_compliance_tests {
 }
 
 /// Helper types for testing
+#[allow(dead_code)]
 struct TestResourceHandler {
+    #[allow(dead_code)]
     resources: Vec<Resource>,
 }
 

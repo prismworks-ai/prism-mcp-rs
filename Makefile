@@ -7,20 +7,21 @@
 # For detailed documentation about the build system and development workflow,
 # see DEVELOPMENT.md in the project root.
 #
-# ACT FOR LOCAL CI:
+# CI COMMANDS:
 #   Run GitHub Actions locally without pushing:
-#   act push         - Run full CI pipeline
-#   act -j test      - Run test job
-#   act -j clippy    - Run clippy job
+#   make ci          - Run full CI pipeline
+#   make ci-fast     - Quick validation (essential checks)
+#   make ci-verbose  - Full CI with verbose output
+#   make ci-dry      - Show what would run (dry run)
 #   act -l           - List all available workflows
 #
 # Quick usage (requires local Rust installation):
 #   make quick       - Run quick validation before committing
-#   make check       - Run standard CI checks before pushing
-#   make full        - Run complete CI pipeline (uses Act)
+#   make check       - Run standard CI checks before pushing  
+#   make ci          - Run full CI pipeline with Act
 #   make help        - Show all available targets
 
-.PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean setup-hooks examples-validate examples-clean
+.PHONY: help check quick full fmt clippy test test-all test-features examples docs security coverage coverage-clean clean setup-hooks examples-validate examples-clean ci ci-fast ci-verbose ci-dry
 
 # Default target
 help: ## Show this help message
@@ -48,15 +49,6 @@ check: ## Run standard CI checks (mirrors GitHub Actions)
 	@cargo check --all-features
 	@$(MAKE) test-all
 	@$(MAKE) examples
-
-# Run local CI with Act (sequential execution)
-local-ci: ## Run sequential CI locally with Act (won't run on GitHub)
-	@echo "🚀 Running local sequential CI with Act..."
-	@if ! command -v act &> /dev/null; then \
-		echo "❌ Act is not installed. Run 'make install-act' first."; \
-		exit 1; \
-	fi
-	@act -W .github/workflows/ci-local.yml push
 	@$(MAKE) docs
 	@echo "✅ Standard CI checks complete!"
 
@@ -197,8 +189,8 @@ clean: ## Clean build artifacts
 	@rm -rf .local/reports/*.html .local/reports/*.xml
 	@rm -f *.profraw
 
-# Tool installation (Act is the primary tool needed)
-install-act: ## Install Act for local CI
+# Tool installation (Act is the primary tool needed for CI)
+install-act: ## Install Act for CI
 	@echo "📦 Installing Act..."
 	@if ! command -v act &> /dev/null; then \
 		if [ "$$(uname)" = "Darwin" ]; then \
@@ -235,33 +227,26 @@ commit-ready: quick ## Check if code is ready to commit
 push-ready: check ## Check if code is ready to push
 	@echo "✅ Code is ready to push!"
 
-# CI simulation with Act
-local-ci: ## Run full CI pipeline locally with Act
-	@echo "🚀 Running full CI pipeline locally with Act..."
-	@./scripts/local-ci.sh
-
-local-ci-quick: ## Run quick CI validation locally with Act
-	@echo "⚡ Running quick CI validation locally with Act..."
-	@./scripts/local-ci.sh --quick
-
-local-ci-verbose: ## Run CI locally with verbose output
-	@echo "🔍 Running CI with verbose output..."
-	@./scripts/local-ci.sh --verbose
-
-local-ci-dry: ## Show what CI would run without executing
-	@echo "👀 Showing CI dry run..."
-	@./scripts/local-ci.sh --dry-run
-ci-local: ## Run CI locally with Act
-	@echo "🚀 Running CI locally with Act..."
+# CI/CD targets
+ci: ## Run full CI pipeline locally
+	@echo "🚀 Running full CI pipeline..."
+	@if ! command -v act &> /dev/null; then \
+		echo "❌ Act is not installed. Run 'make install-act' first."; \
+		exit 1; \
+	fi
 	@act push
 
-ci-quick: ## Quick CI check with Act
-	@echo "🚀 Running quick CI check with Act..."
+ci-fast: ## Run quick CI validation (essential checks only)
+	@echo "⚡ Running quick CI validation..."
 	@act -j test
 
-ci-full: ## Full CI pipeline with Act
-	@echo "🚀 Running full CI pipeline with Act..."
-	@act push --matrix os:ubuntu-latest
+ci-verbose: ## Run CI with verbose output for debugging
+	@echo "🔍 Running CI with verbose output..."
+	@act push -v
+
+ci-dry: ## Show what CI would run without executing
+	@echo "👀 Showing CI dry run..."
+	@act push -n
 	@echo "Common Development Workflows:"
 	@echo ""
 	@echo "📝 Before committing:"
@@ -283,12 +268,13 @@ ci-full: ## Full CI pipeline with Act
 	@echo "📚 Documentation:"
 	@echo "   make docs-open      # Generate and open docs"
 	@echo ""
-	@echo "🐳 Act for Local CI (GitHub Actions locally!):"
-	@echo "   make local-ci       # Run full CI pipeline locally"
-	@echo "   make local-ci-quick # Run quick validation locally"
+	@echo "🐳 CI/CD (GitHub Actions locally):"
+	@echo "   make ci             # Run full CI pipeline"
+	@echo "   make ci-fast        # Quick validation (essential checks)"
+	@echo "   make ci-verbose     # Full CI with verbose output" 
+	@echo "   make ci-dry         # Show what would run (dry run)"
 	@echo "   act -l              # List available workflows"
-	@echo "   act -j test         # Run test job"
-	@echo "   act -j clippy       # Run clippy job"
+	@echo "   act -j test         # Run specific job"
 	@echo "   act push            # Run full CI pipeline"
 	@echo "   act -v push         # Verbose output for debugging"
 	@echo ""

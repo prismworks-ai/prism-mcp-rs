@@ -48,7 +48,7 @@ jobs:
       - name: Run benchmarks
         run: |
           # Run cargo bench and capture output
-          cargo bench --features bench 2>&1 | tee benchmark_output.txt
+          cargo bench --features bench,plugin 2>&1 | tee benchmark_output.txt
 
       - name: Parse benchmark results to JSON
         run: |

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755724633604,
+  "lastUpdate": 1755729308398,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -81,6 +81,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/b40a7148140144130f63e06b22daf10e0d8b4c52"
         },
         "date": 1755724632602,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "dummy_benchmark",
+            "value": 100,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "fbfd7c4aa272f3ad2c865a7efb2eef8b21437996",
+          "message": "fix: shorten keywords for crates.io compatibility\n\n- Replace 'model-context-protocol' (22 chars) with 'protocol' (8 chars)\n- Resolves crates.io publish error: keywords must have less than 20 characters\n- Maintains SEO and discoverability with core keywords",
+          "timestamp": "2025-08-20T18:32:44-04:00",
+          "tree_id": "3e33e85ce9f6d95b8ad347858ae8307fe9b7e381",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/fbfd7c4aa272f3ad2c865a7efb2eef8b21437996"
+        },
+        "date": 1755729307699,
         "tool": "customSmallerIsBetter",
         "benches": [
           {

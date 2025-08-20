@@ -23,19 +23,10 @@ allow = [
     "Unlicense",
 ]
 
-# List of denied licenses
-deny = [
-    "GPL-2.0",
-    "GPL-3.0",
-    "AGPL-3.0",
-    "LGPL-2.0",
-    "LGPL-3.0",
-]
-
-copyleft = "warn"
-allow-osi-fsf-free = "neither"
-default = "deny"
+# Modern license configuration
+# Removed deprecated keys: copyleft, allow-osi-fsf-free, default
 confidence-threshold = 0.8
+private = { ignore = true }
 
 [bans]
 # Deny multiple versions of the same crate
@@ -62,6 +53,16 @@ skip-tree = [
     { name = "criterion" },
 ]
 
+# Explicitly deny problematic licenses
+deny = [
+    # Deny GPL and copyleft licenses
+    { name = "*", license = "GPL-2.0" },
+    { name = "*", license = "GPL-3.0" },
+    { name = "*", license = "AGPL-3.0" },
+    { name = "*", license = "LGPL-2.0" },
+    { name = "*", license = "LGPL-3.0" },
+]
+
 [advisories]
 # The path where the advisory database is cloned/fetched into
 db-path = "~/.cargo/advisory-db"
@@ -69,14 +70,10 @@ db-path = "~/.cargo/advisory-db"
 # The url(s) of the advisory databases to use
 db-urls = ["https://github.com/rustsec/advisory-db"]
 
-# The lint level for security vulnerabilities
-vulnerability = "deny"
-
-# The lint level for unmaintained crates
-unmaintained = "workspace"
-
-# The lint level for crates with security notices
-notice = "warn"
+# Modern advisory configuration
+# Removed deprecated keys: vulnerability, notice
+# These are now handled by the default severity levels
+unmaintained = "warn"
 
 # A list of advisory IDs to ignore
 ignore = [

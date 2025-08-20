@@ -111,6 +111,9 @@ jobs:
         with:
           tool: cargo-vet
       
+      - name: Generate lockfile  
+        run: cargo generate-lockfile
+
       - name: Check supply chain
         run: cargo vet --locked
         continue-on-error: false

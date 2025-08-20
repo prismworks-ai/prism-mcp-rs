@@ -154,17 +154,17 @@ jobs:
         shell: bash
 
       - name: Create Release
-        uses: ncipollo/create-release@v1
-        with:
-          tag: v${{ steps.version.outputs.version }}
-          name: prism-mcp-rs v${{ steps.version.outputs.version }}
-          bodyFile: release_notes.txt
-          draft: false
-          prerelease: false
-          artifacts: |
-            prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz
+        run: |
+          echo "🚀 Creating GitHub release..."
+          gh release create v${{ steps.version.outputs.version }} \
+            --title "prism-mcp-rs v${{ steps.version.outputs.version }}" \
+            --notes-file release_notes.txt \
+            --verify-tag \
+            prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz \
             prism-mcp-rs-${{ steps.version.outputs.version }}.crate
-          token: ${{ secrets.GITHUB_TOKEN }}
+          echo "✅ GitHub release created successfully!"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Deploy documentation to GitHub Pages
   docs:

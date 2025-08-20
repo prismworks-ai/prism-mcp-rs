@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn test_builder_basic() {
-        let server = ServerBuilder::new()
+        let _server = ServerBuilder::new()
             .name("test-server")
             .version("1.0.0")
             .build();
@@ -273,7 +273,7 @@ mod tests {
 
     #[test]
     fn test_builder_with_capabilities() {
-        let server = ServerBuilder::new()
+        let _server = ServerBuilder::new()
             .name("test-server")
             .version("1.0.0")
             .with_prompts()
@@ -287,7 +287,7 @@ mod tests {
 
     #[test]
     fn test_builder_with_config() {
-        let server = ServerBuilder::new()
+        let _server = ServerBuilder::new()
             .name("test-server")
             .version("1.0.0")
             .max_concurrent_requests(50)
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn test_builder_with_experimental() {
-        let server = ServerBuilder::new()
+        let _server = ServerBuilder::new()
             .name("test-server")
             .version("1.0.0")
             .with_experimental("custom_feature", json!(true))

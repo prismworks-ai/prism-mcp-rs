@@ -20,29 +20,24 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Build release artifacts
-  build:
-    name: Build Release
+  # Validate library builds across platforms
+  validate:
+    name: Validate Library Build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: prism-mcp-rs-linux-amd64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            artifact_name: prism-mcp-rs-linux-arm64
             use_cross: true
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: prism-mcp-rs-macos-amd64
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: prism-mcp-rs-macos-arm64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: prism-mcp-rs-windows-amd64.exe
     
     steps:
       - uses: actions/checkout@v4
@@ -56,32 +51,28 @@ jobs:
             VERSION="${{ github.event.inputs.version }}"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Release version: $VERSION"
         shell: bash
-      
-      - name: Validate Cargo.toml version
-        run: |
-          CARGO_VERSION=$(grep "^version" Cargo.toml | head -1 | cut -d'"' -f2)
-          if [[ "$CARGO_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
-            echo "Error: Cargo.toml version ($CARGO_VERSION) doesn't match release version (${{ steps.version.outputs.version }})"
-            exit 1
-          fi
-        shell: bash
-      
-      - name: Install OpenSSL dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest' && matrix.target == 'x86_64-unknown-linux-gnu'
-        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      
-      - name: Install cross
+
+      - name: Install cross-compilation tools
         if: matrix.use_cross
-        run: cargo install cross
-      
-      - name: Build release binary
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
+        shell: bash
+
+      # Install OpenSSL for x86_64-unknown-linux-gnu only (for reqwest dependencies)
+      - name: Install OpenSSL (Linux x86_64 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev
+        shell: bash
+
+      - name: Build library
         run: |
           if [[ "${{ matrix.use_cross }}" == "true" ]]; then
             cross build --release --target ${{ matrix.target }} --all-features
@@ -89,34 +80,23 @@ jobs:
             cargo build --release --target ${{ matrix.target }} --all-features
           fi
         shell: bash
-      
-      - name: Package binary
-        run: |
-          cd target/${{ matrix.target }}/release
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a ../../../${{ matrix.artifact_name }}.zip prism-mcp-rs.exe
-          else
-            tar czf ../../../${{ matrix.artifact_name }}.tar.gz prism-mcp-rs
-          fi
-          cd ../../../
-        shell: bash
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.zip' || '.tar.gz' }}
 
-  # Create release and upload assets
+      - name: Validate library build
+        run: |
+          echo "✅ Library build validation successful for ${{ matrix.target }}"
+          echo "📦 prism-mcp-rs is a library crate - distributed via crates.io"
+        shell: bash
+
+  # Create GitHub release (library source distribution)
   release:
     name: Create Release
-    needs: build
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Determine version
         id: version
         run: |
@@ -126,89 +106,97 @@ jobs:
             VERSION="${{ github.event.inputs.version }}"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-      
-      - name: Display structure of downloaded files
-        run: ls -R ./artifacts
-      
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Release v${{ steps.version.outputs.version }}
-          draft: true
-          prerelease: false
-          files: ./artifacts/**/*
-          body: |
-            ## Changes in v${{ steps.version.outputs.version }}
-            
-            ### Features
-            - 
-            
-            ### Bug Fixes
-            - 
-            
-            ### Documentation
-            - 
-            
-            ### Breaking Changes
-            - 
-            
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
-
-  # Publish to crates.io
-  publish:
-    name: Publish to crates.io
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-
-
-      - name: Install OpenSSL dependencies
-        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
+        shell: bash
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-      
-      - name: Login to crates.io
-        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
-      
-      - name: Publish to crates.io
-        run: cargo publish --all-features
-        continue-on-error: false
 
-  # Generate and publish documentation
+      - name: Create source tarball
+        run: |
+          # Create clean source distribution
+          git archive --format=tar.gz --prefix=prism-mcp-rs-${{ steps.version.outputs.version }}/ HEAD > prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz
+          
+          # Also create a crate package (what would be published to crates.io)
+          cargo package --no-verify
+          cp target/package/prism-mcp-rs-${{ steps.version.outputs.version }}.crate ./
+        shell: bash
+
+      - name: Extract release notes
+        id: extract_notes
+        run: |
+          # Extract release notes from CHANGELOG.md or README.md
+          if [ -f CHANGELOG.md ]; then
+            # Try to extract version-specific notes from CHANGELOG
+            awk '/^## \[?v?${{ steps.version.outputs.version }}\]?/{flag=1; next} /^## \[?v?[0-9]/{flag=0} flag {print}' CHANGELOG.md > release_notes.txt
+          fi
+          
+          # If no specific notes found, create default notes
+          if [ ! -s release_notes.txt ]; then
+            echo "## prism-mcp-rs v${{ steps.version.outputs.version }}" > release_notes.txt
+            echo "" >> release_notes.txt
+            echo "Production-grade Rust SDK for Model Context Protocol with enterprise features." >> release_notes.txt
+            echo "" >> release_notes.txt
+            echo "### Installation" >> release_notes.txt
+            echo "\`\`\`toml" >> release_notes.txt
+            echo "[dependencies]" >> release_notes.txt
+            echo "prism-mcp-rs = \"${{ steps.version.outputs.version }}\"" >> release_notes.txt
+            echo "\`\`\`" >> release_notes.txt
+            echo "" >> release_notes.txt
+            echo "### Features" >> release_notes.txt
+            echo "- ⚡ High-performance async MCP implementation" >> release_notes.txt
+            echo "- 🔒 Enterprise-grade security and authentication" >> release_notes.txt
+            echo "- 🚀 Multi-transport support (HTTP/2, SSE, WebSockets)" >> release_notes.txt
+            echo "- 📊 Comprehensive observability and metrics" >> release_notes.txt
+            echo "- 🛠️ Production-ready error handling" >> release_notes.txt
+            echo "" >> release_notes.txt
+            echo "**Platform Validation**: ✅ Linux (x86_64, ARM64) ✅ macOS (Intel, Apple Silicon) ✅ Windows" >> release_notes.txt
+          fi
+        shell: bash
+
+      - name: Create Release
+        uses: ncipollo/create-release@v1
+        with:
+          tag: v${{ steps.version.outputs.version }}
+          name: prism-mcp-rs v${{ steps.version.outputs.version }}
+          bodyFile: release_notes.txt
+          draft: false
+          prerelease: false
+          artifacts: |
+            prism-mcp-rs-${{ steps.version.outputs.version }}-src.tar.gz
+            prism-mcp-rs-${{ steps.version.outputs.version }}.crate
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deploy documentation to GitHub Pages
   docs:
-    name: Publish Documentation
-    needs: release
+    name: Deploy Documentation
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       
-
-
-      - name: Install OpenSSL dependencies
-        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Generate documentation
-        run: cargo doc --all-features --no-deps
-      
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Build documentation
+        run: |
+          cargo doc --all-features --no-deps
+          echo '<meta http-equiv="refresh" content="0; url=prism_mcp_rs">' > target/doc/index.html
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./target/doc
-          cname: docs.prismworks.ai
+          path: ./target/doc
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755746506511,
+  "lastUpdate": 1755748187057,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -605,6 +605,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 918.46,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "a597e2989dd65cc2fdfaf222c55136ea6509a099",
+          "message": "fix: Restructure GitHub Pages deployment architecture\n\n- Create dedicated pages.yml workflow for proper Pages deployment\n- Separate benchmark generation from Pages deployment\n- Benchmarks now commit results to docs/benchmarks folder\n- Pages workflow deploys from docs/ folder with benchmark integration\n- Add professional landing page with project overview\n- Fix permissions and environment configuration\n- Should resolve all Pages deployment failures\n\nComplete separation of concerns for reliable documentation hosting.",
+          "timestamp": "2025-08-20T23:39:25-04:00",
+          "tree_id": "190d3ac71a39f05608e36bc013588206c475fe6d",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/a597e2989dd65cc2fdfaf222c55136ea6509a099"
+        },
+        "date": 1755748185458,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 88.551,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 124.51,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 101.92,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 436.63,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 240.13,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 35.545,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 377.77,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.208,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.663,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 22.231,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.292,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 113.84,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 448.04,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 107.31,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 191.43,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 193.84,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 144.77,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 456.24,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5548,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.09,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 222.31,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 212.93,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 629.56,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 907.08,
             "unit": "ns"
           }
         ]

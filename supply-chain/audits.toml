@@ -1,4 +1,4 @@
-# cargo-vet audit file
-# This will be populated as we audit dependencies
 
-# Currently no manual audits - relying on exemptions during initial setup
+# cargo-vet audits file
+
+[audits]

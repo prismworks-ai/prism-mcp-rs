@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755748187057,
+  "lastUpdate": 1755749192439,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -749,6 +749,145 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 907.08,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "cac8e60e1dad0f925151fad12de14f9f5e7ecf02",
+          "message": "feat: Optimize crates.io keywords and description for AI/LLM discoverability\n\n- Update keywords to: ai, llm, agents, assistant, protocol\n- Enhance description to mention AI agents, LLM integrations, assistant tools\n- Optimize categories for better crates.io categorization\n- Improves discoverability for developers searching for AI/agent frameworks\n\nAligns crates.io metadata with GitHub topics for consistent search optimization.",
+          "timestamp": "2025-08-20T23:55:20-04:00",
+          "tree_id": "d36551250da4fdd6365885a5be335f6455a9cce8",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/cac8e60e1dad0f925151fad12de14f9f5e7ecf02"
+        },
+        "date": 1755749191881,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 88.329,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 123.98,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 102.5,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 430.08,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 240,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 35.54,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 351.68,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.787,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.293,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 22.34,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.436,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 113.38,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 441.06,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 107.09,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 191.34,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 193.67,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 144.42,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 448.79,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5538,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 32.297,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 208.57,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 211.16,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 624.22,
             "unit": "ns"
           }
         ]

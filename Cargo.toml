@@ -4,13 +4,13 @@ version = "0.1.1"
 edition = "2021"
 authors = ["Prismworks AI <developers@prismworks.ai>"]
 license = "MIT"
-description = "Production-grade Rust SDK for Model Context Protocol with enterprise features"
+description = "Production-grade Rust SDK for Model Context Protocol (MCP) - Build AI agents, LLM integrations, and assistant tools with enterprise features"
 repository = "https://github.com/prismworks-ai/prism-mcp-rs"
 homepage = "https://github.com/prismworks-ai/prism-mcp-rs"
 documentation = "https://docs.rs/prism-mcp-rs"
 readme = "README.md"
-keywords = ["mcp", "protocol", "ai", "llm", "enterprise"]
-categories = ["api-bindings", "asynchronous", "network-programming", "development-tools"]
+keywords = ["ai", "llm", "agents", "assistant", "protocol"]
+categories = ["api-bindings", "asynchronous", "development-tools", "web-programming"]
 exclude = [
     ".github/",
     "scripts/",

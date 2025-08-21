@@ -380,7 +380,13 @@ for method in &introspection.methods.methods {
 
 ### **📚 Getting Started**
 - [Quick Start Guide](docs/GETTING_STARTED.md) - Installation, setup, and first steps
+- [AI Tool Integration](docs/AI_TOOL_INTEGRATION.md) - Connect to Claude, Cursor, VS Code, Windsurf
+- [Configuration Examples](docs/examples/ai-tool-configs/README.md) - Ready-to-use configuration templates
 - [API Reference](https://docs.rs/prism-mcp-rs) - Complete API documentation
+
+### **🚀 Deployment & Production**
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) - Production deployment strategies
+- [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Common issues and solutions
 
 ### **🏗️ Development Guides**
 - [Architecture Guide](docs/ARCHITECTURE.md) - System design and components

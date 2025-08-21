@@ -458,6 +458,12 @@ tar -czf plugin-v1.0.0-linux-x64.tar.gz \
 }
 ```
 
+### Integration with AI Tools
+
+Once your plugin is distributed and installed, users need to configure their AI tools to use servers that load your plugin. See the [AI Tool Integration Guide](../AI_TOOL_INTEGRATION.md) for complete setup instructions for Claude Desktop, Cursor, VS Code, Windsurf, and Claude Code.
+
+For deployment strategies and packaging options, refer to the [Deployment Guide](../DEPLOYMENT_GUIDE.md).
+
 ## Licensing
 
 ### SDK License Protection

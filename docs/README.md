@@ -11,6 +11,9 @@ This directory contains comprehensive technical documentation for the Prism MCP 
 | Document | Purpose | Audience |
 |----------|---------|----------|
 | [Getting Started](GETTING_STARTED.md) | Initial setup and basic usage | New users |
+| [AI Tool Integration](AI_TOOL_INTEGRATION.md) | Connect servers to Claude, Cursor, VS Code, etc. | End users, developers |
+| [Deployment Guide](DEPLOYMENT_GUIDE.md) | Production deployment strategies | DevOps, developers |
+| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and solutions | All users |
 | [Architecture](ARCHITECTURE.md) | System design and components | Architects, senior developers |
 | [Development](DEVELOPMENT.md) | Development environment and workflows | Contributors |
 
@@ -24,6 +27,12 @@ This directory contains comprehensive technical documentation for the Prism MCP 
 | [Plugin Types](guides/plugin-types.md) | Component specifications | Plugin architecture |
 | [Error Handling](guides/error-handling.md) | Fault tolerance | Production systems |
 | [Migration](guides/migration.md) | Version upgrades | System maintenance |
+
+### Configuration Examples
+
+| Resource | Focus Area | Use Case |
+|----------|------------|----------|
+| [AI Tool Configs](examples/ai-tool-configs/README.md) | Claude, Cursor, VS Code, Windsurf setup | Integration with AI tools |
 
 ### API Documentation
 
@@ -87,9 +96,9 @@ cargo doc --no-deps --features "http2 compression plugin" --open
 ### Beginner
 
 1. Read [Getting Started](GETTING_STARTED.md)
-2. Run example applications
-3. Build simple echo server
-4. Implement basic client
+2. Build simple echo server
+3. Connect to AI tool using [AI Tool Integration](AI_TOOL_INTEGRATION.md)
+4. Test server functionality
 
 ### Intermediate
 

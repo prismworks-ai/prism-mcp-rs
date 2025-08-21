@@ -5,6 +5,33 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-08-20
+
+### Added
+- **🎯 Comprehensive AI Tool Integration Documentation** - Complete guides for integrating with Claude Desktop, Cursor, VS Code, Windsurf, and Claude Code
+- **📋 Production Deployment Guide** - Enterprise-grade deployment strategies, cross-platform builds, and distribution methods
+- **🔧 Troubleshooting Guide** - Systematic issue resolution with platform-specific solutions and diagnostic scripts
+- **📚 Configuration Examples Library** - Ready-to-use templates for all supported AI tools and environments
+- **🚀 Automatic Crates.io Publication** - Streamlined release workflow with automatic package publishing
+
+### Changed
+- **💎 Streamlined README** - Refocused on innovation showcase and clean API examples rather than verbose quickstart content
+- **📖 Enhanced Documentation Structure** - Improved navigation and cross-references between all documentation files
+- **🏗️ Optimized CI/CD Pipeline** - Fixed benchmark workflows and enabled proper plugin feature testing
+
+### Fixed
+- **🔒 Security Validation Issues** - Resolved cargo-vet configuration and license validation failures
+- **🔗 Documentation Cross-Links** - Fixed all broken internal documentation references
+- **📊 Benchmark Infrastructure** - Corrected benchmark badge generation and plugin feature compilation
+- **📦 Crates.io Compatibility** - Shortened package keywords to meet registry requirements
+
+### Technical Improvements
+- Added MPL-2.0 to allowed licenses for dependency compatibility
+- Reinitialized cargo-vet supply chain with compatible version format
+- Enhanced README to highlight architectural innovations and unique value proposition
+- Integrated plugin documentation with AI tool deployment workflow
+- Complete validation: 264 tests passing, no clippy warnings, all security checks green
+
 ## [Unreleased]
 
 ### Added

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755733667315,
+  "lastUpdate": 1755745207155,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -317,6 +317,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 912.9,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "45b136c38465f0b1075ba3cd7b3c7f7d770abf62",
+          "message": "docs: Add comprehensive AI tool integration documentation\n\n- Add AI_TOOL_INTEGRATION.md with complete setup guides for Claude Desktop, Cursor, VS Code, Windsurf, and Claude Code\n- Add DEPLOYMENT_GUIDE.md with production deployment strategies, cross-platform builds, and distribution methods\n- Add TROUBLESHOOTING.md with systematic issue resolution and platform-specific solutions\n- Enhance GETTING_STARTED.md with end-to-end workflow and 5-minute quick start\n- Add examples/ai-tool-configs/ with configuration templates for all AI tools\n- Update main and docs README.md with improved navigation\n- Integrate plugin documentation with AI tool deployment workflow\n- Fix cross-links and validate all documentation references\n\nCloses the critical gap between server development and AI tool integration.\nTotal: 51,839 bytes of production-ready documentation added.",
+          "timestamp": "2025-08-20T22:44:45-04:00",
+          "tree_id": "26ef9d994a0ef31f2c0b2324e4d6bb3450f6eb9b",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/45b136c38465f0b1075ba3cd7b3c7f7d770abf62"
+        },
+        "date": 1755745206243,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 88.155,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 124,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 101.15,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 427.84,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 243.85,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 34.617,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 389.37,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 20.148,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 22.014,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 23.202,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.496,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 117.7,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 437.23,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 115.12,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 190.37,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 224.11,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 151.04,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 468.59,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.3791,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.698,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 218.18,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 217.15,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 625.52,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 893.29,
             "unit": "ns"
           }
         ]

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755745207155,
+  "lastUpdate": 1755746506511,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -461,6 +461,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 893.29,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "60e9fb5072c77bf36d3e029bd2e7560c102ed52d",
+          "message": "fix: Resolve license and cargo-vet configuration issues\n\n- Add MPL-2.0 to allowed licenses in deny.toml for option-ext dependency\n- Reinitialize cargo-vet supply chain with compatible version\n- Replace incompatible wildcard version exemptions with proper format\n- All security checks now passing:\n  - cargo deny check licenses: ✅ PASS\n  - cargo vet --locked: ✅ PASS (388 exempted)\n\nFixes CI pipeline security validation failures.",
+          "timestamp": "2025-08-20T23:11:20-04:00",
+          "tree_id": "c6775874161bcf610472f9e5a710397330c00037",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/60e9fb5072c77bf36d3e029bd2e7560c102ed52d"
+        },
+        "date": 1755746505056,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 88.419,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 123.82,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 102.37,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 435.04,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 254.2,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 34.655,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 344.24,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.377,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.218,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 22.127,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.548,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 119.49,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 442.14,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 107.02,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 189.6,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 192.6,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 146.81,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 456.4,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.3786,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.756,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 225.51,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 215.13,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 668.15,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 918.46,
             "unit": "ns"
           }
         ]

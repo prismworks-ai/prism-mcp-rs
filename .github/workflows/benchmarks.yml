@@ -19,13 +19,8 @@ jobs:
   benchmark:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       contents: write
-      pages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       
@@ -188,20 +183,19 @@ jobs:
           </html>
           EOF
           
-      - name: Setup Pages
+      - name: Store benchmark results  
         if: github.event_name == 'push'
-        uses: actions/configure-pages@v4
-        
-      - name: Upload to GitHub Pages
-        if: github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./benchmarks
+        run: |
+          # Commit benchmark results to docs/benchmarks for Pages deployment
+          mkdir -p docs/benchmarks
+          cp -r benchmarks/* docs/benchmarks/ 2>/dev/null || true
           
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push'
-        id: deployment
-        uses: actions/deploy-pages@v4
+          # Commit if there are changes
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/benchmarks/ || true
+          git diff --staged --quiet || git commit -m "Update benchmark results [skip ci]" || true
+          git push || true
   
   compile-time:
     name: Compile Time Benchmark

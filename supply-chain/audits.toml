@@ -1,4 +1,50 @@
 
 # cargo-vet audits file
 
-[audits]
+[[audits.bitflags]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "2.9.3"
+notes = "Well-established crate for bitflag operations. Widely used in the Rust ecosystem with good track record."
+
+[[audits.cc]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "1.2.34"
+notes = "Build-time dependency for C/C++ compilation. Standard tool in Rust ecosystem."
+
+[[audits.form_urlencoded]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "1.2.2"
+notes = "URL encoding library from the url crate family. Part of Mozilla's web standards implementation."
+
+[[audits.idna]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "1.1.0"
+notes = "IDNA (Internationalized Domain Names) implementation. Part of Mozilla's web standards suite."
+
+[[audits.io-uring]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "0.7.10"
+notes = "Linux io_uring interface for high-performance async I/O. Optional dependency for tokio performance optimization."
+
+[[audits.percent-encoding]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "2.3.2"
+notes = "Percent encoding library. Part of Mozilla's web standards implementation, widely used."
+
+[[audits.prism-mcp-rs]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "0.1.2"
+notes = "Our own crate - Prism MCP SDK for Rust. Developed and maintained by PrismWorks AI."
+
+[[audits.url]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "2.5.6"
+notes = "URL parsing library from Mozilla. Well-established and widely used in the Rust ecosystem."

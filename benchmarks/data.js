@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755877237559,
+  "lastUpdate": 1755892551933,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1176,6 +1176,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 892.25,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "7ae51bb2f8286b2a8d64736e52e019d9d406fd4c",
+          "message": "🚀 FIX: Completely rebuild CI workflow to eliminate infrastructure failures\n\n✅ **MAJOR CI ROBUSTNESS IMPROVEMENTS**:\n\n## 🔧 **Cache/Archive Issues FIXED**:\n- Replace fragmented cache actions with unified Swatinem/rust-cache@v2\n- Implement cache corruption prevention with better keys\n- Add conditional cache saving to reduce conflicts\n- Include comprehensive cache directories for all Rust artifacts\n\n## 🎯 **Matrix Strategy FIXED**:\n- Add comprehensive job timeouts (45min main, step-specific)\n- Improve fail-fast strategy with smart exclusions\n- Remove problematic combinations (Windows beta/nightly, macOS beta)\n- Enhance job naming with OS/Rust version context\n\n## 🛠️ **Infrastructure Robustness ENHANCED**:\n- Add cargo retry configuration (3 attempts, 60s timeout)\n- Implement disk space cleanup for Ubuntu runners\n- Optimize checkout with minimal history (fetch-depth: 1)\n- Configure resource limits (2 parallel jobs) for stability\n\n## 🔍 **Error Handling IMPROVED**:\n- Add continue-on-error for non-critical steps\n- Implement artifact preservation with always() conditions\n- Create informative step names with emoji indicators\n- Add graceful degradation for missing directories\n\n## 📊 **Workflow Structure OPTIMIZED**:\n- **Required Jobs**: test, minimal, fmt, clippy, security, check\n- **Optional Jobs**: coverage, doc, examples, benchmarks\n- **CI Success Job**: Aggregate results with detailed status reporting\n- **Conditional Execution**: Benchmarks only on main branch\n\n## 🎉 **Expected Benefits**:\n- ✅ Eliminate \"Failed to delete archive\" errors\n- ⚡ Faster cache operations and reduced CI time\n- 🔍 Better error visibility and troubleshooting\n- 🚀 More reliable CI results for all contributors\n\n## 🎯 **Key Technical Improvements**:\n- Unified caching strategy prevents cache conflicts\n- Job-level and step-level timeouts prevent hanging\n- Resource management prevents disk space exhaustion\n- Retry mechanisms handle transient network issues\n- Clear separation of required vs optional validations\n\nThis addresses all infrastructure issues identified in the act simulation and\nprovides a production-ready, robust CI workflow that will work reliably on\nGitHub Actions without the cache/archive failures that caused matrix job issues.",
+          "timestamp": "2025-08-22T15:45:55-04:00",
+          "tree_id": "8890cfe17c9b942debada3cdaf89039ac7404517",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/7ae51bb2f8286b2a8d64736e52e019d9d406fd4c"
+        },
+        "date": 1755892551422,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 87.968,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 123.74,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 105.18,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 436.23,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 238.88,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 35.09,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 353.28,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 20.537,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.074,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 22.098,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.417,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 113.64,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 450.18,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 106.74,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 191.74,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 201.32,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 145.69,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 462.21,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5541,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.075,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 221.47,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 216.09,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 640.78,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 909.94,
             "unit": "ns"
           }
         ]

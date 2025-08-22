@@ -5,9 +5,9 @@
 use async_trait::async_trait;
 use prism_mcp_rs::{
     core::error::{McpError, McpResult},
+    core::tool::ToolHandler,
     protocol::types::{ContentBlock, ToolResult},
     server::McpServer,
-    core::tool::ToolHandler,
 };
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -113,7 +113,7 @@ fn test_imports_compile() {
     // This test ensures the import statements shown in docs are correct
     use async_trait::async_trait;
     use prism_mcp_rs::prelude::*;
-    use serde_json::{Value};
+    use serde_json::Value;
     use std::collections::HashMap;
 
     // If this compiles, our imports are correct

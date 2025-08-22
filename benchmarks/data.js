@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755876042974,
+  "lastUpdate": 1755877237559,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1032,6 +1032,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 882.8,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "d5102061ae30027c1cfa2fd9aa3139da4706e636",
+          "message": "fix: Resolve CI workflow test failures and compilation issues\n\n🧪 Test Fixes:\n- Fixed test_getting_started_examples.rs compilation errors\n- Corrected MCPServer -> McpServer naming convention\n- Fixed String parameter issues for McpServer::new()\n- Resolved McpError import and usage patterns\n- Fixed HashMap import conflicts\n- Proper error handling with McpError constructors\n\n📝 Code Quality:\n- Eliminated rustfmt formatting issues\n- Fixed all compilation errors in documentation examples\n- All 7 tests now pass successfully\n- Maintained backward compatibility with API examples\n\n⚡ Performance:\n- Tests run cleanly with only minor warnings\n- Documentation examples are now verified and functional\n- Improved reliability of CI test suite",
+          "timestamp": "2025-08-22T11:30:52-04:00",
+          "tree_id": "c609d780dab85351e22fcd393d0b8a32d380662e",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/d5102061ae30027c1cfa2fd9aa3139da4706e636"
+        },
+        "date": 1755877236254,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 87.563,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 124.14,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 102.48,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 429.91,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 235.42,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 35.564,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 342.28,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.162,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.122,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 22.702,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.357,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 112.63,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 454.87,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 108.54,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 189.66,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 193.56,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 145.15,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 456.8,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5535,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.368,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 210.38,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 214.94,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 629.5,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 892.25,
             "unit": "ns"
           }
         ]

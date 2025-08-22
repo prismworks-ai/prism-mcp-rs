@@ -206,6 +206,7 @@ jobs:
     name: Publish to crates.io
     needs: [validate, release]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -288,14 +289,33 @@ jobs:
           echo "🔍 Waiting for crates.io to process the new version..."
           sleep 30
           
-          # Verify the package is available
-          for i in {1..10}; do
-            if cargo search prism-mcp-rs | grep -q "prism-mcp-rs = \"${{ steps.version.outputs.version }}\""; then
-              echo "✅ Version ${{ steps.version.outputs.version }} confirmed available on crates.io"
+          # Verify the package is available with improved error handling
+          echo "🔍 Verifying publication of version ${{ steps.version.outputs.version }}..."
+          
+          for i in {1..6}; do
+            echo "📡 Attempt $i: Checking crates.io for version ${{ steps.version.outputs.version }}..."
+            
+            # Use timeout and improved search pattern
+            if timeout 30s cargo search prism-mcp-rs 2>/dev/null | grep -E "prism-mcp-rs.*=.*\"${{ steps.version.outputs.version }}\""; then
+              echo "✅ Version ${{ steps.version.outputs.version }} confirmed available on crates.io!"
+              echo "📦 Package URL: https://crates.io/crates/prism-mcp-rs/${{ steps.version.outputs.version }}"
               break
             else
-              echo "⏳ Attempt $i: Version not yet visible on crates.io, waiting..."
-              sleep 30
+              if [ $i -eq 6 ]; then
+                echo "⚠️  Version verification reached maximum attempts. Package may still be propagating."
+                echo "📦 Manual verification: https://crates.io/crates/prism-mcp-rs"
+                echo "🔍 Alternative check with curl..."
+                
+                # Fallback verification with curl
+                if curl -sf "https://crates.io/api/v1/crates/prism-mcp-rs/${{ steps.version.outputs.version }}" > /dev/null; then
+                  echo "✅ Version confirmed via API - publication successful!"
+                else
+                  echo "⚠️  Could not verify via API, but this may be due to CDN delays"
+                fi
+              else
+                echo "⏳ Version not yet visible, waiting 20 seconds..."
+                sleep 20
+              fi
             fi
           done
 

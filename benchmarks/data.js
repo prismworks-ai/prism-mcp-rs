@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755749192439,
+  "lastUpdate": 1755876042974,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -888,6 +888,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_3_middlewares",
             "value": 624.22,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "8eaa0ed34b717c67987fc55bcedbd9a5fa99066c",
+          "message": "fix: Improve release workflow reliability and timeouts\n\n🔧 Release workflow improvements:\n- Added 15-minute timeout to publish job to prevent indefinite hanging\n- Enhanced post-publication verification with better error handling\n- Improved cargo search pattern with timeout and regex matching\n- Added fallback verification via crates.io API\n- Reduced wait times (20s vs 30s) and max attempts (6 vs 10)\n- Better logging and user feedback during verification\n\n⚡ Performance enhancements:\n- Faster failure detection with timeouts\n- More reliable verification process\n- Graceful degradation when verification has issues\n\n🛡️ Reliability improvements:\n- Prevents workflows from hanging indefinitely\n- Better handling of crates.io propagation delays\n- Alternative verification methods for edge cases",
+          "timestamp": "2025-08-22T11:10:46-04:00",
+          "tree_id": "15762c047d84ed613ab947ad21514c60763bf018",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/8eaa0ed34b717c67987fc55bcedbd9a5fa99066c"
+        },
+        "date": 1755876041628,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 87.658,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 124.33,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 102.71,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 418.44,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 233.33,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 32.127,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 365.02,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 18.992,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.312,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 22.458,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.41,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 113.63,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 482.61,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 244.85,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 240.03,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 275.38,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 147.45,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 459.3,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5545,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.394,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 217.01,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 214.78,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 622.95,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 882.8,
             "unit": "ns"
           }
         ]

@@ -16,7 +16,9 @@
 use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
+#[cfg(any(feature = "chunked-encoding", feature = "http2"))]
+use std::time::Instant;
 use tokio::sync::RwLock;
 
 #[cfg(feature = "chunked-encoding")]

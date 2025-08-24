@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756073347627,
+  "lastUpdate": 1756075480715,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1464,6 +1464,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 915.56,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "f2912e4beae6fd635f6ee71fd3f66b2d03763107",
+          "message": "fix: Add conditional compilation for Instant import\n\n- Make Instant import conditional on chunked-encoding OR http2 features\n- Instant used in StreamInfo struct (http2 feature) and performance timing (chunked-encoding feature)\n- Resolves coverage build failures where Instant type not found\n- Fixes CI error: 'cannot find type `Instant` in this scope'",
+          "timestamp": "2025-08-24T18:34:30-04:00",
+          "tree_id": "109567dd62a34b3b1c83af93f67b77ca3f6b65f8",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/f2912e4beae6fd635f6ee71fd3f66b2d03763107"
+        },
+        "date": 1756075479775,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 87.978,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 123.72,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 101.08,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 449.14,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 250.67,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 35.114,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 323.31,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.628,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 21.664,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 21.991,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.139,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 117.95,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 442.29,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 106.78,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 190.38,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 193.34,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 146.44,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 457.02,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5542,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.076,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 225.98,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 211.39,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 629.18,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 917.98,
             "unit": "ns"
           }
         ]

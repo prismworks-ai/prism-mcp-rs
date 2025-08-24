@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755892551933,
+  "lastUpdate": 1756073347627,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1320,6 +1320,150 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 909.94,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "007649d116d753e5819a0eafba9a0de9956bf278",
+          "message": "🚀 Fix critical CI failures through performance optimization\n\n- Fix CI timeouts by optimizing feature selection (--all-features → selective features)\n- Reduce build complexity: 412 → 312 crates (~25% faster compilation)\n- Simplify CI matrix: Remove nightly/beta variants, keep stable only\n- Support ubuntu-latest, macos-latest, windows-latest with stable Rust\n- Fix Cargo.toml profile duplications causing build errors\n- Add optimized test compilation settings\n- Separate full-features test as optional job with longer timeout\n\n✅ Result: 372/372 tests passing (100% success rate)\n✅ All critical CI jobs now pass: test, package-check, minimal-features\n\nResolves: CI workflow failures, timeout issues, build performance\nPerformance: ~25% faster builds with maintained comprehensive coverage",
+          "timestamp": "2025-08-24T17:59:09-04:00",
+          "tree_id": "3f00145641b843833c15d73a1c3d667ea37c91fa",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/007649d116d753e5819a0eafba9a0de9956bf278"
+        },
+        "date": 1756073346781,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "client_create_default",
+            "value": 88.011,
+            "unit": "ns"
+          },
+          {
+            "name": "client_create_with_config",
+            "value": 123.82,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 104.49,
+            "unit": "ns"
+          },
+          {
+            "name": "500_bytes",
+            "value": 440.07,
+            "unit": "ns"
+          },
+          {
+            "name": "50_bytes",
+            "value": 244.96,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_config_empty",
+            "value": 35.931,
+            "unit": "ns"
+          },
+          {
+            "name": "register_single_tool",
+            "value": 339.99,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_10",
+            "value": 19.281,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_100",
+            "value": 22.144,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_in_1000",
+            "value": 21.931,
+            "unit": "ns"
+          },
+          {
+            "name": "lookup_missing",
+            "value": 20.106,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_simple",
+            "value": 118.7,
+            "unit": "ns"
+          },
+          {
+            "name": "execute_complex",
+            "value": 433.56,
+            "unit": "ns"
+          },
+          {
+            "name": "create_metadata",
+            "value": 106.8,
+            "unit": "ns"
+          },
+          {
+            "name": "state_update",
+            "value": 189.12,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_result",
+            "value": 194.07,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_default",
+            "value": 145.52,
+            "unit": "ns"
+          },
+          {
+            "name": "server_config_with_capabilities",
+            "value": 454.67,
+            "unit": "ns"
+          },
+          {
+            "name": "route_simple",
+            "value": 1.5538,
+            "unit": "ns"
+          },
+          {
+            "name": "route_complex",
+            "value": 22.38,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_success",
+            "value": 213.34,
+            "unit": "ns"
+          },
+          {
+            "name": "generate_error",
+            "value": 211.75,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_3_middlewares",
+            "value": 638.73,
+            "unit": "ns"
+          },
+          {
+            "name": "chain_5_middlewares",
+            "value": 915.56,
             "unit": "ns"
           }
         ]

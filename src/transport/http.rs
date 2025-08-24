@@ -168,10 +168,9 @@ impl HttpClientTransport {
             .await
             .map_err(|e| McpError::Http(format!("SSE connection failed: {e}")))?;
 
-        let mut stream = response.bytes_stream();
-
         #[cfg(feature = "sse")]
         {
+            let mut stream = response.bytes_stream();
             while let Some(chunk) = stream.next().await {
                 match chunk {
                     Ok(bytes) => {
@@ -200,6 +199,7 @@ impl HttpClientTransport {
 
         #[cfg(not(feature = "sse"))]
         {
+            let _ = notification_sender; // Silence unused warning
             tracing::warn!("SSE streaming requires SSE feature");
         }
 

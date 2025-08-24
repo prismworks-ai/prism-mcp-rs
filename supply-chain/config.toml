@@ -275,6 +275,10 @@ criteria = "safe-to-deploy"
 version = "0.10.0"
 criteria = "safe-to-run"
 
+[[exemptions.deadpool]]
+version = "0.12.2"
+criteria = "safe-to-run"
+
 [[exemptions.deadpool-runtime]]
 version = "0.1.4"
 criteria = "safe-to-run"
@@ -544,6 +548,10 @@ criteria = "safe-to-deploy"
 version = "2.10.0"
 criteria = "safe-to-deploy"
 
+[[exemptions.indexmap]]
+version = "2.11.0"
+criteria = "safe-to-deploy"
+
 [[exemptions.inotify]]
 version = "0.9.6"
 criteria = "safe-to-deploy"
@@ -586,6 +594,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.jobserver]]
 version = "0.1.33"
+criteria = "safe-to-deploy"
+
+[[exemptions.jobserver]]
+version = "0.1.34"
 criteria = "safe-to-deploy"
 
 [[exemptions.js-sys]]
@@ -889,6 +901,10 @@ criteria = "safe-to-deploy"
 version = "1.11.1"
 criteria = "safe-to-deploy"
 
+[[exemptions.regex]]
+version = "1.11.2"
+criteria = "safe-to-deploy"
+
 [[exemptions.regex-automata]]
 version = "0.1.10"
 criteria = "safe-to-deploy"
@@ -897,12 +913,20 @@ criteria = "safe-to-deploy"
 version = "0.4.9"
 criteria = "safe-to-deploy"
 
+[[exemptions.regex-automata]]
+version = "0.4.10"
+criteria = "safe-to-deploy"
+
 [[exemptions.regex-syntax]]
 version = "0.6.29"
 criteria = "safe-to-deploy"
 
 [[exemptions.regex-syntax]]
 version = "0.8.5"
+criteria = "safe-to-deploy"
+
+[[exemptions.regex-syntax]]
+version = "0.8.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.relative-path]]
@@ -1507,6 +1531,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.wiremock]]
 version = "0.6.4"
+criteria = "safe-to-run"
+
+[[exemptions.wiremock]]
+version = "0.6.5"
 criteria = "safe-to-run"
 
 [[exemptions.wit-bindgen-rt]]

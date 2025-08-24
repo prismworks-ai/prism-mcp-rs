@@ -285,4 +285,6 @@ criterion_group!(
     benchmark_middleware_chain
 );
 
+// Use criterion_main! only when building benchmarks
+// For other builds, criterion_main! won't be included
 criterion_main!(benches);

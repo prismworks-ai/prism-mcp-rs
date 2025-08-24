@@ -80,21 +80,36 @@ jobs:
           sudo docker system prune -af
           df -h
       
-      - name: Configure cargo for reliability
+      - name: Configure cargo for reliability (Unix)
+        if: runner.os != 'Windows'
         run: |
           # Configure cargo for better reliability
           mkdir -p ~/.cargo
-          cat >> ~/.cargo/config.toml << EOF
-          [net]
-          retry = 3
-          timeout = 60
-          
-          [build]
-          jobs = 2
-          
-          [term]
-          color = "always"
-          EOF
+          echo "[net]" >> ~/.cargo/config.toml
+          echo "retry = 3" >> ~/.cargo/config.toml
+          echo "timeout = 60" >> ~/.cargo/config.toml
+          echo "" >> ~/.cargo/config.toml
+          echo "[build]" >> ~/.cargo/config.toml
+          echo "jobs = 2" >> ~/.cargo/config.toml
+          echo "" >> ~/.cargo/config.toml
+          echo "[term]" >> ~/.cargo/config.toml
+          echo "color = \"always\"" >> ~/.cargo/config.toml
+      
+      - name: Configure cargo for reliability (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Configure cargo for better reliability
+          New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.cargo"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "[net]"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "retry = 3"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "timeout = 60"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value ""
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "[build]"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "jobs = 2"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value ""
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "[term]"
+          Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "color = `"always`""
       
       - name: Update and check toolchain
         run: |

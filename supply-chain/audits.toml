@@ -48,3 +48,9 @@ who = "PrismWorks AI <team@prismworks.ai>"
 criteria = "safe-to-deploy"
 version = "2.5.6"
 notes = "URL parsing library from Mozilla. Well-established and widely used in the Rust ecosystem."
+
+[[audits.url]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "2.5.7"
+notes = "URL parsing library from Mozilla. Well-established and widely used in the Rust ecosystem."

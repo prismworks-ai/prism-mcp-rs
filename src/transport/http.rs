@@ -163,14 +163,14 @@ impl HttpClientTransport {
             request = request.header(name_str, value_bytes);
         }
 
-        let response = request
+        let _response = request
             .send()
             .await
             .map_err(|e| McpError::Http(format!("SSE connection failed: {e}")))?;
 
         #[cfg(feature = "sse")]
         {
-            let mut stream = response.bytes_stream();
+            let mut stream = _response.bytes_stream();
             while let Some(chunk) = stream.next().await {
                 match chunk {
                     Ok(bytes) => {

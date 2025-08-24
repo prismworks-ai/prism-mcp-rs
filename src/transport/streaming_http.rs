@@ -19,11 +19,14 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 
+#[cfg(feature = "chunked-encoding")]
 use tracing::{debug, warn};
 
 use crate::core::error::{McpError, McpResult};
 use crate::protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
-use crate::transport::traits::{ConnectionState, Transport, TransportStats};
+use crate::transport::traits::Transport;
+#[cfg(feature = "chunked-encoding")]
+use crate::transport::traits::{ConnectionState, TransportStats};
 
 // Chunked encoding support
 #[cfg(feature = "chunked-encoding")]

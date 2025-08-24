@@ -119,6 +119,7 @@ node_modules/
 
 # AI Context system files
 .aicontext/
+.context/
 
 # Local development files
 .local/

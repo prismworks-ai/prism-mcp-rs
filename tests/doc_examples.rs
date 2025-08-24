@@ -24,7 +24,7 @@ fn test_and_extract_doc_examples() {
 
     // Run doc tests without --quiet to get better error messages
     let output = Command::new("cargo")
-        .args(&["test", "--doc"])
+        .args(["test", "--doc"])
         .current_dir(env!("CARGO_MANIFEST_DIR")) // Set proper working directory
         .output()
         .expect("Failed to run doc tests");
@@ -80,7 +80,7 @@ fn extract_examples_recursive(dir: &Path, examples: &mut HashMap<String, Vec<Exa
 
             if path.is_dir() {
                 extract_examples_recursive(&path, examples);
-            } else if path.extension().map_or(false, |ext| ext == "rs") {
+            } else if path.extension().is_some_and(|ext| ext == "rs") {
                 extract_examples_from_file(&path, examples);
             }
         }
@@ -158,13 +158,13 @@ fn extract_examples_from_file(file: &Path, examples: &mut HashMap<String, Vec<Ex
                 module_path: module_path.clone(),
                 line_number: content[..cap.get(0).unwrap().start()].lines().count(),
                 is_runnable,
-                requires_features: extract_required_features(&attributes),
+                requires_features: extract_required_features(attributes),
                 description: description.to_string(),
             };
 
             examples
                 .entry(module_path.clone())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(example);
         }
     }
@@ -202,7 +202,7 @@ fn generate_example_files(examples: HashMap<String, Vec<Example>>) {
     let mut skipped_count = 0;
 
     // Generate example files
-    for (_module, module_examples) in &examples {
+    for module_examples in examples.values() {
         for example in module_examples {
             let file_name = format!("{}.rs", example.name);
             let file_path = examples_dir.join(&file_name);
@@ -369,7 +369,7 @@ fn generate_examples_readme(examples: &HashMap<String, Vec<Example>>) {
 
                 if !example.description.is_empty() {
                     content.push_str(&format!("  {}", example.description.trim()));
-                    content.push_str("\n");
+                    content.push('\n');
                 }
             }
             content.push('\n');

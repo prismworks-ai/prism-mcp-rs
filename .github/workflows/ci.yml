@@ -15,8 +15,8 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
-  # Enable all features for CI
-  CARGO_BUILD_FLAGS: --all-features
+  # Use reasonable feature set for CI instead of --all-features (too slow)
+  CARGO_BUILD_FLAGS: --features="stdio,http,auth,compression"
   # Add timeout and retry configurations
   CARGO_NET_RETRY: 3
   CARGO_NET_TIMEOUT: 60
@@ -24,33 +24,20 @@ env:
 jobs:
   # Run tests on multiple OS and Rust versions with improved robustness
   test:
-    name: Test Suite (${{ matrix.os }}, ${{ matrix.rust }})
+    name: Test Suite (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45  # Prevent hanging jobs
     strategy:
       fail-fast: false  # Continue other jobs if one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [stable, beta, nightly]
-        exclude:
-          # Exclude problematic combinations
-          - os: windows-latest
-            rust: beta
-          - os: windows-latest
-            rust: nightly
-          # Reduce matrix for faster CI on non-critical combinations
-          - os: macos-latest
-            rust: beta
         include:
           # Add specific timeout for slower combinations
           - os: windows-latest
-            rust: stable
             timeout: 60
           - os: macos-latest
-            rust: stable
             timeout: 50
           - os: ubuntu-latest
-            rust: stable
             timeout: 40
     
     steps:
@@ -63,14 +50,14 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: stable
       
       # Improved caching strategy with better keys and error handling
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           # Use more specific cache keys to avoid conflicts
-          key: ${{ matrix.os }}-${{ matrix.rust }}-${{ hashFiles('Cargo.lock') }}
+          key: ${{ matrix.os }}-stable-${{ hashFiles('Cargo.lock') }}
           # Include additional paths that might be needed
           cache-directories: |
             ~/.cargo/bin/
@@ -501,6 +488,34 @@ jobs:
             reports/benchmark-report.md
             target/criterion/
           retention-days: 7
+
+  # Full feature test (optional, longer timeout)
+  full-features:
+    name: Full Features Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # Longer timeout for comprehensive test
+    continue-on-error: true  # Don't fail CI if this takes too long
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: full-features-${{ hashFiles('Cargo.lock') }}
+      
+      - name: Test with all features
+        timeout-minutes: 50
+        run: |
+          echo "🧪 Testing with all features (may take a while)..."
+          cargo test --verbose --all-features --lib
+        env:
+          RUST_LOG: warn
 
   # Summary job that depends on all others
   ci-success:

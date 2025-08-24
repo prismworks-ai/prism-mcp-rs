@@ -212,6 +212,6 @@ mod integration_tests {
 
         // Verify the server has the request_list_roots method
         // The actual communication test would require a full transport setup
-        assert!(true); // Placeholder - actual test would involve transport setup
+        // Placeholder - actual test would involve transport setup
     }
 }

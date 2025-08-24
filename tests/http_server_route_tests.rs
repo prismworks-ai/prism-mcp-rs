@@ -172,7 +172,7 @@ mod http_server_route_tests {
                 Err(_) => {
                     // This would result in StatusCode::INTERNAL_SERVER_ERROR
                     // in the actual route handler
-                    assert!(true, "Handler failure handled correctly");
+                    // Handler failure handled correctly
                 }
             }
         }
@@ -421,7 +421,7 @@ mod http_server_route_tests {
 
         // Test that CORS layer can be created and configured
         // In actual usage, this would be applied to the router
-        assert!(true, "CORS layer should be configurable");
+        // CORS layer should be configurable
     }
 
     #[tokio::test]
@@ -443,7 +443,7 @@ mod http_server_route_tests {
             .with_state(state);
 
         // Test that router can be created
-        assert!(true, "Router should be constructible with all routes");
+        // Router should be constructible with all routes
     }
 
     // Test handler functions to verify route structure

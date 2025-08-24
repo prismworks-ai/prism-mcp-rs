@@ -48,6 +48,7 @@ impl MemoryTransport {
     }
 
     /// Process messages in the background
+    #[allow(clippy::collapsible_match)]
     async fn process_messages(&self) {
         while *self.running.read().await {
             // Get next incoming message

@@ -119,7 +119,7 @@
 //! ## Module Organization
 //!
 //! - [`core`]: Core abstractions for resources, tools, prompts, and errors
-//! - [`plugin`]: Plugin system for dynamic tool loading
+//! - plugin: Plugin system for dynamic tool loading
 //! - [`protocol`]: MCP protocol types and message definitions (2025-06-18)
 //! - [`transport`]: Transport layer implementations (STDIO, HTTP, WebSocket)
 //! - [`server`]: MCP server implementation and lifecycle management

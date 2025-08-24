@@ -198,6 +198,7 @@ required-features = ["stdio"]
 name = "server_benchmarks"
 harness = false
 
+# Additional benchmarks
 [[bench]]
 name = "client_benchmarks"
 harness = false
@@ -206,6 +207,7 @@ harness = false
 name = "plugin_benchmarks"
 harness = false
 
+# Optimize build profiles
 [profile.release]
 opt-level = 3
 lto = true
@@ -219,10 +221,13 @@ inherits = "release"
 [profile.dev]
 opt-level = 0
 debug = true
+split-debuginfo = "unpacked"
 
 [profile.test]
-opt-level = 2
-debug = true
+# Optimized for CI speed
+opt-level = 1
+debug = 1
+incremental = true
 
 [package.metadata.docs.rs]
 all-features = true

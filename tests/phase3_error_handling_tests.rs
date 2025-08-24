@@ -645,6 +645,7 @@ mod timeout_and_failure_scenarios {
         enum CircuitState {
             Closed,
             Open,
+            #[allow(dead_code)]
             HalfOpen,
         }
 

@@ -156,7 +156,7 @@ mod http_sse_streaming_tests {
     #[tokio::test]
     async fn test_http_client_request_id_mismatch() {
         // Test response ID validation
-        let transport = HttpClientTransport::new("http://localhost:3000", None)
+        let _transport = HttpClientTransport::new("http://localhost:3000", None)
             .await
             .unwrap();
 
@@ -459,7 +459,7 @@ mod http_sse_streaming_tests {
 
         let (notification_sender, mut notification_receiver) = mpsc::unbounded_channel();
 
-        for (i, chunk) in test_chunks.into_iter().enumerate() {
+        for chunk in test_chunks.into_iter() {
             // Simulate the chunk processing logic from handle_sse_stream
             let text = String::from_utf8_lossy(&chunk);
 
@@ -496,7 +496,7 @@ mod http_sse_streaming_tests {
         let mut headers = HeaderMap::new();
         headers.insert("Accept", "text/event-stream".parse().unwrap());
 
-        let (notification_sender, _notification_receiver) =
+        let (_notification_sender, _notification_receiver) =
             mpsc::unbounded_channel::<JsonRpcNotification>();
 
         // Test with invalid URL
@@ -598,7 +598,7 @@ mod http_sse_streaming_tests {
             ),
         ];
 
-        for (base_url, sse_url, expected_parts) in test_cases {
+        for (base_url, sse_url, _expected_parts) in test_cases {
             let transport = HttpClientTransport::new(base_url, sse_url).await.unwrap();
             let info = transport.connection_info();
 

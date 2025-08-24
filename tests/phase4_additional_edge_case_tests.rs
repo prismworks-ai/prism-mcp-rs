@@ -53,7 +53,7 @@ mod boundary_condition_tests {
         }
 
         // Test various empty string scenarios
-        let test_cases = vec![
+        let test_cases = [
             json!({"text": ""}),       // Empty string
             json!({"text": null}),     // Null value
             json!({}),                 // Missing field
@@ -424,9 +424,10 @@ mod error_recovery_tests {
             } else {
                 // Errors should be handled smoothly without crashing
                 // Either as error responses or proper error handling
-                match result {
-                    Ok(_) => {}  // smooth error response
-                    Err(_) => {} // Error properly propagated
+                if result.is_ok() {
+                    // smooth error response
+                } else {
+                    // Error properly propagated
                 }
             }
         }

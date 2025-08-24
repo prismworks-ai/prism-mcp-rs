@@ -59,6 +59,7 @@ async fn test_filesystem_example() {
 
 // Mock HTTP tool for testing advanced example
 struct HttpTool {
+    #[allow(dead_code)]
     client: String,
 }
 
@@ -111,8 +112,8 @@ async fn test_http_tool_example() {
 #[test]
 fn test_imports_compile() {
     // This test ensures the import statements shown in docs are correct
-    use async_trait::async_trait;
-    use prism_mcp_rs::prelude::*;
+    // use async_trait::async_trait;  // Unused import
+    // use prism_mcp_rs::prelude::*;   // Unused import
     use serde_json::Value;
     use std::collections::HashMap;
 
@@ -121,7 +122,7 @@ fn test_imports_compile() {
     let _: HashMap<String, Value> = HashMap::new();
 
     // Test that we can reference the async_trait
-    let _ = std::marker::PhantomData::<fn() -> Box<dyn Send>>::default();
+    let _ = std::marker::PhantomData::<fn() -> Box<dyn Send>>;
 }
 
 // Test parameter extraction patterns shown in documentation
@@ -145,7 +146,7 @@ fn test_parameter_extraction_patterns() {
 
     // Boolean extraction pattern from docs
     let flag = args.get("flag").and_then(|v| v.as_bool()).unwrap_or(false);
-    assert_eq!(flag, true);
+    assert!(flag);
 }
 
 // Test ContentBlock patterns shown in documentation

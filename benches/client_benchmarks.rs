@@ -5,7 +5,7 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
 use prism_mcp_rs::client::McpClientBuilder;
 use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
@@ -259,4 +259,5 @@ criterion_group!(
     benchmark_batch_operations
 );
 
-criterion_main!(benches);
+// Note: criterion_main! is not needed for cargo bench
+// The benchmarks are discovered automatically by Cargo

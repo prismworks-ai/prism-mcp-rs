@@ -4,7 +4,7 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, Criterion};
 use prism_mcp_rs::plugin::{PluginCapabilities, PluginConfig, PluginMetadata};
 use prism_mcp_rs::protocol::{ContentBlock, Tool, ToolInputSchema};
 use serde_json::json;
@@ -395,4 +395,5 @@ criterion_group!(
     benchmark_plugin_lifecycle
 );
 
-criterion_main!(benches);
+// Note: criterion_main! is not needed for cargo bench
+// The benchmarks are discovered automatically by Cargo

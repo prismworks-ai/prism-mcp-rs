@@ -5,7 +5,7 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, Criterion};
 use prism_mcp_rs::protocol::{ErrorObject, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
 use std::collections::HashMap;
@@ -285,6 +285,5 @@ criterion_group!(
     benchmark_middleware_chain
 );
 
-// Use criterion_main! only when building benchmarks
-// For other builds, criterion_main! won't be included
-criterion_main!(benches);
+// Note: criterion_main! is not needed for cargo bench
+// The benchmarks are discovered automatically by Cargo

@@ -152,15 +152,28 @@ jobs:
           RUST_LOG: warn
       
       # Add step to verify the build artifacts
-      - name: Verify build artifacts
+      - name: Verify build artifacts (Unix)
+        if: runner.os != 'Windows'
         run: |
           echo "✅ Verifying build artifacts..."
           ls -la target/
-          if [ -d "target/${{ runner.os == 'Windows' && 'debug' || 'debug' }}" ]; then
+          if [ -d "target/debug" ]; then
             echo "Debug build artifacts found"
           else
             echo "Warning: Debug build artifacts not found"
           fi
+      
+      - name: Verify build artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "✅ Verifying build artifacts..."
+          Get-ChildItem target/
+          if (Test-Path "target/debug") {
+            Write-Host "Debug build artifacts found"
+          } else {
+            Write-Host "Warning: Debug build artifacts not found"
+          }
   
   # Test with minimal features (more robust)
   minimal:

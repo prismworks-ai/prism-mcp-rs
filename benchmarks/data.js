@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756075480715,
+  "lastUpdate": 1756078237986,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1608,6 +1608,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "chain_5_middlewares",
             "value": 917.98,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "f7fb5b31d03dcd935a57f8f09f408cadf956b7c9",
+          "message": "fix: Resolve CI benchmark compilation and PowerShell issues\n\n- Remove criterion_main! from benchmark files (server_benchmarks.rs, client_benchmarks.rs, plugin_benchmarks.rs)\n- Remove unused criterion_main imports from benchmark files\n- Fix PowerShell syntax error in CI workflow by separating Unix/Windows verification steps\n- Benchmarks now properly compile without main function conflicts when using harness = false",
+          "timestamp": "2025-08-24T19:27:31-04:00",
+          "tree_id": "b7efe9698c53558056a3371adf817f5e612e2774",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/f7fb5b31d03dcd935a57f8f09f408cadf956b7c9"
+        },
+        "date": 1756078236927,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "dummy_benchmark",
+            "value": 100,
             "unit": "ns"
           }
         ]

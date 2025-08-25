@@ -13,7 +13,7 @@
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square&logo=rust)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
 [![Dependencies](https://img.shields.io/librariesio/github/prismworks-ai/prism-mcp-rs?style=flat-square&label=dependencies&color=informational)](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs)
 [![Total Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=total%20downloads&color=success)](https://crates.io/crates/prism-mcp-rs)
-[![API Stability](https://img.shields.io/badge/API-v0.1.3-orange.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
+[![API Stability](https://img.shields.io/badge/API-v0.1.4-orange.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
 
 [![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
 [![Last Commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)

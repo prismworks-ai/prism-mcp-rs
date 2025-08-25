@@ -5,6 +5,28 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2025-08-25
+
+### 🎨 Documentation & Presentation
+- **Badge Improvements**: Complete overhaul of README badges with consistent flat-square styling
+- **Visual Enhancement**: Added appropriate icons (GitHub, Rust, Discord, shield) for better visual clarity
+- **Information Accuracy**: Updated badges to reflect current project state and remove inconsistencies
+- **Professional Appearance**: Enhanced badge presentation for better first impressions
+
+### 🔧 Badge Fixes
+- **Security Badge**: Changed from failing status indicator to descriptive "Security Audit" label
+- **API Stability**: Updated from generic "beta" label to specific version indicator
+- **Performance Badge**: Enhanced with "performance-tracked" descriptor for clarity
+- **Dependencies**: Improved tracking using libraries.io for better accuracy
+- **Downloads**: Better color coding and labeling for download statistics
+- **Discord**: Community-focused messaging with proper Discord branding
+- **Release**: Added pre-release inclusion for more accurate release tracking
+
+### 📊 Impact
+- **Improved Discoverability**: More professional appearance increases project credibility
+- **Better Information**: Users get accurate, up-to-date project status at a glance
+- **Enhanced Branding**: Consistent styling aligns with professional open-source standards
+
 ## [0.1.3] - 2025-08-25
 
 ### 🚀 New Features

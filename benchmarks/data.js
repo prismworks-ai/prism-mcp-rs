@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756088795980,
+  "lastUpdate": 1756091246706,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1735,6 +1735,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 193.6,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "6f581b0b4c68d5002b2c6c4ce9a1778a6b31fbf3",
+          "message": "fix: add cargo vet audit entry for v0.1.4\n\n- Add safe-to-deploy audit entry for prism-mcp-rs v0.1.4\n- Document badge improvements and documentation enhancements\n- Resolves cargo vet --locked compliance for CI/CD pipeline\n- Maintains security audit trail for dependency verification",
+          "timestamp": "2025-08-24T23:02:53-04:00",
+          "tree_id": "32d4bce069cad7401c7891eb2c6d6a2cb9bf95dc",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/6f581b0b4c68d5002b2c6c4ce9a1778a6b31fbf3"
+        },
+        "date": 1756091245445,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 35.055,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 379.13,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.044,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 106.98,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 202.2,
             "unit": "ns"
           }
         ]

@@ -49,6 +49,12 @@ criteria = "safe-to-deploy"
 version = "0.1.3"
 notes = "Our own crate - Prism MCP SDK for Rust v0.1.3. Includes benchmark consolidation, utilities module, and CI/CD improvements. Developed and maintained by PrismWorks AI."
 
+[[audits.prism-mcp-rs]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "0.1.4"
+notes = "Our own crate - Prism MCP SDK for Rust v0.1.4. Badge improvements with consistent flat-square styling, enhanced security and performance badges, better Discord community integration, and improved professional presentation. Documentation and branding enhancements. Developed and maintained by PrismWorks AI."
+
 [[audits.url]]
 who = "PrismWorks AI <team@prismworks.ai>"
 criteria = "safe-to-deploy"

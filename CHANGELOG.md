@@ -5,6 +5,51 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-08-25
+
+### 🚀 New Features
+- **Benchmark Consolidation**: Unified benchmark suite with `all_benchmarks.rs` for comprehensive performance testing
+- **Utilities Module**: Added structured utilities directory with dedicated README and benchmark organization
+- **Enhanced CI/CD**: Completely rebuilt CI workflow to eliminate infrastructure failures and improve reliability
+
+### 🔧 Improvements
+- **Project Organization**: Moved benchmark files to `utilities/benchmarks/` for better project structure
+- **Performance Optimization**: Critical CI performance optimizations to reduce build times and failure rates
+- **Code Quality**: Enhanced rustfmt formatting and resolved compilation warnings
+- **Dependencies**: Added cargo-vet audit entries for unvetted dependencies to improve security posture
+
+### 🐛 Bug Fixes
+- **CI Compilation**: Resolved benchmark compilation issues and PowerShell compatibility problems
+- **Import Resolution**: Fixed missing `Instant` import in streaming HTTP transport
+- **Unused Imports**: Cleaned up unused import and variable warnings across the codebase
+- **Workflow Reliability**: Improved release workflow reliability with better timeout handling
+- **Context Management**: Removed `.context` folder from version control and added to `.gitignore`
+
+### 📁 File Changes
+- **Added**: `benches/all_benchmarks.rs` - Consolidated benchmark suite
+- **Added**: `utilities/README.md` - Documentation for utilities module
+- **Moved**: Benchmark files to `utilities/benchmarks/` directory (client, plugin, server benchmarks)
+- **Modified**: Multiple test files and transport modules for improved reliability
+- **Updated**: CI/CD workflows and Cargo configuration
+
+### 📊 Statistics
+- **13 commits** since v0.1.2
+- **22 files** modified or added
+- **Enhanced security** with dependency auditing
+- **Improved CI/CD** reliability and performance
+
+## [0.1.2] - 2025-08-22
+
+### Added
+- CI workflow stability improvements
+- Enhanced error handling in transport modules
+- Better dependency management with cargo-vet
+
+### Fixed
+- Multiple CI/CD pipeline issues
+- Compilation warnings and errors
+- Release workflow reliability
+
 ## [0.1.1] - 2025-08-20
 
 ### Added

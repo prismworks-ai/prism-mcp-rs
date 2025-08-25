@@ -1,26 +1,26 @@
 # Prism MCP SDK for Rust
 
-[![Crates.io](https://img.shields.io/crates/v/prism-mcp-rs.svg)](https://crates.io/crates/prism-mcp-rs)
-[![Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg)](https://crates.io/crates/prism-mcp-rs)
-[![Documentation](https://docs.rs/prism-mcp-rs/badge.svg)](https://docs.rs/prism-mcp-rs)
-[![CI](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
-[![Benchmarks](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml)
-[![Performance](https://prismworks-ai.github.io/prism-mcp-rs/benchmarks/badge.svg)](https://prismworks-ai.github.io/prism-mcp-rs/benchmarks/)
-[![Security](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
-[![codecov](https://codecov.io/gh/prismworks-ai/prism-mcp-rs/branch/main/graph/badge.svg)](https://codecov.io/gh/prismworks-ai/prism-mcp-rs)
+[![Crates.io](https://img.shields.io/crates/v/prism-mcp-rs.svg?style=flat-square)](https://crates.io/crates/prism-mcp-rs)
+[![Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=downloads&color=brightgreen)](https://crates.io/crates/prism-mcp-rs)
+[![Documentation](https://img.shields.io/docsrs/prism-mcp-rs?style=flat-square&label=docs)](https://docs.rs/prism-mcp-rs)
+[![CI](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/ci.yml?style=flat-square&label=CI&logo=github)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
+[![Benchmarks](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/benchmarks.yml?style=flat-square&label=benchmarks&logo=github)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml)
+[![Performance](https://img.shields.io/badge/performance-tracked-brightgreen?style=flat-square)](https://prismworks-ai.github.io/prism-mcp-rs/benchmarks/)
+[![Security Audit](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/security.yml?style=flat-square&label=security&logo=shield)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
+[![codecov](https://img.shields.io/codecov/c/github/prismworks-ai/prism-mcp-rs?style=flat-square&logo=codecov)](https://codecov.io/gh/prismworks-ai/prism-mcp-rs)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
-[![deps.rs](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs/status.svg)](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs)
-[![Crates.io Total Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?label=total%20downloads)](https://crates.io/crates/prism-mcp-rs)
-[![API Stability](https://img.shields.io/badge/API-beta-orange.svg)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square&logo=rust)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
+[![Dependencies](https://img.shields.io/librariesio/github/prismworks-ai/prism-mcp-rs?style=flat-square&label=dependencies&color=informational)](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs)
+[![Total Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=total%20downloads&color=success)](https://crates.io/crates/prism-mcp-rs)
+[![API Stability](https://img.shields.io/badge/API-v0.1.3-orange.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
 
-[![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs.svg)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
-[![GitHub last commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)
-[![GitHub release](https://img.shields.io/github/release/prismworks-ai/prism-mcp-rs.svg)](https://github.com/prismworks-ai/prism-mcp-rs/releases)
-[![Discord](https://img.shields.io/discord/1406362094353383637?logo=discord&label=Discord)](https://discord.gg/prismworks)
+[![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
+[![Last Commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)
+[![Release](https://img.shields.io/github/v/release/prismworks-ai/prism-mcp-rs.svg?style=flat-square&include_prereleases)](https://github.com/prismworks-ai/prism-mcp-rs/releases)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865f2?style=flat-square&logo=discord)](https://discord.gg/prismworks)
 
-[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg?style=flat-square)](https://github.com/rust-secure-code/safety-dance/)
 
 **prism-mcp-rs** is a production-grade Rust implementation of the Model Context Protocol (MCP) SDK with enterprise-class features for building secure, scalable MCP servers and clients.
 

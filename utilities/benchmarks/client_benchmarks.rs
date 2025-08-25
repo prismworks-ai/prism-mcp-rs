@@ -2,10 +2,12 @@
 //!
 //! Measures transport layer performance, serialization speed,
 //! and request/response handling efficiency.
+//!
+//! Usage: cargo run --bin client_benchmarks --features bench
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use prism_mcp_rs::client::McpClientBuilder;
 use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
@@ -259,5 +261,4 @@ criterion_group!(
     benchmark_batch_operations
 );
 
-// Note: criterion_main! is not needed for cargo bench
-// The benchmarks are discovered automatically by Cargo
+criterion_main!(benches);

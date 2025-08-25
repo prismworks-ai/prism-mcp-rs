@@ -194,18 +194,28 @@ name = "transport_selection_guide"
 path = "examples/transport_selection_guide.rs"
 required-features = ["stdio"]
 
-[[bench]]
-name = "server_benchmarks"
-harness = false
-
-# Additional benchmarks
-[[bench]]
-name = "client_benchmarks"
-harness = false
-
-[[bench]]
+# Benchmark utilities (run with: cargo run --bin <benchmark_name> --features bench)
+# Also supports standard cargo bench for CI/CD compatibility
+[[bin]]
 name = "plugin_benchmarks"
+path = "utilities/benchmarks/plugin_benchmarks.rs"
+required-features = ["bench"]
+
+[[bin]]
+name = "client_benchmarks"
+path = "utilities/benchmarks/client_benchmarks.rs"
+required-features = ["bench"]
+
+[[bin]]
+name = "server_benchmarks"
+path = "utilities/benchmarks/server_benchmarks.rs"
+required-features = ["bench"]
+
+# Standard bench entries for CI/CD compatibility (call the utilities)
+[[bench]]
+name = "all_benchmarks"
 harness = false
+required-features = ["bench"]
 
 # Optimize build profiles
 [profile.release]

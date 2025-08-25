@@ -1,10 +1,12 @@
 //! Plugin system performance benchmarks
 //!
 //! Measures tool registration, execution, and plugin lifecycle management.
+//!
+//! Usage: cargo run --bin plugin_benchmarks --features bench
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use prism_mcp_rs::plugin::{PluginCapabilities, PluginConfig, PluginMetadata};
 use prism_mcp_rs::protocol::{ContentBlock, Tool, ToolInputSchema};
 use serde_json::json;
@@ -395,5 +397,4 @@ criterion_group!(
     benchmark_plugin_lifecycle
 );
 
-// Note: criterion_main! is not needed for cargo bench
-// The benchmarks are discovered automatically by Cargo
+criterion_main!(benches);

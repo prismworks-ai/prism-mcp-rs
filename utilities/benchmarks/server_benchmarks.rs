@@ -2,10 +2,12 @@
 //!
 //! Measures request handling, routing efficiency,
 //! and concurrent request processing.
+//!
+//! Usage: cargo run --bin server_benchmarks --features bench
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use prism_mcp_rs::protocol::{ErrorObject, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
 use std::collections::HashMap;
@@ -285,5 +287,4 @@ criterion_group!(
     benchmark_middleware_chain
 );
 
-// Note: criterion_main! is not needed for cargo bench
-// The benchmarks are discovered automatically by Cargo
+criterion_main!(benches);

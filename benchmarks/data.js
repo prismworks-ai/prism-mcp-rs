@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756088116923,
+  "lastUpdate": 1756088795980,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1686,6 +1686,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 195.54,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "4fa9d454a0bc7342131b68fadc13421ddae8bf79",
+          "message": "fix: Add cargo-vet audit entry for v0.1.3 and update Cargo.lock",
+          "timestamp": "2025-08-24T22:22:05-04:00",
+          "tree_id": "de16053084be4cd7a662ce3dfaa7bd85b475e560",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4fa9d454a0bc7342131b68fadc13421ddae8bf79"
+        },
+        "date": 1756088794679,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 34.722,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 372.55,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.753,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 107.96,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 193.6,
             "unit": "ns"
           }
         ]

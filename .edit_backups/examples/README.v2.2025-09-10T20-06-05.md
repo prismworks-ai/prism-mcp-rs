@@ -19,24 +19,6 @@ cargo run --example chunked_encoding_showcase --features chunked-encoding
 
 ## Available Examples
 
-### SDK Enhancement Examples
-
-- **sdk_enhancements_demo.rs** - Comprehensive demonstration of SDK enhancements:
-  - McpClientBuilder with full configuration
-  - All session convenience methods (list_tools, call_tool, etc.)
-  - ConnectionConfig and RetryConfig
-  - Interactive request handler
-
-- **client_with_info.rs** - Alternative client creation methods:
-  - `McpClient::with_client_info()` constructor
-  - StdioClientTransport with `with_env()` for environment variables
-  - Direct transport configuration
-
-- **client_with_anthropic.rs** - Production LLM integration:
-  - ClientRequestHandler for Anthropic Claude
-  - Handling sampling/createMessage requests
-  - MCP ↔ Anthropic message format conversion
-
 ### Core Examples
 
 - **server_builder_demo.rs** - Building and configuring MCP servers

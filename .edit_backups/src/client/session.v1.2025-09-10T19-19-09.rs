@@ -426,46 +426,6 @@ impl ClientSession {
     }
 
     // ========================================================================
-    // Convenience Methods for Common Operations
-    // ========================================================================
-
-    /// List available tools from the server
-    pub async fn list_tools(&self, cursor: Option<String>) -> McpResult<ListToolsResult> {
-        let client = self.client.lock().await;
-        client.list_tools(cursor).await
-    }
-
-    /// Call a tool on the server
-    pub async fn call_tool(&self, params: CallToolParams) -> McpResult<CallToolResult> {
-        let client = self.client.lock().await;
-        client.call_tool(params.name, params.arguments).await
-    }
-
-    /// List available resources from the server
-    pub async fn list_resources(&self, cursor: Option<String>) -> McpResult<ListResourcesResult> {
-        let client = self.client.lock().await;
-        client.list_resources(cursor).await
-    }
-
-    /// Read a resource from the server
-    pub async fn read_resource(&self, params: ReadResourceParams) -> McpResult<ReadResourceResult> {
-        let client = self.client.lock().await;
-        client.read_resource(params.uri).await
-    }
-
-    /// List available prompts from the server
-    pub async fn list_prompts(&self, cursor: Option<String>) -> McpResult<ListPromptsResult> {
-        let client = self.client.lock().await;
-        client.list_prompts(cursor).await
-    }
-
-    /// Get a prompt from the server
-    pub async fn get_prompt(&self, params: GetPromptParams) -> McpResult<GetPromptResult> {
-        let client = self.client.lock().await;
-        client.get_prompt(params.name, params.arguments).await
-    }
-
-    // ========================================================================
     // Background Tasks
     // ========================================================================
 

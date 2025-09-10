@@ -79,21 +79,6 @@ impl McpClient {
         }
     }
 
-    /// Create a new MCP client with a specific ClientInfo
-    pub fn with_client_info(info: ClientInfo) -> Self {
-        Self {
-            info,
-            capabilities: ClientCapabilities::default(),
-            config: ClientConfig::default(),
-            transport: Arc::new(Mutex::new(None)),
-            server_capabilities: Arc::new(RwLock::new(None)),
-            server_info: Arc::new(RwLock::new(None)),
-            request_counter: Arc::new(Mutex::new(0)),
-            connected: Arc::new(RwLock::new(false)),
-            request_handler: Arc::new(DefaultClientRequestHandler),
-        }
-    }
-
     /// Create a new MCP client with custom configuration
     pub fn with_config(name: String, version: String, config: ClientConfig) -> Self {
         let mut client = Self::new(name, version);

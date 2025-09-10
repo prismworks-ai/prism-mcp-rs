@@ -4,9 +4,8 @@
 
 use crate::client::McpClient;
 use crate::core::error::McpResult;
-use crate::protocol::types::{ClientCapabilities, ClientInfo};
+use crate::protocol::types::ClientCapabilities;
 use std::time::Duration;
-use std::collections::HashMap;
 
 /// Configuration for retry behavior
 #[derive(Debug, Clone)]
@@ -118,31 +117,6 @@ impl McpClientBuilder {
     pub fn with_client_info(mut self, client_info: ClientInfo) -> Self {
         self.client_info = Some(client_info);
         self
-    }
-
-    /// Connect to stdio transport directly from builder
-    #[cfg(feature = "stdio")]
-    pub async fn connect_stdio(
-        self,
-        command: &str,
-        args: &[String],
-        env: Option<HashMap<String, String>>,
-    ) -> McpResult<crate::client::ClientSession> {
-        use crate::transport::stdio::StdioClientTransport;
-        use crate::client::ClientSession;
-        
-        let mut client = self.build()?;
-        
-        // Create stdio transport with optional environment variables
-        let transport = if let Some(env_vars) = env {
-            StdioClientTransport::with_env(command, args.iter().map(|s| s.as_str()).collect(), env_vars).await?
-        } else {
-            StdioClientTransport::new(command, args.iter().map(|s| s.as_str()).collect()).await?
-        };
-        
-        // Connect and create session
-        client.connect(transport).await?;
-        Ok(ClientSession::new(client))
     }
 
     /// Build the client

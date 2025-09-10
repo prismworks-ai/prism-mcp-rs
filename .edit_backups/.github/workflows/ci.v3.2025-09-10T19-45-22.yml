@@ -578,7 +578,7 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [test, minimal, fmt, clippy, doc, vet, security, check, examples]
+    needs: [test, minimal, fmt, clippy, doc, security, check, examples]
     if: always()
     steps:
       - name: Check all jobs
@@ -586,7 +586,7 @@ jobs:
           echo "Checking status of all jobs..."
           
           # Required jobs that must pass
-          required_jobs=("test" "minimal" "fmt" "clippy" "vet" "security" "check")
+          required_jobs=("test" "minimal" "fmt" "clippy" "security" "check")
           
           for job in "${required_jobs[@]}"; do
             case "$job" in
@@ -610,12 +610,6 @@ jobs:
                 ;;
               "clippy")
                 if [ "${{ needs.clippy.result }}" != "success" ]; then
-                  echo "❌ Required job '$job' failed or was cancelled"
-                  exit 1
-                fi
-                ;;
-              "vet")
-                if [ "${{ needs.vet.result }}" != "success" ]; then
                   echo "❌ Required job '$job' failed or was cancelled"
                   exit 1
                 fi

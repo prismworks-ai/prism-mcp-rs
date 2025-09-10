@@ -96,10 +96,10 @@ impl AuthConfig {
     pub fn generate_state(&self) -> String {
         // Default: generate random state
         use rand::Rng;
-        let mut rng = rand::rng();
+        let mut rng = rand::thread_rng();
         let state: String = (0..32)
             .map(|_| {
-                let idx = rng.random_range(0..62);
+                let idx = rng.gen_range(0..62);
                 let chars = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                 chars[idx] as char
             })

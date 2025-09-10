@@ -4,9 +4,8 @@
 
 use crate::client::McpClient;
 use crate::core::error::McpResult;
-use crate::protocol::types::{ClientCapabilities, ClientInfo};
+use crate::protocol::types::ClientCapabilities;
 use std::time::Duration;
-use std::collections::HashMap;
 
 /// Configuration for retry behavior
 #[derive(Debug, Clone)]
@@ -61,7 +60,6 @@ pub struct McpClientBuilder {
     timeout: Option<Duration>,
     retry_config: Option<RetryConfig>,
     connection_config: Option<ConnectionConfig>,
-    client_info: Option<ClientInfo>,
 }
 
 impl McpClientBuilder {
@@ -74,7 +72,6 @@ impl McpClientBuilder {
             timeout: None,
             retry_config: None,
             connection_config: None,
-            client_info: None,
         }
     }
 
@@ -114,47 +111,12 @@ impl McpClientBuilder {
         self
     }
 
-    /// Set client info directly
-    pub fn with_client_info(mut self, client_info: ClientInfo) -> Self {
-        self.client_info = Some(client_info);
-        self
-    }
-
-    /// Connect to stdio transport directly from builder
-    #[cfg(feature = "stdio")]
-    pub async fn connect_stdio(
-        self,
-        command: &str,
-        args: &[String],
-        env: Option<HashMap<String, String>>,
-    ) -> McpResult<crate::client::ClientSession> {
-        use crate::transport::stdio::StdioClientTransport;
-        use crate::client::ClientSession;
-        
-        let mut client = self.build()?;
-        
-        // Create stdio transport with optional environment variables
-        let transport = if let Some(env_vars) = env {
-            StdioClientTransport::with_env(command, args.iter().map(|s| s.as_str()).collect(), env_vars).await?
-        } else {
-            StdioClientTransport::new(command, args.iter().map(|s| s.as_str()).collect()).await?
-        };
-        
-        // Connect and create session
-        client.connect(transport).await?;
-        Ok(ClientSession::new(client))
-    }
-
     /// Build the client
     pub fn build(self) -> McpResult<McpClient> {
-        let mut client = if let Some(info) = self.client_info {
-            McpClient::with_client_info(info)
-        } else {
-            McpClient::new(
-                self.name.unwrap_or_else(|| "mcp-client".to_string()),
-                self.version.unwrap_or_else(|| "1.0.0".to_string()),
-            )
-        };
+        let mut client = McpClient::new(
+            self.name.unwrap_or_else(|| "mcp-client".to_string()),
+            self.version.unwrap_or_else(|| "1.0.0".to_string()),
+        );
 
         client.set_capabilities(self.capabilities.unwrap_or_default());
 

@@ -73,13 +73,13 @@ impl PkceParams {
     /// string using unreserved characters [A-Z] / [a-z] / [0-9] / "-" / "." / "_" / "~"
     /// with a minimum length of 43 characters and maximum of 128 characters.
     fn generate_verifier() -> String {
-        let mut rng = rand::rng();
-        let _length = rng.random_range(43..=128);
+        let mut rng = rand::thread_rng();
+        let _length = rng.gen_range(43..=128);
 
         // Use URL-safe base64 alphabet which matches the unreserved characters
         let mut bytes = [0u8; 32];
         for byte in &mut bytes {
-            *byte = rng.random::<u8>();
+            *byte = rng.r#gen::<u8>();
         }
 
         // Convert to URL-safe base64 without padding

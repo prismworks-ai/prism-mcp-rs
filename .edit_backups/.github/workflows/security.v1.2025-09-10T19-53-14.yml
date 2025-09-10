@@ -96,6 +96,28 @@ jobs:
         run: cargo deny check licenses
         continue-on-error: false
   
+  # Supply chain security
+  supply-chain:
+    name: Supply Chain Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-vet
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-vet
+      
+      - name: Generate lockfile  
+        run: cargo generate-lockfile
+
+      - name: Check supply chain
+        run: cargo vet --locked
+        continue-on-error: false
+  
   # SARIF upload for GitHub Security tab
   sarif:
     name: SARIF Upload

@@ -465,27 +465,6 @@ impl InteractiveClientRequestHandler {
 
             form_data.insert(field_name.clone(), value);
         }
-        
-        // Validate required fields are present and non-empty
-        if let Some(ref required_fields) = schema.required {
-            for field_name in required_fields {
-                match form_data.get(field_name) {
-                    None => {
-                        return Err(McpError::validation(format!(
-                            "Required field '{}' is missing",
-                            field_name
-                        )));
-                    }
-                    Some(serde_json::Value::String(s)) if s.is_empty() => {
-                        return Err(McpError::validation(format!(
-                            "Required field '{}' cannot be empty",
-                            field_name
-                        )));
-                    }
-                    _ => {} // Field is present and valid
-                }
-            }
-        }
 
         Ok(form_data)
     }
@@ -789,53 +768,6 @@ mod tests {
         let result = elicit_result.unwrap();
         assert!(matches!(result.action, ElicitationAction::Accept));
         assert!(result.content.is_some());
-    }
-
-    #[tokio::test]
-    async fn test_elicitation_required_field_validation() {
-        let handler = InteractiveClientRequestHandler::new("Test App")
-            .auto_accept_elicitation(false);
-
-        // Test that required fields are properly tracked
-        let mut properties = HashMap::new();
-        properties.insert(
-            "email".to_string(),
-            PrimitiveSchemaDefinition::String {
-                title: Some("Email Address".to_string()),
-                description: Some("Your email for confirmation".to_string()),
-                min_length: None,
-                max_length: None,
-                format: Some("email".to_string()),
-                enum_values: None,
-                enum_names: None,
-            },
-        );
-        properties.insert(
-            "optional_field".to_string(),
-            PrimitiveSchemaDefinition::String {
-                title: Some("Optional Info".to_string()),
-                description: None,
-                min_length: None,
-                max_length: None,
-                format: None,
-                enum_values: None,
-                enum_names: None,
-            },
-        );
-
-        let elicit_params = ElicitParams {
-            message: "Please provide your email".to_string(),
-            requested_schema: ElicitationSchema {
-                schema_type: "object".to_string(),
-                properties,
-                required: Some(vec!["email".to_string()]), // email is required
-            },
-            meta: None,
-        };
-
-        // With auto_accept off and no user input simulation, this will fail
-        // In a real scenario, we'd need to mock stdin or use dependency injection
-        // This test demonstrates the structure is in place
     }
 
     #[tokio::test]

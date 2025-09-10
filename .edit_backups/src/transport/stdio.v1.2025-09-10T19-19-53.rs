@@ -48,23 +48,6 @@ impl StdioClientTransport {
         Self::with_config(command, args, TransportConfig::default()).await
     }
 
-    /// Create a new STDIO client transport with environment variables
-    ///
-    /// # Arguments
-    /// * `command` - Command to execute for the MCP server
-    /// * `args` - Arguments to pass to the command
-    /// * `env` - Environment variables to set for the process
-    ///
-    /// # Returns
-    /// Result containing the transport or an error
-    pub async fn with_env<S: AsRef<str>>(
-        command: S,
-        args: Vec<S>,
-        env: HashMap<String, String>,
-    ) -> McpResult<Self> {
-        Self::with_config_and_env(command, args, TransportConfig::default(), Some(env)).await
-    }
-
     /// Create a new STDIO client transport with custom configuration
     ///
     /// # Arguments
@@ -79,42 +62,16 @@ impl StdioClientTransport {
         args: Vec<S>,
         config: TransportConfig,
     ) -> McpResult<Self> {
-        Self::with_config_and_env(command, args, config, None).await
-    }
-
-    /// Create a new STDIO client transport with custom configuration and environment
-    ///
-    /// # Arguments
-    /// * `command` - Command to execute for the MCP server
-    /// * `args` - Arguments to pass to the command
-    /// * `config` - Transport configuration
-    /// * `env` - Optional environment variables to set for the process
-    ///
-    /// # Returns
-    /// Result containing the transport or an error
-    pub async fn with_config_and_env<S: AsRef<str>>(
-        command: S,
-        args: Vec<S>,
-        config: TransportConfig,
-        env: Option<HashMap<String, String>>,
-    ) -> McpResult<Self> {
         let command_str = command.as_ref();
         let args_str: Vec<&str> = args.iter().map(|s| s.as_ref()).collect();
 
         tracing::debug!("Starting MCP server: {} {:?}", command_str, args_str);
 
-        let mut cmd = Command::new(command_str);
-        cmd.args(&args_str)
+        let mut child = Command::new(command_str)
+            .args(&args_str)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
-            
-        // Add environment variables if provided
-        if let Some(env_vars) = env {
-            cmd.envs(env_vars);
-        }
-        
-        let mut child = cmd
+            .stderr(Stdio::piped())
             .spawn()
             .map_err(|e| McpError::transport(format!("Failed to start server process: {e}")))?;
 

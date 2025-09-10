@@ -32,15 +32,10 @@ cargo run --example chunked_encoding_showcase --features chunked-encoding
   - StdioClientTransport with `with_env()` for environment variables
   - Direct transport configuration
 
-- **client_with_anthropic.rs** - Production LLM integration with Anthropic:
+- **client_with_anthropic.rs** - Production LLM integration:
   - ClientRequestHandler for Anthropic Claude
   - Handling sampling/createMessage requests
   - MCP ↔ Anthropic message format conversion
-
-- **client_with_openai.rs** - Production LLM integration with OpenAI:
-  - ClientRequestHandler for GPT models
-  - System prompt handling
-  - Token usage tracking
 
 ### Core Examples
 

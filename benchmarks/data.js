@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757538038294,
+  "lastUpdate": 1757540444101,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2029,6 +2029,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.21,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "efeeb40f84477aa2af215b4ed1d413e5eb6095c8",
+          "message": "style: apply rustfmt formatting\n\n- Formatted all code with cargo fmt\n- No clippy errors, only minor warnings about unused code in examples",
+          "timestamp": "2025-09-10T16:59:51-04:00",
+          "tree_id": "952be15838f22acec38079c49384db3de065cf7c",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/efeeb40f84477aa2af215b4ed1d413e5eb6095c8"
+        },
+        "date": 1757540443032,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.453,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 361.31,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.855,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.553,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 176.91,
             "unit": "ns"
           }
         ]

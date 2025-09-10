@@ -386,12 +386,12 @@ jobs:
       - name: Run cargo vet
         run: |
           echo "🔐 Running supply chain audit with cargo-vet..."
-          cargo vet --locked
+          cargo vet
       
       - name: Check for unvetted dependencies
         run: |
           echo "📊 Supply chain audit summary:"
-          cargo vet --locked | tail -1
+          cargo vet | tail -1
   
   # Security audit with better error handling
   security:

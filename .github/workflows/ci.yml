@@ -386,6 +386,8 @@ jobs:
       - name: Run cargo vet
         run: |
           echo "🔐 Running supply chain audit with cargo-vet..."
+          # For library crates, we need to generate Cargo.lock first
+          cargo generate-lockfile
           cargo vet
       
       - name: Check for unvetted dependencies

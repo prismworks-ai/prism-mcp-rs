@@ -10,6 +10,7 @@ use prism_mcp_rs::core::error::{McpError, McpResult};
 
 use prism_mcp_rs::protocol::messages::*;
 use prism_mcp_rs::protocol::types::*;
+
 // reqwest would be added as dependency for production use
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -160,7 +161,8 @@ impl ClientRequestHandler for OpenAIRequestHandler {
         let model = params
             .model_preferences
             .as_ref()
-            .and_then(|prefs| prefs.hints.first())
+            .and_then(|prefs| prefs.hints.as_ref())
+            .and_then(|hints| hints.first())
             .map(|hint| hint.name.clone())
             .unwrap_or_else(|| self.default_model.clone());
 
@@ -258,7 +260,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_root("file:///home/user/projects".to_string(), Some("Projects".to_string()))
         .add_root("file:///home/user/documents".to_string(), Some("Documents".to_string()));
     
-    client.set_request_handler(Box::new(handler));
+    client.set_request_handler(handler);
 
     // Example showing connection would work (commented out as it needs a server)
     println!("Client configured with OpenAI handler.");

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757540444101,
+  "lastUpdate": 1757540954818,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2078,6 +2078,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 176.91,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "c2b0d056724ae896875fe9b82f428ab8a9d1dda6",
+          "message": "fix: Make examples compile without stdio feature",
+          "timestamp": "2025-09-10T17:45:43-04:00",
+          "tree_id": "fc21de86d6b106ee8f63fad981c849235a2721ee",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/c2b0d056724ae896875fe9b82f428ab8a9d1dda6"
+        },
+        "date": 1757540953986,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.448,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 364.6,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.092,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.883,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.1,
             "unit": "ns"
           }
         ]

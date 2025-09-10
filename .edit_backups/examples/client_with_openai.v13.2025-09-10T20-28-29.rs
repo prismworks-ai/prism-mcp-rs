@@ -163,15 +163,15 @@ impl ClientRequestHandler for OpenAIRequestHandler {
             .as_ref()
             .and_then(|prefs| prefs.hints.as_ref())
             .and_then(|hints| hints.first())
-            .map(|hint| hint.name.clone())
+            .and_then(|hint| hint.name.clone())
             .unwrap_or_else(|| self.default_model.clone());
 
         // Create OpenAI API request
         let request = OpenAIRequest {
-            model,
+            model: model.clone(),
             messages: openai_messages,
             max_tokens: Some(params.max_tokens as i32),
-            temperature: params.temperature,
+            temperature: params.temperature.map(|t| t as f64),
             stop: params.stop_sequences,
             stream: Some(false),
         };
@@ -194,7 +194,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
         };
 
         Ok(CreateMessageResult {
-            model: response.model,
+            model,
             stop_reason: Some(stop_reason),
             role: Role::Assistant,
             content: SamplingContent::Text {

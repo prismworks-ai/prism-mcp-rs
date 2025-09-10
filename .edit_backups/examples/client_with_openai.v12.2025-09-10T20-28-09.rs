@@ -194,7 +194,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
         };
 
         Ok(CreateMessageResult {
-            model: response.model,
+            model,
             stop_reason: Some(stop_reason),
             role: Role::Assistant,
             content: SamplingContent::Text {

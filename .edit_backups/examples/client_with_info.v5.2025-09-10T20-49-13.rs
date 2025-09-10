@@ -32,8 +32,8 @@ async fn main() -> McpResult<()> {
     ]);
 
     // Create transport with custom environment
-    let transport =
-        StdioClientTransport::new("node", vec!["./mcp-server/index.js", "--verbose"]).await?;
+    let transport = StdioClientTransport::new("node", vec!["./mcp-server/index.js", "--verbose"])
+        .await?;
 
     info!("Created StdioClientTransport with custom environment variables");
 
@@ -44,10 +44,8 @@ async fn main() -> McpResult<()> {
     // let server_info = client.initialize().await?;
     // info!("Server initialized: {} v{}", server_info.name, server_info.version);
 
-    // Demonstrate that all session methods work (commented out as they need a server connection)
-    // demonstrate_quick_session_usage(&mut client).await?;
-
-    info!("Example completed. To use in production, uncomment the connection code and ensure a server is running.");
+    // Demonstrate that all session methods work
+    demonstrate_quick_session_usage(&mut client).await?;
 
     Ok(())
 }

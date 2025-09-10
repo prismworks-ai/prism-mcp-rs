@@ -8,8 +8,7 @@
 //! - Interactive request handling
 
 use prism_mcp_rs::client::{
-    ConnectionConfig, InteractiveClientRequestHandler, McpClientBuilder,
-    RetryConfig,
+    ConnectionConfig, InteractiveClientRequestHandler, McpClientBuilder, RetryConfig,
 };
 use prism_mcp_rs::core::error::McpResult;
 
@@ -117,10 +116,7 @@ async fn demonstrate_session_methods(
         ("param2".to_string(), json!(42)),
     ]);
     let tool_result = client
-        .call_tool(
-            "example_tool".to_string(),
-            Some(tool_params),
-        )
+        .call_tool("example_tool".to_string(), Some(tool_params))
         .await;
 
     match tool_result {
@@ -222,7 +218,10 @@ async fn demonstrate_session_methods(
                     ("arg2".to_string(), "value2".to_string()),
                 ]);
 
-                match client.get_prompt(first_prompt.name.clone(), Some(args)).await {
+                match client
+                    .get_prompt(first_prompt.name.clone(), Some(args))
+                    .await
+                {
                     Ok(prompt_result) => {
                         info!("Prompt retrieved:");
                         if !prompt_result.messages.is_empty() {

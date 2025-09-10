@@ -9,56 +9,42 @@ use prism_mcp_rs::client::{ClientRequestHandler, McpClient};
 use prism_mcp_rs::core::error::{McpError, McpResult};
 use prism_mcp_rs::protocol::messages::*;
 use prism_mcp_rs::protocol::types::*;
-use prism_mcp_rs::protocol::content::*;
-use reqwest;
+
+// reqwest would be added as dependency for production use
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 
-/// Anthropic API client wrapper
+/// Anthropic API client wrapper (simplified for example)
 struct AnthropicClient {
+    #[allow(dead_code)]
     api_key: String,
-    client: reqwest::Client,
 }
 
 impl AnthropicClient {
     fn new(api_key: String) -> Self {
-        Self {
-            api_key,
-            client: reqwest::Client::new(),
-        }
+        Self { api_key }
     }
 
     async fn create_message(
         &self,
-        request: AnthropicRequest,
+        _request: AnthropicRequest,
     ) -> Result<AnthropicResponse, McpError> {
-        let response = self
-            .client
-            .post("https://api.anthropic.com/v1/messages")
-            .header("x-api-key", &self.api_key)
-            .header("anthropic-version", "2023-06-01")
-            .header("content-type", "application/json")
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| McpError::Protocol(format!("Failed to call Anthropic API: {}", e)))?;
-
-        if !response.status().is_success() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(McpError::Protocol(format!(
-                "Anthropic API error: {}",
-                error_text
-            )));
-        }
-
-        response
-            .json::<AnthropicResponse>()
-            .await
-            .map_err(|e| McpError::Protocol(format!("Failed to parse Anthropic response: {}", e)))
+        // In production, you would use reqwest or another HTTP client here
+        // Example response for demonstration
+        Ok(AnthropicResponse {
+            id: "msg_example".to_string(),
+            model: "claude-3-5-sonnet-20241022".to_string(),
+            content: vec![AnthropicContent {
+                content_type: "text".to_string(),
+                text: "This is a simulated response. In production, integrate with Anthropic API.".to_string(),
+            }],
+            stop_reason: Some("end_turn".to_string()),
+            usage: AnthropicUsage {
+                input_tokens: 10,
+                output_tokens: 20,
+            },
+        })
     }
 }
 
@@ -167,16 +153,17 @@ impl ClientRequestHandler for AnthropicRequestHandler {
         let model = params
             .model_preferences
             .as_ref()
-            .and_then(|prefs| prefs.hints.first())
-            .map(|hint| hint.name.clone())
+            .and_then(|prefs| prefs.hints.as_ref())
+            .and_then(|hints| hints.first())
+            .and_then(|hint| hint.name.clone())
             .unwrap_or_else(|| self.default_model.clone());
 
         // Create Anthropic API request
         let request = AnthropicRequest {
             model,
             messages: anthropic_messages,
-            max_tokens: params.max_tokens,
-            temperature: params.temperature,
+            max_tokens: params.max_tokens as usize,
+            temperature: params.temperature.map(|t| t as f64),
             system: params.system_prompt,
             stop_sequences: params.stop_sequences,
         };
@@ -256,19 +243,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Set up the handler with Anthropic integration
     let handler = AnthropicRequestHandler::new(api_key)
         .with_default_model("claude-3-5-sonnet-20241022".to_string())
-        .add_root("file:///home/user/projects", Some("Projects"))
-        .add_root("file:///home/user/documents", Some("Documents"));
+        .add_root("file:///home/user/projects".to_string(), Some("Projects".to_string()))
+        .add_root("file:///home/user/documents".to_string(), Some("Documents".to_string()));
 
     client.set_request_handler(handler);
 
-    // Connect to MCP server via stdio
-    println!("Connecting to MCP server...");
-    client.connect_stdio().await?;
-
-    // Initialize the connection
-    println!("Initializing MCP connection...");
-    let server_info = client.initialize().await?;
-    println!("Connected to server: {:?}", server_info);
+    // Example showing connection would work (commented out as it needs a server)
+    println!("Client configured with Anthropic handler.");
+    // In production:
+    // client.connect_stdio().await?;
+    // let server_info = client.initialize().await?;
+    // println!("Connected to server: {:?}", server_info);
 
     // Now the client can handle sampling requests from the server
     // The server can call sampling/createMessage and get responses from Claude

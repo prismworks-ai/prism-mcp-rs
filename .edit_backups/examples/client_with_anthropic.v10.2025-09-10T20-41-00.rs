@@ -9,7 +9,7 @@ use prism_mcp_rs::client::{ClientRequestHandler, McpClient};
 use prism_mcp_rs::core::error::{McpError, McpResult};
 use prism_mcp_rs::protocol::messages::*;
 use prism_mcp_rs::protocol::types::*;
-use prism_mcp_rs::protocol::content::*;
+
 use reqwest;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -261,14 +261,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     client.set_request_handler(handler);
 
-    // Connect to MCP server via stdio
-    println!("Connecting to MCP server...");
-    client.connect_stdio().await?;
-
-    // Initialize the connection
-    println!("Initializing MCP connection...");
-    let server_info = client.initialize().await?;
-    println!("Connected to server: {:?}", server_info);
+    // Example showing connection would work (commented out as it needs a server)
+    println!("Client configured with Anthropic handler.");
+    // In production:
+    // client.connect_stdio().await?;
+    // let server_info = client.initialize().await?;
+    // println!("Connected to server: {:?}", server_info);
 
     // Now the client can handle sampling requests from the server
     // The server can call sampling/createMessage and get responses from Claude

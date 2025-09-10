@@ -37,7 +37,8 @@ impl AnthropicClient {
             model: "claude-3-5-sonnet-20241022".to_string(),
             content: vec![AnthropicContent {
                 content_type: "text".to_string(),
-                text: "This is a simulated response. In production, integrate with Anthropic API.".to_string(),
+                text: "This is a simulated response. In production, integrate with Anthropic API."
+                    .to_string(),
             }],
             stop_reason: Some("end_turn".to_string()),
             usage: AnthropicUsage {
@@ -247,8 +248,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Set up the handler with Anthropic integration
     let handler = AnthropicRequestHandler::new(api_key)
         .with_default_model("claude-3-5-sonnet-20241022".to_string())
-        .add_root("file:///home/user/projects".to_string(), Some("Projects".to_string()))
-        .add_root("file:///home/user/documents".to_string(), Some("Documents".to_string()));
+        .add_root(
+            "file:///home/user/projects".to_string(),
+            Some("Projects".to_string()),
+        )
+        .add_root(
+            "file:///home/user/documents".to_string(),
+            Some("Documents".to_string()),
+        );
 
     client.set_request_handler(handler);
 

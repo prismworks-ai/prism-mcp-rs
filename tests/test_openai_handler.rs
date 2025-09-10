@@ -11,22 +11,20 @@ mod client_with_openai;
 #[tokio::main]
 async fn main() {
     println!("Testing OpenAI handler...");
-    
+
     // Create handler
     let handler = client_with_openai::OpenAIRequestHandler::new("test-key".to_string());
-    
+
     // Test sampling request
     let params = CreateMessageParams {
-        messages: vec![
-            SamplingMessage {
-                role: Role::User,
-                content: SamplingContent::Text {
-                    text: "Hello, what's 2+2?".to_string(),
-                    annotations: None,
-                    meta: None,
-                },
+        messages: vec![SamplingMessage {
+            role: Role::User,
+            content: SamplingContent::Text {
+                text: "Hello, what's 2+2?".to_string(),
+                annotations: None,
+                meta: None,
             },
-        ],
+        }],
         max_tokens: 100,
         system_prompt: Some("You are a helpful assistant.".to_string()),
         include_context: None,
@@ -36,7 +34,7 @@ async fn main() {
         metadata: None,
         meta: None,
     };
-    
+
     match handler.handle_create_message(params).await {
         Ok(result) => {
             println!("✅ Sampling works!");
@@ -47,14 +45,17 @@ async fn main() {
         }
         Err(e) => println!("Error: {}", e),
     }
-    
+
     // Test roots
-    match handler.handle_list_roots(ListRootsParams { meta: None }).await {
+    match handler
+        .handle_list_roots(ListRootsParams { meta: None })
+        .await
+    {
         Ok(result) => {
             println!("✅ Roots: {} configured", result.roots.len());
         }
         Err(e) => println!("Error: {}", e),
     }
-    
+
     println!("\nAll tests complete!");
 }

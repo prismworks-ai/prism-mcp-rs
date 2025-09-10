@@ -37,7 +37,9 @@ impl OpenAIClient {
                 index: 0,
                 message: OpenAIMessage {
                     role: "assistant".to_string(),
-                    content: "This is a simulated response. In production, integrate with OpenAI API.".to_string(),
+                    content:
+                        "This is a simulated response. In production, integrate with OpenAI API."
+                            .to_string(),
                 },
                 finish_reason: Some("stop".to_string()),
             }],
@@ -132,7 +134,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
     ) -> McpResult<CreateMessageResult> {
         // Convert MCP messages to OpenAI format
         let mut openai_messages: Vec<OpenAIMessage> = vec![];
-        
+
         // Add system prompt if provided
         if let Some(system_prompt) = params.system_prompt {
             openai_messages.push(OpenAIMessage {
@@ -140,7 +142,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
                 content: system_prompt,
             });
         }
-        
+
         // Convert conversation messages
         for msg in params.messages.iter() {
             let content = match &msg.content {
@@ -236,7 +238,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
     async fn handle_elicit(&self, params: ElicitParams) -> McpResult<ElicitResult> {
         // For automated handling, accept with empty data
         println!("[Elicitation Request] {}", params.message);
-        
+
         Ok(ElicitResult {
             action: ElicitationAction::Accept,
             content: Some(HashMap::new()),
@@ -255,18 +257,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     // Get API key from environment
-    let api_key = env::var("OPENAI_API_KEY")
-        .expect("OPENAI_API_KEY environment variable must be set");
+    let api_key =
+        env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY environment variable must be set");
 
     // Create MCP client with OpenAI handler
     let mut client = McpClient::new("openai-client".to_string(), "1.0.0".to_string());
-    
+
     // Set up the handler with OpenAI integration
     let handler = OpenAIRequestHandler::new(api_key)
         .with_default_model("gpt-4-turbo-preview".to_string())
-        .add_root("file:///home/user/projects".to_string(), Some("Projects".to_string()))
-        .add_root("file:///home/user/documents".to_string(), Some("Documents".to_string()));
-    
+        .add_root(
+            "file:///home/user/projects".to_string(),
+            Some("Projects".to_string()),
+        )
+        .add_root(
+            "file:///home/user/documents".to_string(),
+            Some("Documents".to_string()),
+        );
+
     client.set_request_handler(handler);
 
     // Example showing connection would work (commented out as it needs a server)
@@ -278,11 +286,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Now the client can handle sampling requests from the server
     // The server can call sampling/createMessage and get responses from GPT-4
-    
+
     // Keep the client running
     println!("Client ready. Press Ctrl+C to exit.");
     tokio::signal::ctrl_c().await?;
-    
+
     println!("Shutting down...");
     Ok(())
 }

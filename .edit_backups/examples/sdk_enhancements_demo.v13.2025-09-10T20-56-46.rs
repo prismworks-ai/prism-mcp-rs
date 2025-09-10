@@ -8,16 +8,16 @@
 //! - Interactive request handling
 
 use prism_mcp_rs::client::{
-    ClientRequestHandler, ConnectionConfig, InteractiveClientRequestHandler, McpClientBuilder,
+    ConnectionConfig, InteractiveClientRequestHandler, McpClientBuilder,
     RetryConfig,
 };
 use prism_mcp_rs::core::error::McpResult;
-use prism_mcp_rs::protocol::messages::*;
+
 use prism_mcp_rs::protocol::types::*;
-use prism_mcp_rs::protocol::content::*;
+
 use serde_json::json;
 use std::collections::HashMap;
-use std::time::Duration;
+
 use tracing::{error, info};
 
 #[tokio::main]
@@ -32,6 +32,7 @@ async fn main() -> McpResult<()> {
         .with_client_info(ClientInfo {
             name: "enhanced-mcp-client".to_string(),
             version: "2.0.0".to_string(),
+            title: Some("Enhanced MCP Client".to_string()),
         })
         .with_connection_config(ConnectionConfig {
             timeout_ms: 30000,
@@ -44,7 +45,7 @@ async fn main() -> McpResult<()> {
             max_delay_ms: 10000,
             backoff_multiplier: 2.0,
         })
-        .build();
+        .build()?;
 
     info!("Client built with enhanced configuration");
 
@@ -68,19 +69,12 @@ async fn main() -> McpResult<()> {
     // ]);
     // client.connect_stdio_with_env("mcp-server", &["--verbose"], env_vars).await?;
 
-    // For this example, we'll use the standard connect_stdio
-    client.connect_stdio().await?;
+    // For production, you would connect and initialize:
+    // client.connect_stdio().await?;
+    // let server_info = client.initialize().await?;
+    // info!("Connected to server: {} v{}", server_info.name, server_info.version);
 
-    // Example 4: Initialize and get server information
-    info!("Initializing connection...");
-    let server_info = client.initialize().await?;
-    info!(
-        "Connected to server: {} v{}",
-        server_info.name, server_info.version
-    );
-
-    // Example 5: Use session convenience methods
-    demonstrate_session_methods(&mut client).await?;
+    info!("Client configured with all enhancements. Would be ready for connection.");
 
     // Example 6: Handle bidirectional communication
     info!("Client ready for bidirectional communication");
@@ -102,7 +96,7 @@ async fn demonstrate_session_methods(
 
     // 1. List available tools
     info!("\n1. Listing available tools...");
-    match client.list_tools().await {
+    match client.list_tools(None).await {
         Ok(tools) => {
             info!("Found {} tools:", tools.tools.len());
             for tool in &tools.tools {
@@ -118,32 +112,39 @@ async fn demonstrate_session_methods(
 
     // 2. Call a tool (if available)
     info!("\n2. Attempting to call a tool...");
+    let tool_params = HashMap::from([
+        ("param1".to_string(), json!("value1")),
+        ("param2".to_string(), json!(42)),
+    ]);
     let tool_result = client
         .call_tool(
-            "example_tool",
-            json!({
-                "param1": "value1",
-                "param2": 42
-            }),
+            "example_tool".to_string(),
+            Some(tool_params),
         )
         .await;
 
     match tool_result {
         Ok(result) => {
             info!("Tool executed successfully");
-            if let Some(content) = result.content {
-                for item in content {
+            if !result.content.is_empty() {
+                for item in result.content {
                     match item {
-                        ToolResponseContent::Text { text, .. } => {
+                        ContentBlock::Text { text, .. } => {
                             info!("  Result: {}", text);
                         }
-                        ToolResponseContent::Image {
+                        ContentBlock::Image {
                             data, mime_type, ..
                         } => {
                             info!("  Image result: {} ({} bytes)", mime_type, data.len());
                         }
-                        ToolResponseContent::Resource { resource, .. } => {
-                            info!("  Resource: {}", resource.uri);
+                        ContentBlock::Resource { resource, .. } => {
+                            info!("  Resource: {}", resource.uri());
+                        }
+                        ContentBlock::Audio { .. } => {
+                            info!("  Audio result");
+                        }
+                        ContentBlock::ResourceLink { .. } => {
+                            info!("  Resource link result");
                         }
                     }
                 }
@@ -154,7 +155,7 @@ async fn demonstrate_session_methods(
 
     // 3. List available resources
     info!("\n3. Listing available resources...");
-    match client.list_resources().await {
+    match client.list_resources(None).await {
         Ok(resources) => {
             info!("Found {} resources:", resources.resources.len());
             for resource in &resources.resources {
@@ -169,23 +170,23 @@ async fn demonstrate_session_methods(
             // 4. Read a resource (if available)
             if let Some(first_resource) = resources.resources.first() {
                 info!("\n4. Reading first resource: {}", first_resource.uri);
-                match client.read_resource(&first_resource.uri).await {
+                match client.read_resource(first_resource.uri.clone()).await {
                     Ok(content) => {
-                        if let Some(contents) = content.contents {
-                            for item in contents {
+                        if !content.contents.is_empty() {
+                            for item in content.contents {
                                 match item {
-                                    ResourceContent::Text { text, .. } => {
+                                    ResourceContents::Text { text, .. } => {
                                         info!(
                                             "  Content preview: {}...",
                                             text.chars().take(100).collect::<String>()
                                         );
                                     }
-                                    ResourceContent::Blob {
+                                    ResourceContents::Blob {
                                         blob, mime_type, ..
                                     } => {
                                         info!(
                                             "  Blob content: {} ({} bytes)",
-                                            mime_type,
+                                            mime_type.as_deref().unwrap_or("unknown"),
                                             blob.len()
                                         );
                                     }
@@ -202,7 +203,7 @@ async fn demonstrate_session_methods(
 
     // 5. List available prompts
     info!("\n5. Listing available prompts...");
-    match client.list_prompts().await {
+    match client.list_prompts(None).await {
         Ok(prompts) => {
             info!("Found {} prompts:", prompts.prompts.len());
             for prompt in &prompts.prompts {
@@ -221,23 +222,29 @@ async fn demonstrate_session_methods(
                     ("arg2".to_string(), "value2".to_string()),
                 ]);
 
-                match client.get_prompt(&first_prompt.name, args).await {
+                match client.get_prompt(first_prompt.name.clone(), Some(args)).await {
                     Ok(prompt_result) => {
                         info!("Prompt retrieved:");
-                        if let Some(messages) = prompt_result.messages {
-                            for msg in messages {
+                        if !prompt_result.messages.is_empty() {
+                            for msg in prompt_result.messages {
                                 info!("  - Role: {:?}", msg.role);
                                 match msg.content {
-                                    PromptMessageContent::Text { text, .. } => {
+                                    ContentBlock::Text { text, .. } => {
                                         info!("    Content: {}", text);
                                     }
-                                    PromptMessageContent::Image {
+                                    ContentBlock::Image {
                                         data, mime_type, ..
                                     } => {
                                         info!("    Image: {} ({} bytes)", mime_type, data.len());
                                     }
-                                    PromptMessageContent::Resource { resource, .. } => {
-                                        info!("    Resource: {}", resource.uri);
+                                    ContentBlock::Resource { resource, .. } => {
+                                        info!("    Resource: {}", resource.uri());
+                                    }
+                                    ContentBlock::Audio { .. } => {
+                                        info!("    Audio content");
+                                    }
+                                    ContentBlock::ResourceLink { .. } => {
+                                        info!("    Resource link");
                                     }
                                 }
                             }

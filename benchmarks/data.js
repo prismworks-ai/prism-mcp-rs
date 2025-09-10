@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757536332745,
+  "lastUpdate": 1757536660456,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1931,6 +1931,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 178.06,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "0e96aef173a3267780a8891adddabe36e3b9c39b",
+          "message": "fix: remove compiler warnings in OpenAI example",
+          "timestamp": "2025-09-10T16:34:24-04:00",
+          "tree_id": "f78ca7c5304b73238c536604301307f0137da840",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/0e96aef173a3267780a8891adddabe36e3b9c39b"
+        },
+        "date": 1757536659300,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.446,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 356.71,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.982,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.627,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.81,
             "unit": "ns"
           }
         ]

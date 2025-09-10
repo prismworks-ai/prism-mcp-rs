@@ -18,6 +18,7 @@ use std::env;
 
 /// OpenAI API client wrapper (simplified for example)
 struct OpenAIClient {
+    #[allow(dead_code)]
     api_key: String,
 }
 
@@ -146,6 +147,10 @@ impl ClientRequestHandler for OpenAIRequestHandler {
                     // OpenAI supports base64 images in a different format
                     // This is simplified - real implementation would handle properly
                     format!("[Image data: {} bytes]", data.len())
+                }
+                SamplingContent::Audio { .. } => {
+                    // Audio not supported in this example
+                    "[Audio content]".to_string()
                 }
             };
             openai_messages.push(OpenAIMessage {

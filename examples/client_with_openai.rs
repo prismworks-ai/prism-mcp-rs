@@ -18,6 +18,7 @@ use std::env;
 
 /// OpenAI API client wrapper (simplified for example)
 struct OpenAIClient {
+    #[allow(dead_code)]
     api_key: String,
 }
 
@@ -71,6 +72,7 @@ struct OpenAIMessage {
 #[derive(Deserialize)]
 struct OpenAIResponse {
     id: String,
+    #[allow(dead_code)]
     model: String,
     choices: Vec<OpenAIChoice>,
     usage: OpenAIUsage,
@@ -78,6 +80,7 @@ struct OpenAIResponse {
 
 #[derive(Deserialize)]
 struct OpenAIChoice {
+    #[allow(dead_code)]
     index: i32,
     message: OpenAIMessage,
     finish_reason: Option<String>,

@@ -18,6 +18,7 @@ use std::env;
 
 /// OpenAI API client wrapper (simplified for example)
 struct OpenAIClient {
+    #[allow(dead_code)]
     api_key: String,
 }
 
@@ -71,6 +72,7 @@ struct OpenAIMessage {
 #[derive(Deserialize)]
 struct OpenAIResponse {
     id: String,
+    #[allow(dead_code)]
     model: String,
     choices: Vec<OpenAIChoice>,
     usage: OpenAIUsage,
@@ -147,6 +149,10 @@ impl ClientRequestHandler for OpenAIRequestHandler {
                     // This is simplified - real implementation would handle properly
                     format!("[Image data: {} bytes]", data.len())
                 }
+                SamplingContent::Audio { .. } => {
+                    // Audio not supported in this example
+                    "[Audio content]".to_string()
+                }
             };
             openai_messages.push(OpenAIMessage {
                 role: match msg.role {
@@ -163,7 +169,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
             .as_ref()
             .and_then(|prefs| prefs.hints.as_ref())
             .and_then(|hints| hints.first())
-            .map(|hint| hint.name.clone())
+            .and_then(|hint| hint.name.clone())
             .unwrap_or_else(|| self.default_model.clone());
 
         // Create OpenAI API request
@@ -194,7 +200,7 @@ impl ClientRequestHandler for OpenAIRequestHandler {
         };
 
         Ok(CreateMessageResult {
-            model: model,
+            model,
             stop_reason: Some(stop_reason),
             role: Role::Assistant,
             content: SamplingContent::Text {

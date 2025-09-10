@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757535189458,
+  "lastUpdate": 1757535685555,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1833,6 +1833,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 171.16,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "4222cc03773523ad69ae3e35209e88681a7434cf",
+          "message": "fix: resolve CI failures\n\n- Run cargo fmt on all files\n- Fix example compilation errors (add missing imports)\n- Comment out code requiring active connections in examples\n- Fix syntax error in client_with_anthropic.rs",
+          "timestamp": "2025-09-10T16:18:34-04:00",
+          "tree_id": "c496d0eda354e3f400b401e28a773964e50ea643",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4222cc03773523ad69ae3e35209e88681a7434cf"
+        },
+        "date": 1757535684298,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.453,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 377.16,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.969,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.457,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.61,
             "unit": "ns"
           }
         ]

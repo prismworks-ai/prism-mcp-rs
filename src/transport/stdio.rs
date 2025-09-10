@@ -108,12 +108,12 @@ impl StdioClientTransport {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
-            
+
         // Add environment variables if provided
         if let Some(env_vars) = env {
             cmd.envs(env_vars);
         }
-        
+
         let mut child = cmd
             .spawn()
             .map_err(|e| McpError::transport(format!("Failed to start server process: {e}")))?;

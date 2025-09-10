@@ -256,17 +256,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Set up the handler with Anthropic integration
     let handler = AnthropicRequestHandler::new(api_key)
         .with_default_model("claude-3-5-sonnet-20241022".to_string())
-        .add_root("file:///home/user/projects".to_string(), Some("Projects".to_string()))
-        .add_root("file:///home/user/documents".to_string(), Some("Documents".to_string()));
+        .add_root("file:///home/user/projects", Some("Projects"))
+        .add_root("file:///home/user/documents", Some("Documents"));
 
-    client.set_request_handler(Box::new(handler));
+    client.set_request_handler(handler);
 
-    // Example showing connection would work (commented out as it needs a server)
-    println!("Client configured with Anthropic handler.");
-    // In production:
-    // client.connect_stdio().await?;
-    // let server_info = client.initialize().await?;
-    // println!("Connected to server: {:?}", server_info);
+    // Connect to MCP server via stdio
+    println!("Connecting to MCP server...");
+    client.connect_stdio().await?;
+
+    // Initialize the connection
+    println!("Initializing MCP connection...");
+    let server_info = client.initialize().await?;
+    println!("Connected to server: {:?}", server_info);
 
     // Now the client can handle sampling requests from the server
     // The server can call sampling/createMessage and get responses from Claude

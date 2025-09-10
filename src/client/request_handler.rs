@@ -85,7 +85,7 @@
 // ! # Roots Security Model
 // !
 // ! **IMPORTANT**: Roots provide guidance but DO NOT enforce security boundaries.
-// ! 
+// !
 // ! Security considerations:
 // ! - Roots are hints to servers about intended working directories
 // ! - Actual file access is ALWAYS mediated by the client's OS-level permissions
@@ -376,7 +376,7 @@ impl InteractiveClientRequestHandler {
             "\n[{}] Please provide the following information:",
             self.app_name
         );
-        
+
         // Show required fields if any
         if let Some(ref required_fields) = schema.required {
             if !required_fields.is_empty() {
@@ -465,7 +465,7 @@ impl InteractiveClientRequestHandler {
 
             form_data.insert(field_name.clone(), value);
         }
-        
+
         // Validate required fields are present and non-empty
         if let Some(ref required_fields) = schema.required {
             for field_name in required_fields {
@@ -793,8 +793,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_elicitation_required_field_validation() {
-        let handler = InteractiveClientRequestHandler::new("Test App")
-            .auto_accept_elicitation(false);
+        let handler =
+            InteractiveClientRequestHandler::new("Test App").auto_accept_elicitation(false);
 
         // Test that required fields are properly tracked
         let mut properties = HashMap::new();

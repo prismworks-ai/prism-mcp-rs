@@ -36,12 +36,16 @@ async fn main() -> McpResult<()> {
 
     info!("Created StdioClientTransport with custom environment variables");
 
-    // Example showing connection would work (commented out as it needs a server)
-    info!("Client configured with custom transport.");
-    // In production:
-    // client.connect_with_transport(Box::new(transport)).await?;
-    // let server_info = client.initialize().await?;
-    // info!("Server initialized: {} v{}", server_info.name, server_info.version);
+    // Connect using the configured transport
+    client.connect_with_transport(Box::new(transport)).await?;
+    info!("Connected to server with custom transport");
+
+    // Initialize the connection
+    let server_info = client.initialize().await?;
+    info!(
+        "Server initialized: {} v{}",
+        server_info.name, server_info.version
+    );
 
     // Demonstrate that all session methods work
     demonstrate_quick_session_usage(&mut client).await?;

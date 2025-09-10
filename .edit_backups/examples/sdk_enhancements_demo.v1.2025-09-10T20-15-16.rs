@@ -14,7 +14,6 @@ use prism_mcp_rs::client::{
 use prism_mcp_rs::core::error::McpResult;
 use prism_mcp_rs::protocol::messages::*;
 use prism_mcp_rs::protocol::types::*;
-use prism_mcp_rs::protocol::content::*;
 use serde_json::json;
 use std::collections::HashMap;
 use std::time::Duration;
@@ -68,12 +67,19 @@ async fn main() -> McpResult<()> {
     // ]);
     // client.connect_stdio_with_env("mcp-server", &["--verbose"], env_vars).await?;
 
-    // For production, you would connect and initialize:
-    // client.connect_stdio().await?;
-    // let server_info = client.initialize().await?;
-    // info!("Connected to server: {} v{}", server_info.name, server_info.version);
+    // For this example, we'll use the standard connect_stdio
+    client.connect_stdio().await?;
 
-    info!("Client configured with all enhancements. Would be ready for connection.");
+    // Example 4: Initialize and get server information
+    info!("Initializing connection...");
+    let server_info = client.initialize().await?;
+    info!(
+        "Connected to server: {} v{}",
+        server_info.name, server_info.version
+    );
+
+    // Example 5: Use session convenience methods
+    demonstrate_session_methods(&mut client).await?;
 
     // Example 6: Handle bidirectional communication
     info!("Client ready for bidirectional communication");

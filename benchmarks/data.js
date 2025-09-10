@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756091246706,
+  "lastUpdate": 1757535189458,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1784,6 +1784,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 202.2,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "ca52a5e3808265ea8fd4d5bcb78b6eeaa74fad4f",
+          "message": "feat: enhance client module with production-ready features\n\n- Add comprehensive sampling/LLM integration examples (OpenAI/Anthropic)\n- Document roots security model with explicit warnings\n- Implement elicitation validation for required fields\n- Create SDK enhancement examples showcasing all convenience methods\n- Remove duplicate cargo vet from security.yml workflow\n- Add examples: sdk_enhancements_demo.rs, client_with_info.rs, client_with_anthropic.rs",
+          "timestamp": "2025-09-10T16:08:36-04:00",
+          "tree_id": "1d0256508ff60d5b64119506f950397d2acd55d1",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/ca52a5e3808265ea8fd4d5bcb78b6eeaa74fad4f"
+        },
+        "date": 1757535188212,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.452,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 380.03,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 22.117,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.517,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.16,
             "unit": "ns"
           }
         ]

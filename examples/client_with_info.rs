@@ -6,9 +6,11 @@
 use prism_mcp_rs::client::McpClient;
 use prism_mcp_rs::core::error::McpResult;
 use prism_mcp_rs::protocol::types::ClientInfo;
-use prism_mcp_rs::transport::stdio::StdioClientTransport;
 use std::collections::HashMap;
 use tracing::info;
+
+#[cfg(feature = "stdio")]
+use prism_mcp_rs::transport::stdio::StdioClientTransport;
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
@@ -24,25 +26,34 @@ async fn main() -> McpResult<()> {
     let mut client = McpClient::with_client_info(client_info);
     info!("Created client with ClientInfo struct");
 
-    // Method 2: Create StdioClientTransport with environment variables
-    let env_vars = HashMap::from([
-        ("MCP_DEBUG".to_string(), "true".to_string()),
-        ("MCP_LOG_LEVEL".to_string(), "debug".to_string()),
-        ("NODE_ENV".to_string(), "development".to_string()),
-    ]);
+    // Method 2: Create StdioClientTransport with environment variables (when stdio feature is enabled)
+    #[cfg(feature = "stdio")]
+    {
+        let env_vars = HashMap::from([
+            ("MCP_DEBUG".to_string(), "true".to_string()),
+            ("MCP_LOG_LEVEL".to_string(), "debug".to_string()),
+            ("NODE_ENV".to_string(), "development".to_string()),
+        ]);
 
-    // Create transport with custom environment
-    let transport =
-        StdioClientTransport::new("node", vec!["./mcp-server/index.js", "--verbose"]).await?;
+        // Create transport with custom environment
+        let transport =
+            StdioClientTransport::new("node", vec!["./mcp-server/index.js", "--verbose"]).await?;
 
-    info!("Created StdioClientTransport with custom environment variables");
+        info!("Created StdioClientTransport with custom environment variables");
 
-    // Example showing connection would work (commented out as it needs a server)
-    info!("Client configured with custom transport.");
-    // In production:
-    // client.connect_with_transport(Box::new(transport)).await?;
-    // let server_info = client.initialize().await?;
-    // info!("Server initialized: {} v{}", server_info.name, server_info.version);
+        // Example showing connection would work (commented out as it needs a server)
+        info!("Client configured with custom transport.");
+        // In production:
+        // client.connect_with_transport(Box::new(transport)).await?;
+        // let server_info = client.initialize().await?;
+        // info!("Server initialized: {} v{}", server_info.name, server_info.version);
+    }
+
+    #[cfg(not(feature = "stdio"))]
+    {
+        info!("StdioClientTransport example skipped (stdio feature not enabled)");
+        info!("To run this example with stdio support, use: cargo run --example client_with_info --features stdio");
+    }
 
     // Demonstrate that all session methods work (commented out as they need a server connection)
     // demonstrate_quick_session_usage(&mut client).await?;

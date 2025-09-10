@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757536660456,
+  "lastUpdate": 1757538038294,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1980,6 +1980,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 171.81,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "e24efce8207be769578106cf264ea7250671eef2",
+          "message": "fix: ensure all examples compile successfully\n\n- sdk_enhancements_demo.rs and client_with_info.rs now compile\n- All examples in the project build without errors\n- Only minor warnings about unused variables remain",
+          "timestamp": "2025-09-10T16:57:15-04:00",
+          "tree_id": "ef423af1711ce4525ba0ab7eed068048a26abca4",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/e24efce8207be769578106cf264ea7250671eef2"
+        },
+        "date": 1757538037309,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.447,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 376.13,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.326,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.568,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.21,
             "unit": "ns"
           }
         ]

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757535685555,
+  "lastUpdate": 1757536332745,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -1882,6 +1882,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.61,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "5eb38af958f3f2ebf959d64bd970b945b7356ba3",
+          "message": "fix: complete OpenAI example compilation\n\n- Fix model type handling\n- Add Audio content variant match\n- Example now compiles successfully",
+          "timestamp": "2025-09-10T16:28:49-04:00",
+          "tree_id": "972c0e94d00050670f5ecdec954bbcee727283a8",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/5eb38af958f3f2ebf959d64bd970b945b7356ba3"
+        },
+        "date": 1757536331288,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.456,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 368.23,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.921,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 79.292,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 178.06,
             "unit": "ns"
           }
         ]

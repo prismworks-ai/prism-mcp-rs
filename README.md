@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=downloads&color=brightgreen)](https://crates.io/crates/prism-mcp-rs)
 [![Documentation](https://img.shields.io/docsrs/prism-mcp-rs?style=flat-square&label=docs)](https://docs.rs/prism-mcp-rs)
 [![CI](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/ci.yml?style=flat-square&label=CI&logo=github)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
-[![Benchmarks](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/benchmarks.yml?style=flat-square&label=benchmarks&logo=github)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml)
+[![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Performance](https://img.shields.io/badge/performance-tracked-brightgreen?style=flat-square)](https://prismworks-ai.github.io/prism-mcp-rs/benchmarks/)
 [![Security Audit](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/security.yml?style=flat-square&label=security&logo=shield)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
 [![codecov](https://img.shields.io/codecov/c/github/prismworks-ai/prism-mcp-rs?style=flat-square&logo=codecov)](https://codecov.io/gh/prismworks-ai/prism-mcp-rs)
@@ -13,7 +13,7 @@
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square&logo=rust)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
 [![Dependencies](https://img.shields.io/librariesio/github/prismworks-ai/prism-mcp-rs?style=flat-square&label=dependencies&color=informational)](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs)
 [![Total Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=total%20downloads&color=success)](https://crates.io/crates/prism-mcp-rs)
-[![API Stability](https://img.shields.io/badge/API-v0.1.4-orange.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
+[![API Stability](https://img.shields.io/badge/API-v0.1.5-orange.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
 
 [![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
 [![Last Commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)

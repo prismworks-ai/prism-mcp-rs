@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757555748965,
+  "lastUpdate": 1757555965185,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2323,6 +2323,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 171.13,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "68772d2e2f8a67281f8c5b50b862dd593864a1f5",
+          "message": "fix: add cargo-vet audit entry for v0.1.5\n\nAdded safe-to-deploy audit for prism-mcp-rs v0.1.5 to fix CI cargo-vet failure",
+          "timestamp": "2025-09-10T21:56:13-04:00",
+          "tree_id": "815c31a584416f4e99686525a86716be1dc21b22",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/68772d2e2f8a67281f8c5b50b862dd593864a1f5"
+        },
+        "date": 1757555964594,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.449,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 359.8,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.636,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.046,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 173.77,
             "unit": "ns"
           }
         ]

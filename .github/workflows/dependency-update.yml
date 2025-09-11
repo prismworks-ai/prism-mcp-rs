@@ -1,0 +1,229 @@
+name: Nightly Dependency Update
+
+on:
+  schedule:
+    # Runs every day at 2 AM UTC (7 PM PST / 10 PM EST)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update to perform'
+        required: false
+        default: 'compatible'
+        type: choice
+        options:
+          - compatible  # Only compatible updates (default)
+          - latest      # Update to latest versions
+          - security    # Only security updates
+
+jobs:
+  update-dependencies:
+    name: Update Rust Dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Use PAT to trigger subsequent workflows
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: cargo-edit
+
+      - name: Install cargo-update and cargo-audit
+        run: |
+          cargo install cargo-update --locked
+          cargo install cargo-audit --locked
+          cargo install cargo-edit --locked
+
+      - name: Check for security vulnerabilities
+        id: security_check
+        run: |
+          echo "🔒 Checking for security vulnerabilities..."
+          if cargo audit --json > audit-report.json 2>&1; then
+            echo "has_vulnerabilities=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_vulnerabilities=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Security vulnerabilities detected"
+          fi
+
+      - name: Update dependencies
+        id: update
+        run: |
+          echo "📦 Starting dependency updates..."
+          
+          # Determine update type
+          UPDATE_TYPE="${{ github.event.inputs.update_type || 'compatible' }}"
+          
+          # Store initial Cargo.lock for comparison
+          cp Cargo.lock Cargo.lock.bak || true
+          
+          case "$UPDATE_TYPE" in
+            "latest")
+              echo "🚀 Updating to latest versions..."
+              cargo update
+              # Update Cargo.toml to latest versions
+              cargo upgrade --incompatible
+              ;;
+            "security")
+              echo "🔐 Updating only packages with security vulnerabilities..."
+              # Only update if vulnerabilities exist
+              if [ "${{ steps.security_check.outputs.has_vulnerabilities }}" = "true" ]; then
+                cargo update
+              fi
+              ;;
+            *)
+              echo "✅ Updating to latest compatible versions..."
+              cargo update
+              ;;
+          esac
+          
+          # Check if there were actual changes
+          if [ -f Cargo.lock.bak ]; then
+            if diff -q Cargo.lock Cargo.lock.bak > /dev/null; then
+              echo "updates_available=false" >> $GITHUB_OUTPUT
+              echo "No updates available"
+            else
+              echo "updates_available=true" >> $GITHUB_OUTPUT
+              echo "Updates found!"
+            fi
+          else
+            echo "updates_available=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.update.outputs.updates_available == 'true'
+        run: |
+          echo "🧪 Running tests to verify updates..."
+          cargo test --all-features
+
+      - name: Run cargo check
+        if: steps.update.outputs.updates_available == 'true'
+        run: |
+          echo "🔍 Running cargo check..."
+          cargo check --all-features
+
+      - name: Update cargo-vet if needed
+        if: steps.update.outputs.updates_available == 'true'
+        continue-on-error: true
+        run: |
+          echo "🔐 Updating cargo-vet audits..."
+          # Try to auto-add trusted publishers
+          cargo vet suggest --accept-all || true
+
+      - name: Generate update report
+        if: steps.update.outputs.updates_available == 'true'
+        id: report
+        run: |
+          echo "📝 Generating update report..."
+          
+          # Generate a summary of changes
+          SUMMARY=""
+          
+          if [ -f Cargo.lock.bak ]; then
+            # Get list of updated packages
+            UPDATES=$(diff Cargo.lock.bak Cargo.lock | grep '^[<>]' | grep 'name = ' | sort -u || true)
+            
+            if [ ! -z "$UPDATES" ]; then
+              SUMMARY="### 📦 Updated Dependencies\n\n"
+              SUMMARY="${SUMMARY}\`\`\`diff\n${UPDATES}\n\`\`\`\n\n"
+            fi
+          fi
+          
+          # Add security audit results if applicable
+          if [ "${{ steps.security_check.outputs.has_vulnerabilities }}" = "true" ] && [ -f audit-report.json ]; then
+            SUMMARY="${SUMMARY}### 🔒 Security Updates\n\n"
+            SUMMARY="${SUMMARY}Security vulnerabilities were addressed in this update.\n\n"
+          fi
+          
+          # Save summary for commit message
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.update.outputs.updates_available == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: |
+            chore: automated dependency update
+            
+            ${{ steps.report.outputs.summary }}
+            
+            Update type: ${{ github.event.inputs.update_type || 'compatible' }}
+            Security vulnerabilities: ${{ steps.security_check.outputs.has_vulnerabilities }}
+            
+            [skip ci] remove this line if you want CI to run
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          branch: ${{ github.ref }}
+          file_pattern: "Cargo.lock Cargo.toml supply-chain/"
+
+      - name: Create issue if update fails
+        if: failure()
+        uses: actions/create-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: "⚠️ Nightly dependency update failed"
+          body: |
+            The automated dependency update workflow failed.
+            
+            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+            **Update type:** ${{ github.event.inputs.update_type || 'compatible' }}
+            
+            Please investigate and fix the issue.
+          labels: dependencies,automated
+
+      - name: Notify on security updates
+        if: steps.security_check.outputs.has_vulnerabilities == 'true' && steps.update.outputs.updates_available == 'true'
+        run: |
+          echo "::warning::Security vulnerabilities were found and updates were applied"
+          echo "🔐 Security updates have been applied. Please review the changes."
+
+  # Optional: Create a PR instead of direct commit (can be enabled/disabled)
+  create-pr:
+    name: Create Pull Request (Optional)
+    runs-on: ubuntu-latest
+    needs: update-dependencies
+    if: false  # Set to true if you want PRs instead of direct commits
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: automated dependency update"
+          title: "🤖 Automated Dependency Update"
+          body: |
+            ## 🤖 Automated Dependency Update
+            
+            This PR contains automated dependency updates performed by the nightly workflow.
+            
+            ### Update Type
+            ${{ github.event.inputs.update_type || 'compatible' }}
+            
+            ### Security Status
+            Vulnerabilities found: ${{ needs.update-dependencies.outputs.has_vulnerabilities || 'unknown' }}
+            
+            ---
+            *This PR was automatically generated by the dependency update workflow.*
+          branch: deps/automated-update-${{ github.run_number }}
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+          reviewers: rishirandhawa

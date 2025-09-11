@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757553702077,
+  "lastUpdate": 1757555482411,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2225,6 +2225,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 170.04,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "3cb141ea75e8d3540d41d718a3244d4a356982b7",
+          "message": "fix: replace broken benchmarks badge with standard Rust badge\n\n- Removed non-existent benchmarks.yml workflow badge\n- Added standard Rust language badge\n- Updated API version badge to v0.1.5",
+          "timestamp": "2025-09-10T21:48:13-04:00",
+          "tree_id": "00397ad0cda45783158d8e4935c12bb714abcbf5",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/3cb141ea75e8d3540d41d718a3244d4a356982b7"
+        },
+        "date": 1757555481731,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.45,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 340.78,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.764,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.207,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 173.17,
             "unit": "ns"
           }
         ]

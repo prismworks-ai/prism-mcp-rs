@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757555965185,
+  "lastUpdate": 1757556614195,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2372,6 +2372,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 173.77,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "ada0e52375755b9ba0918b6b9be3c7b5f0342fd6",
+          "message": "feat: add nightly automated dependency updater workflow\n\n- Runs daily at 2 AM UTC to check and update dependencies\n- Three modes: compatible (default), latest, or security-only updates\n- Automatically runs tests to verify updates work\n- Can use PAT token to trigger subsequent CI workflows\n- Creates issues on failure for monitoring\n- Includes comprehensive setup documentation\n\nBenefits:\n- Automatic security vulnerability fixes\n- Reduced maintenance burden\n- Small regular updates instead of large breaking changes\n- Full audit trail in git history",
+          "timestamp": "2025-09-10T22:07:16-04:00",
+          "tree_id": "a4edfb7813fc1ce0d5561396c04e93945e1db80f",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/ada0e52375755b9ba0918b6b9be3c7b5f0342fd6"
+        },
+        "date": 1757556612940,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.458,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 364.78,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.349,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 79.002,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.03,
             "unit": "ns"
           }
         ]

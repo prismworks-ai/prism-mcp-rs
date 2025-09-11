@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757545417304,
+  "lastUpdate": 1757553702077,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2176,6 +2176,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 170.28,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "3725ce7d82ba0e2dbb501f0fffe193f8eeba60f7",
+          "message": "fix: remove accidentally committed .edit_backups and .ai-context directories\n\nThese directories should not be in version control and are now properly ignored via .gitignore",
+          "timestamp": "2025-09-10T21:18:20-04:00",
+          "tree_id": "5298e3d628b38829d02b4e12a91afefc1cde2b0c",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/3725ce7d82ba0e2dbb501f0fffe193f8eeba60f7"
+        },
+        "date": 1757553700839,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.451,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 378.12,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.484,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.176,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 170.04,
             "unit": "ns"
           }
         ]

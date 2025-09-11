@@ -119,7 +119,11 @@ node_modules/
 
 # AI Context system files
 .aicontext/
+.ai-context/
 .context/
+
+# Editor backup files
+.edit_backups/
 
 # Local development files
 .local/

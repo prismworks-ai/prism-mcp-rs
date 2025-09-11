@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757555482411,
+  "lastUpdate": 1757555748965,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2274,6 +2274,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 173.17,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "fe62e2f075c2864ff1bb972071dbbfeb049d8897",
+          "message": "chore: upgrade rustls to 0.23.31 and fix dependency badge\n\n- Updated rustls from ^0.23 to 0.23.31 for security\n- Fixed dependency status badge to use deps.rs standard format\n- Ensures compatibility with latest security patches",
+          "timestamp": "2025-09-10T21:52:50-04:00",
+          "tree_id": "5c586b5691ca8ae761a1d761e1bd3ffa5ecf92de",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/fe62e2f075c2864ff1bb972071dbbfeb049d8897"
+        },
+        "date": 1757555748415,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.453,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 381.9,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.877,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.282,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.13,
             "unit": "ns"
           }
         ]

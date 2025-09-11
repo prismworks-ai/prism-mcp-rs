@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757556949166,
+  "lastUpdate": 1757633861187,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2470,6 +2470,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 173.03,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "02a280e2769307bdb0b6fc13c51b3549c32f5979",
+          "message": "Release v1.0.0: Production-ready MCP SDK\n\n- Major version upgrade with breaking changes\n- Removed all deprecated APIs (add_simple_tool, run_with_*, etc.)\n- Added fluent interfaces and enhanced builder patterns\n- Improved error handling with structured error types\n- Added comprehensive utility modules and prelude\n- Fixed 4 security vulnerabilities in dependencies\n- Updated 13 outdated dependencies\n- Achieved zero compilation warnings\n- Complete test suite validation",
+          "timestamp": "2025-09-11T19:34:09-04:00",
+          "tree_id": "4f6e1d7f1e967c4d69831cc53b637434d285210c",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/02a280e2769307bdb0b6fc13c51b3549c32f5979"
+        },
+        "date": 1757633860098,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.441,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 383.75,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.304,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.943,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.04,
             "unit": "ns"
           }
         ]

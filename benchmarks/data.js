@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757556614195,
+  "lastUpdate": 1757556949166,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2421,6 +2421,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.03,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "46efdb8b34629ae96dfbbbbd094ce1342ae0c783",
+          "message": "\\fix: replace invalid actions/create-issue with actions/github-script in dependency-update workflow\\n\\nThe actions/create-issue action doesn't exist, causing workflow failures.\\nReplaced with actions/github-script@v7 to maintain same functionality\\nfor creating GitHub issues when dependency updates fail.\\n\\nFixes: GitHub Actions error 'repository not found'\\",
+          "timestamp": "2025-09-10T22:12:42-04:00",
+          "tree_id": "f5a28f5f7a5323a4b445dcc523fec996c290455b",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/46efdb8b34629ae96dfbbbbd094ce1342ae0c783"
+        },
+        "date": 1757556947993,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.451,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 359.24,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.178,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 84.691,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 173.03,
             "unit": "ns"
           }
         ]

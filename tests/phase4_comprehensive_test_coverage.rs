@@ -118,7 +118,7 @@ mod error_scenario_tests {
                 let tool_name = format!("tool-{i}");
                 let tool_description = format!("Tool number {i}");
                 server_guard
-                    .add_simple_tool(&tool_name, &tool_description, move |_args| {
+                    .add_tool(&tool_name, &tool_description, move |_args| {
                         Ok(vec![ContentBlock::text(format!("Result from tool {i}"))])
                     })
                     .await
@@ -163,7 +163,7 @@ mod error_scenario_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("concurrent-tool", "Tool for concurrency testing", |args| {
+                .add_tool("concurrent-tool", "Tool for concurrency testing", |args| {
                     let delay_ms = args.get("delay_ms").and_then(|v| v.as_u64()).unwrap_or(10);
 
                     tokio::spawn(async move {
@@ -273,7 +273,7 @@ mod error_scenario_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "large-input-tool",
                     "Tool that processes large inputs",
                     |args| {
@@ -345,7 +345,7 @@ mod workflow_simulation_tests {
 
             // File system tool
             server_guard
-                .add_simple_tool("read-file", "Read a file from the filesystem", |args| {
+                .add_tool("read-file", "Read a file from the filesystem", |args| {
                     let filename = args
                         .get("filename")
                         .and_then(|v| v.as_str())
@@ -360,7 +360,7 @@ mod workflow_simulation_tests {
 
             // Data processing tool
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "process-data",
                     "Process data with specific algorithm",
                     |args| {
@@ -380,7 +380,7 @@ mod workflow_simulation_tests {
 
             // Output tool
             server_guard
-                .add_simple_tool("save-result", "Save processing result", |args| {
+                .add_tool("save-result", "Save processing result", |args| {
                     let result = args.get("result").and_then(|v| v.as_str()).unwrap_or("");
 
                     Ok(vec![ContentBlock::text(format!("Saved result: {result}"))])
@@ -557,7 +557,7 @@ mod performance_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("fast-tool", "A very fast tool", |_args| {
+                .add_tool("fast-tool", "A very fast tool", |_args| {
                     Ok(vec![ContentBlock::text("Fast response")])
                 })
                 .await
@@ -605,7 +605,7 @@ mod performance_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("memory-tool", "Tool that allocates memory", |args| {
+                .add_tool("memory-tool", "Tool that allocates memory", |args| {
                     let size = args.get("size").and_then(|v| v.as_u64()).unwrap_or(1024) as usize;
 
                     // Allocate and immediately drop memory

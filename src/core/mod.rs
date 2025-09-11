@@ -139,6 +139,7 @@
 
 pub mod completion;
 pub mod completion_handlers;
+pub mod enhanced_errors;
 pub mod error;
 pub mod health;
 pub mod logging;

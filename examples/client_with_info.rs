@@ -23,20 +23,20 @@ async fn main() -> McpResult<()> {
         title: Some("Enhanced MCP Client".to_string()),
     };
 
-    let mut client = McpClient::with_client_info(client_info);
+    let _client = McpClient::with_client_info(client_info);
     info!("Created client with ClientInfo struct");
 
     // Method 2: Create StdioClientTransport with environment variables (when stdio feature is enabled)
     #[cfg(feature = "stdio")]
     {
-        let env_vars = HashMap::from([
+        let _env_vars = HashMap::from([
             ("MCP_DEBUG".to_string(), "true".to_string()),
             ("MCP_LOG_LEVEL".to_string(), "debug".to_string()),
             ("NODE_ENV".to_string(), "development".to_string()),
         ]);
 
         // Create transport with custom environment
-        let transport =
+        let _transport =
             StdioClientTransport::new("node", vec!["./mcp-server/index.js", "--verbose"]).await?;
 
         info!("Created StdioClientTransport with custom environment variables");

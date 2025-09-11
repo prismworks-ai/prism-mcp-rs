@@ -320,7 +320,7 @@ async fn test_discovery_with_server_integration() {
 
     // Add a tool to the server
     server
-        .add_simple_tool("test_tool", "A test tool", |_args| {
+        .add_tool("test_tool", "A test tool", |_args| {
             Ok(vec![ContentBlock::text("Test response")])
         })
         .await

@@ -35,7 +35,7 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "empty-string-tool",
                     "Tool for testing empty strings",
                     |args| {
@@ -94,7 +94,7 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("unicode-tool", "Tool for testing unicode", |args| {
+                .add_tool("unicode-tool", "Tool for testing unicode", |args| {
                     let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
 
                     Ok(vec![ContentBlock::text(format!(
@@ -153,7 +153,7 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("numeric-tool", "Tool for testing numeric values", |args| {
+                .add_tool("numeric-tool", "Tool for testing numeric values", |args| {
                     let number = args.get("number").and_then(|v| v.as_f64()).unwrap_or(0.0);
 
                     Ok(vec![ContentBlock::text(format!(
@@ -215,7 +215,7 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("nested-tool", "Tool for testing nested JSON", |args| {
+                .add_tool("nested-tool", "Tool for testing nested JSON", |args| {
                     let default_json = json!({});
                     let data = args.get("data").unwrap_or(&default_json);
 
@@ -297,7 +297,7 @@ mod error_recovery_tests {
 
             // Tool that sometimes fails
             server_guard
-                .add_simple_tool("flaky-tool", "A tool that sometimes fails", |args| {
+                .add_tool("flaky-tool", "A tool that sometimes fails", |args| {
                     let should_fail = args.get("fail").and_then(|v| v.as_bool()).unwrap_or(false);
 
                     if should_fail {
@@ -311,7 +311,7 @@ mod error_recovery_tests {
 
             // Tool that always succeeds
             server_guard
-                .add_simple_tool("reliable-tool", "A reliable tool", |_args| {
+                .add_tool("reliable-tool", "A reliable tool", |_args| {
                     Ok(vec![ContentBlock::text("Always works")])
                 })
                 .await
@@ -368,7 +368,7 @@ mod error_recovery_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "cascade-tool",
                     "Tool that can cause cascading errors",
                     |args| {
@@ -444,7 +444,7 @@ mod error_recovery_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool("resource-tool", "Tool that manages resources", |args| {
+                .add_tool("resource-tool", "Tool that manages resources", |args| {
                     let allocate = args
                         .get("allocate")
                         .and_then(|v| v.as_bool())
@@ -605,7 +605,7 @@ mod malformed_input_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "param-tool",
                     "Tool that expects specific parameters",
                     |args| {
@@ -679,7 +679,7 @@ mod network_failure_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "network-tool",
                     "Tool that simulates network conditions",
                     |args| {
@@ -769,7 +769,7 @@ mod network_failure_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_simple_tool(
+                .add_tool(
                     "shared-tool",
                     "Tool that simulates shared resource access",
                     |args| {

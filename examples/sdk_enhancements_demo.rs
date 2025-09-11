@@ -28,7 +28,7 @@ async fn main() -> McpResult<()> {
 
     // Example 1: Build client with full configuration using McpClientBuilder
     let mut client = McpClientBuilder::new()
-        .with_client_info(ClientInfo {
+        .client_info(ClientInfo {
             name: "enhanced-mcp-client".to_string(),
             version: "2.0.0".to_string(),
             title: Some("Enhanced MCP Client".to_string()),

@@ -134,14 +134,20 @@
 //! - **Multiple Transports**: STDIO, HTTP, WebSocket support
 //! - **Type Safety**: Strongly typed requests and responses
 
-pub mod builder;
+pub mod enhanced_builder;
+pub mod enhanced_traits;
+pub mod fluent_interfaces;
+pub mod fluent_tools;
 pub mod mcp_client;
 pub mod request_handler;
 pub mod session;
 
-// Re-export the main client type and builder
-pub use builder::{ConnectionConfig, McpClientBuilder, RetryConfig};
+// Re-export enhanced APIs
+pub use enhanced_builder::{ConnectionConfig, McpClientBuilder, RetryConfig};
 pub use mcp_client::{ClientConfig, McpClient, TransportInfo, TransportUseCase};
+
+// Legacy re-exports for backward compatibility
+
 pub use request_handler::{
     AutomatedClientRequestHandler, ClientRequestHandler, DefaultClientRequestHandler,
     InteractiveClientRequestHandler,

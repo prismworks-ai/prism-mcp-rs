@@ -7,10 +7,11 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use prism_mcp_rs::protocol::{ErrorObject, JsonRpcError, JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
 use std::collections::HashMap;
+use std::hint::black_box;
 
 fn benchmark_server_creation(c: &mut Criterion) {
     c.bench_function("server_config_default", |b| {

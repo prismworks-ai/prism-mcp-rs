@@ -809,7 +809,12 @@ async fn main() -> McpResult<()> {
     );
     println!();
 
-    server.run_with_stdio().await
+    server.start().await?;
+    
+    // Keep the server running
+    tokio::signal::ctrl_c().await.expect("Failed to listen for ctrl+c");
+    println!("Shutting down server...");
+    Ok(())
 }
 
 // ============================================================================

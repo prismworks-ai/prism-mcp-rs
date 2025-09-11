@@ -793,7 +793,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_elicitation_required_field_validation() {
-        let handler =
+        let _handler =
             InteractiveClientRequestHandler::new("Test App").auto_accept_elicitation(false);
 
         // Test that required fields are properly tracked
@@ -823,7 +823,7 @@ mod tests {
             },
         );
 
-        let elicit_params = ElicitParams {
+        let _elicit_params = ElicitParams {
             message: "Please provide your email".to_string(),
             requested_schema: ElicitationSchema {
                 schema_type: "object".to_string(),

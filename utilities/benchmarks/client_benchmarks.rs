@@ -7,10 +7,11 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use prism_mcp_rs::client::McpClientBuilder;
 use prism_mcp_rs::protocol::{JsonRpcRequest, JsonRpcResponse};
 use serde_json::json;
+use std::hint::black_box;
 use std::time::Duration;
 
 fn benchmark_client_creation(c: &mut Criterion) {
@@ -24,9 +25,9 @@ fn benchmark_client_creation(c: &mut Criterion) {
     c.bench_function("client_create_with_config", |b| {
         b.iter(|| {
             let builder = McpClientBuilder::new()
-                .with_name("benchmark-client")
-                .with_version("1.0.0")
-                .with_timeout(Duration::from_secs(30));
+                .name("benchmark-client")
+                .version("1.0.0")
+                .timeout(Duration::from_secs(30));
             let _config = black_box(builder);
         });
     });

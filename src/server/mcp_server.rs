@@ -492,66 +492,6 @@ impl McpServer {
     // Tool Management
     // ========================================================================
 
-    /// Add a simple tool with basic schema (convenience method)
-    pub async fn add_simple_tool<F>(
-        &self,
-        name: &str,
-        description: &str,
-        handler: F,
-    ) -> McpResult<()>
-    where
-        F: Fn(
-                std::collections::HashMap<String, serde_json::Value>,
-            ) -> McpResult<Vec<crate::protocol::types::ContentBlock>>
-            + Send
-            + Sync
-            + 'static,
-    {
-        // Create a wrapper that implements ToolHandler
-        struct SimpleHandler<F>(F);
-
-        #[async_trait::async_trait]
-        impl<F> crate::core::tool::ToolHandler for SimpleHandler<F>
-        where
-            F: Fn(
-                    std::collections::HashMap<String, serde_json::Value>,
-                ) -> McpResult<Vec<crate::protocol::types::ContentBlock>>
-                + Send
-                + Sync
-                + 'static,
-        {
-            async fn call(
-                &self,
-                arguments: std::collections::HashMap<String, serde_json::Value>,
-            ) -> McpResult<crate::protocol::types::ToolResult> {
-                let content = (self.0)(arguments)?;
-                Ok(crate::protocol::types::ToolResult {
-                    content,
-                    is_error: Some(false),
-                    structured_content: None,
-                    meta: None,
-                })
-            }
-        }
-
-        let simple_handler = SimpleHandler(handler);
-
-        // Create a basic schema that accepts any object
-        let schema = serde_json::json!({
-            "type": "object",
-            "properties": {},
-            "additionalProperties": true
-        });
-
-        self.add_tool(
-            name.to_string(),
-            Some(description.to_string()),
-            schema,
-            simple_handler,
-        )
-        .await
-    }
-
     /// Add a tool with detailed information
     pub async fn add_tool_detailed<H>(&self, info: ToolInfo, handler: H) -> McpResult<()>
     where
@@ -1008,43 +948,6 @@ impl McpServer {
         state.clone()
     }
 
-    /// Start server with STDIO transport and run until interrupted (convenience method)
-    ///
-    /// This is a convenience method that:
-    /// 1. Creates a STDIO transport
-    /// 2. Starts the server
-    /// 3. Waits for Ctrl+C signal
-    /// 4. smoothly shuts down the server
-    ///
-    /// # Example
-    /// ```rust,ignore
-    /// use prism_mcp_rs::prelude::*;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> McpResult<()> {
-    ///     let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
-    ///     // . add tools, resources, prompts ...
-    ///     server.run_with_stdio().await
-    /// }
-    /// ```
-    #[cfg(feature = "stdio")]
-    pub async fn run_with_stdio(mut self) -> McpResult<()> {
-        use crate::transport::stdio::StdioServerTransport;
-
-        let transport = StdioServerTransport::new();
-        self.start(transport).await?;
-
-        tracing::info!("Server started with STDIO transport. Press Ctrl+C to stop.");
-
-        // Wait for shutdown signal
-        tokio::signal::ctrl_c()
-            .await
-            .map_err(|e| McpError::internal(format!("Signal handling error: {e}")))?;
-
-        tracing::info!("Shutdown signal received, stopping server...");
-        self.stop().await
-    }
-
     /// Start server with custom transport and run until interrupted
     ///
     /// This is a convenience method that:
@@ -1115,69 +1018,6 @@ impl McpServer {
     /// server.run_with_http("127.0.0.1:3000").await
     /// }
     /// ```
-    #[cfg(feature = "http")]
-    pub async fn run_with_http(mut self, bind_addr: &str) -> McpResult<()> {
-        use crate::transport::http::HttpServerTransport;
-
-        let transport = HttpServerTransport::new(bind_addr.to_string());
-        self.start(transport).await?;
-
-        tracing::info!(
-            "Server started with HTTP transport on {}. Press Ctrl+C to stop.",
-            bind_addr
-        );
-
-        // Wait for shutdown signal
-        tokio::signal::ctrl_c()
-            .await
-            .map_err(|e| McpError::internal(format!("Signal handling error: {e}")))?;
-
-        tracing::info!("Shutdown signal received, stopping server...");
-        self.stop().await
-    }
-
-    /// Start server with WebSocket transport and run until interrupted (convenience method)
-    ///
-    /// This is a convenience method that:
-    /// 1. Creates a WebSocket transport bound to the specified address
-    /// 2. Starts the server
-    /// 3. Waits for Ctrl+C signal
-    /// 4. smoothly shuts down the server
-    ///
-    /// # Arguments
-    /// * `bind_addr` - The address to bind the WebSocket server to (e.g., "127.0.0.1:8080")
-    ///
-    /// # Example
-    /// ```rust,no_run
-    /// use prism_mcp_rs::prelude::*;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> McpResult<()> {
-    /// let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
-    /// // . add tools, resources, prompts ...
-    /// server.run_with_websocket("127.0.0.1:8080").await
-    /// }
-    /// ```
-    #[cfg(feature = "websocket")]
-    pub async fn run_with_websocket(mut self, bind_addr: &str) -> McpResult<()> {
-        use crate::transport::websocket::WebSocketServerTransport;
-
-        let transport = WebSocketServerTransport::new(bind_addr.to_string());
-        self.start(transport).await?;
-
-        tracing::info!(
-            "Server started with WebSocket transport on {}. Press Ctrl+C to stop.",
-            bind_addr
-        );
-
-        // Wait for shutdown signal
-        tokio::signal::ctrl_c()
-            .await
-            .map_err(|e| McpError::internal(format!("Signal handling error: {e}")))?;
-
-        tracing::info!("Shutdown signal received, stopping server...");
-        self.stop().await
-    }
 
     // ========================================================================
     // Request Handling

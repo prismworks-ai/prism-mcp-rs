@@ -48,6 +48,19 @@ impl StdioClientTransport {
         Self::with_config(command, args, TransportConfig::default()).await
     }
 
+    /// Create a new STDIO client transport with command string and string args
+    ///
+    /// # Arguments
+    /// * `command` - Command to execute for the MCP server
+    /// * `args` - Arguments to pass to the command
+    ///
+    /// # Returns
+    /// Result containing the transport or an error
+    pub async fn new_with_command(command: &str, args: &[String]) -> McpResult<Self> {
+        let args_str: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+        Self::new(command, args_str).await
+    }
+
     /// Create a new STDIO client transport with environment variables
     ///
     /// # Arguments

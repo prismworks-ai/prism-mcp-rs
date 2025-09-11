@@ -20,7 +20,7 @@
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! let server = McpServer::new("server".to_string(), "1.0.0".to_string());
-//! // server.run_with_stdio().await?;
+//! // Use: server.start(transport).await?; then handle lifecycle manually
 //! # Ok(())
 //! # }
 //! ```
@@ -79,7 +79,6 @@ pub mod async_methods;
 pub mod builder;
 pub mod discovery_handler;
 pub mod handlers;
-pub mod lifecycle;
 pub mod mcp_server;
 
 // Test types for complete testing

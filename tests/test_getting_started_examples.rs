@@ -19,7 +19,7 @@ async fn test_corrected_add_simple_tool_example() {
 
     // This should work exactly as shown in GETTING_STARTED.md
     server
-        .add_simple_tool("hello", "Says hello to someone", |args| {
+        .add_tool("hello", "Says hello to someone", |args| {
             let name = args.get("name").and_then(|v| v.as_str()).unwrap_or("World");
             Ok(vec![ContentBlock::text(format!("Hello, {}!", name))])
         })
@@ -38,7 +38,7 @@ async fn test_filesystem_example() {
 
     // Add read file tool as shown in documentation
     server
-        .add_simple_tool("read_file", "Read contents of a file", |args| {
+        .add_tool("read_file", "Read contents of a file", |args| {
             let path = args
                 .get("path")
                 .and_then(|v| v.as_str())
@@ -169,7 +169,7 @@ async fn test_complete_documentation_flow() {
 
     // Add tool using exact code from documentation
     server
-        .add_simple_tool("hello", "Says hello to someone", |args| {
+        .add_tool("hello", "Says hello to someone", |args| {
             let name = args.get("name").and_then(|v| v.as_str()).unwrap_or("World");
             Ok(vec![ContentBlock::text(format!("Hello, {}!", name))])
         })

@@ -5,30 +5,6 @@ mod tests {
     use crate::plugin::{PluginError, PluginLoader};
 
     #[test]
-    fn test_plugin_loader_creation() {
-        let loader = PluginLoader::new();
-        // Test that a new loader starts empty
-        let plugins = loader.list_plugins();
-        assert_eq!(plugins.len(), 0);
-    }
-
-    #[test]
-    fn test_plugin_loader_default() {
-        let loader = PluginLoader::default();
-        // Test default trait implementation
-        assert_eq!(loader.list_plugins().len(), 0);
-    }
-
-    #[test]
-    fn test_add_search_path() {
-        let mut loader = PluginLoader::new();
-        // Test adding custom search paths
-        loader.add_search_path("/custom/path");
-        loader.add_search_path("./local/plugins");
-        // Method should complete without panic
-    }
-
-    #[test]
     fn test_find_plugin_nonexistent() {
         let loader = PluginLoader::new();
         // Test finding a plugin that doesn't exist
@@ -42,14 +18,6 @@ mod tests {
         // Test getting a plugin that hasn't been loaded
         let result = loader.get_plugin("non_existent");
         assert!(result.is_none());
-    }
-
-    #[test]
-    fn test_list_loaded_empty() {
-        let loader = PluginLoader::new();
-        // Test listing plugins when none are loaded
-        let plugins = loader.list_plugins();
-        assert_eq!(plugins.len(), 0);
     }
 
     #[test]

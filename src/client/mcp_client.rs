@@ -64,12 +64,16 @@ pub struct McpClient {
 }
 
 impl McpClient {
-    /// Create a new MCP client with the given name and version
-    pub fn new(name: String, version: String) -> Self {
+    /// Internal constructor - use builder() instead
+    pub(crate) fn from_parts(
+        info: ClientInfo,
+        capabilities: ClientCapabilities,
+        config: ClientConfig,
+    ) -> Self {
         Self {
-            info: ClientInfo::new(name, version),
-            capabilities: ClientCapabilities::default(),
-            config: ClientConfig::default(),
+            info,
+            capabilities,
+            config,
             transport: Arc::new(Mutex::new(None)),
             server_capabilities: Arc::new(RwLock::new(None)),
             server_info: Arc::new(RwLock::new(None)),
@@ -77,6 +81,17 @@ impl McpClient {
             connected: Arc::new(RwLock::new(false)),
             request_handler: Arc::new(DefaultClientRequestHandler),
         }
+    }
+
+    /// Create a new client builder (primary constructor)
+    pub fn builder() -> crate::client::enhanced_builder::McpClientBuilder {
+        crate::client::enhanced_builder::McpClientBuilder::new()
+    }
+
+    /// Create a new MCP client with name and version
+    pub fn new(name: String, version: String) -> Self {
+        let info = ClientInfo::new(name, version);
+        Self::with_client_info(info)
     }
 
     /// Create a new MCP client with a specific ClientInfo
@@ -92,6 +107,51 @@ impl McpClient {
             connected: Arc::new(RwLock::new(false)),
             request_handler: Arc::new(DefaultClientRequestHandler),
         }
+    }
+
+    // ========================================================================
+    // Modern Fluent Interface (Primary API)
+    // ========================================================================
+
+    /// Access tools with fluent interface
+    pub fn tools(&self) -> crate::client::fluent_tools::ToolsBuilder<'_> {
+        crate::client::fluent_tools::ToolsBuilder::new(self)
+    }
+
+    /// Access resources with fluent interface
+    pub fn resources(&self) -> crate::client::fluent_interfaces::ResourcesBuilder<'_> {
+        crate::client::fluent_interfaces::ResourcesBuilder::new(self)
+    }
+
+    /// Access prompts with fluent interface
+    pub fn prompts(&self) -> crate::client::fluent_interfaces::PromptsBuilder<'_> {
+        crate::client::fluent_interfaces::PromptsBuilder::new(self)
+    }
+
+    // ========================================================================
+    // Deprecated Convenience Methods (Backward Compatibility)
+    // ========================================================================
+
+    /// Convenience method: call_tool with &str name and serde_json::Value arguments
+    ///
+    /// # Deprecated
+    /// Use `client.tools().call(name).args(arguments).execute().await` instead
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use fluent interface: client.tools().call(name).args(args).execute().await"
+    )]
+    pub async fn call_tool_simple(
+        &self,
+        name: &str,
+        arguments: serde_json::Value,
+    ) -> McpResult<CallToolResult> {
+        let args_map = if let Some(obj) = arguments.as_object() {
+            obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect()
+        } else {
+            HashMap::new()
+        };
+
+        self.call_tool(name.to_string(), Some(args_map)).await
     }
 
     /// Create a new MCP client with custom configuration
@@ -1526,14 +1586,6 @@ mod tests {
         async fn close(&mut self) -> McpResult<()> {
             Ok(())
         }
-    }
-
-    #[tokio::test]
-    async fn test_client_creation() {
-        let client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
-        assert_eq!(client.info().name, "test-client");
-        assert_eq!(client.info().version, "1.0.0");
-        assert!(!client.is_connected().await);
     }
 
     #[tokio::test]

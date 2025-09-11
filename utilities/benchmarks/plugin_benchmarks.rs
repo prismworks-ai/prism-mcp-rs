@@ -6,11 +6,12 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use prism_mcp_rs::plugin::{PluginCapabilities, PluginConfig, PluginMetadata};
 use prism_mcp_rs::protocol::{ContentBlock, Tool, ToolInputSchema};
 use serde_json::json;
 use std::collections::HashMap;
+use std::hint::black_box;
 
 fn benchmark_plugin_creation(c: &mut Criterion) {
     c.bench_function("plugin_config_empty", |b| {

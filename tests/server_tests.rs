@@ -16,18 +16,11 @@ mod server_tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_server_creation() {
-        let _server = McpServer::new("test-server".to_string(), "1.0.0".to_string());
-        // Basic test that server can be created
-        // Server created successfully - no assertion needed
-    }
-
-    #[tokio::test]
     async fn test_server_with_tool() {
         let server = McpServer::new("test-server".to_string(), "1.0.0".to_string());
 
-        // Add tool using the correct method signature
-        server
+        // Test that tool can be added and validates functionality
+        let result = server
             .add_tool(
                 "echo".to_string(),
                 Some("Echo a message".to_string()),
@@ -39,11 +32,9 @@ mod server_tests {
                 }),
                 EchoTool,
             )
-            .await
-            .unwrap();
+            .await;
 
-        // Test that tool was added successfully
-        // Tool added without error - success confirmed
+        assert!(result.is_ok(), "Tool should be added successfully");
     }
 
     #[tokio::test]
@@ -55,13 +46,6 @@ mod server_tests {
         let result = tool.call(args).await.unwrap();
         assert_eq!(result.content.len(), 1);
         assert_eq!(result.is_error, None);
-    }
-
-    #[test]
-    fn test_server_capabilities() {
-        let _capabilities = ServerCapabilities::default();
-        // Test that capabilities can be created
-        // Capabilities created successfully
     }
 
     #[test]

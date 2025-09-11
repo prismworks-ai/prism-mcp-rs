@@ -168,20 +168,23 @@ jobs:
 
       - name: Create issue if update fails
         if: failure()
-        uses: actions/create-issue@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v7
         with:
-          title: "⚠️ Nightly dependency update failed"
-          body: |
-            The automated dependency update workflow failed.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "⚠️ Nightly dependency update failed",
+              body: `The automated dependency update workflow failed.
             
             **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             **Date:** ${{ github.event.head_commit.timestamp }}
             **Update type:** ${{ github.event.inputs.update_type || 'compatible' }}
             
-            Please investigate and fix the issue.
-          labels: dependencies,automated
+            Please investigate and fix the issue.`,
+              labels: ['dependencies', 'automated']
+            })
 
       - name: Notify on security updates
         if: steps.security_check.outputs.has_vulnerabilities == 'true' && steps.update.outputs.updates_available == 'true'

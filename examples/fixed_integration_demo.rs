@@ -18,7 +18,9 @@ async fn main() {
 
     // Issue #2 Fix: Client identification
     let client_info = ClientInfo::new("vybe".to_string(), "0.1.0".to_string());
-    let client1 = McpClient::with_client_info(client_info);
+    let client1 = McpClientBuilder::new()
+        .with_client_info(client_info)
+        .build();
     let client2 = McpClient::new("vybe".to_string(), "0.1.0".to_string());
     println!(
         "✅ Client identification: {} v{}",
@@ -34,7 +36,7 @@ async fn main() {
     // Demonstration code - in real implementation, you would get these results from actual calls
     let tool_result: Result<String, _> = Ok("Tool result".to_string());
     let resource_result: Result<String, _> = Ok("Resource result".to_string());
-    
+
     match (tool_result, resource_result) {
         (Err(e1), Err(e2))
             if e1.to_string().contains("connected") && e2.to_string().contains("connected") =>

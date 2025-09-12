@@ -143,7 +143,13 @@ async fn demo_stdio_convenience() -> McpResult<()> {
     println!("Note: Press Ctrl+C to stop the server\n");
 
     // ## ONE LINE to start server with STDIO transport and handle shutdown!
-    server.run_with_stdio().await
+    // Start the server and run the event loop
+    server.start().await.expect("Failed to start server");
+    
+    // Run the event loop
+    server.run().await.expect("Failed to run server");
+    
+    Ok(())
 }
 
 #[cfg(not(feature = "stdio"))]

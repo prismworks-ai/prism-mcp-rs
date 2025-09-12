@@ -193,7 +193,7 @@ mod tests {
 
         // Test adding a tool to verify request handling setup
         server_guard
-            .add_tool("test-tool", "Test tool for request handling", |_args| {
+            .add_tool("test-tool", Some("Test tool for request handling"), serde_json::json!({}), |_args: &std::collections::HashMap<String, serde_json::Value>| -> crate::core::error::McpResult<Vec<crate::protocol::types::ContentBlock>> {
                 Ok(vec![crate::protocol::types::ContentBlock::text("handled")])
             })
             .await

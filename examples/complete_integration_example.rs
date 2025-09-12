@@ -4,10 +4,7 @@
 use prism_mcp_rs::{
     client::{McpClient, McpClientBuilder},
     core::error::{McpError, McpResult},
-    protocol::{
-        messages::{CallToolParams, ReadResourceParams, GetPromptParams},
-
-    },
+    protocol::messages::{CallToolParams, GetPromptParams, ReadResourceParams},
     transport::stdio::StdioClientTransport,
 };
 use serde_json::json;
@@ -45,9 +42,12 @@ pub async fn demonstrate_fixed_integration() -> McpResult<()> {
     println!("  📡 Creating transport with environment variables...");
 
     // Method 1: with_env (most common)
-    let transport_result =
-        StdioClientTransport::with_env(&config.command, config.args.iter().collect(), config.env.clone())
-            .await;
+    let transport_result = StdioClientTransport::with_env(
+        &config.command,
+        config.args.iter().collect(),
+        config.env.clone(),
+    )
+    .await;
 
     match transport_result {
         Ok(_) => println!("  ✅ Transport with env created successfully"),
@@ -68,7 +68,9 @@ pub async fn demonstrate_fixed_integration() -> McpResult<()> {
 
     // Method 1: with_client_info
     let client_info = ClientInfo::new("vybe".to_string(), "0.1.0".to_string());
-    let client1 = McpClient::with_client_info(client_info);
+    let client1 = McpClientBuilder::new()
+        .with_client_info(client_info)
+        .build();
     println!(
         "  ✅ McpClient::with_client_info() - client: {}",
         client1.info().name
@@ -98,7 +100,11 @@ pub async fn demonstrate_fixed_integration() -> McpResult<()> {
     let tool_call = client
         .call_tool(
             "read_file".to_string(),
-            Some({let mut map = std::collections::HashMap::new(); map.insert("path".to_string(), json!("/tmp/test.txt")); map})
+            Some({
+                let mut map = std::collections::HashMap::new();
+                map.insert("path".to_string(), json!("/tmp/test.txt"));
+                map
+            }),
         )
         .await;
 
@@ -110,7 +116,9 @@ pub async fn demonstrate_fixed_integration() -> McpResult<()> {
     }
 
     // NEW API - read_resource with String
-    let resource_read = client.read_resource("file:///tmp/test.txt".to_string()).await;
+    let resource_read = client
+        .read_resource("file:///tmp/test.txt".to_string())
+        .await;
     match resource_read {
         Err(e) if e.to_string().contains("connected") => {
             println!("  ✅ read_resource(&str) - correct signature");
@@ -131,9 +139,7 @@ pub async fn demonstrate_fixed_integration() -> McpResult<()> {
         .await;
     match prompt_call {
         Err(e) if e.to_string().contains("connected") => {
-            println!(
-                "  ✅ get_prompt(&str, BTreeMap<String, Value>) - correct signature"
-            );
+            println!("  ✅ get_prompt(&str, BTreeMap<String, Value>) - correct signature");
         }
         _ => return Err(McpError::validation("API signature incorrect")),
     }
@@ -215,9 +221,12 @@ pub async fn show_exact_workflow_fix() -> McpResult<()> {
     };
 
     // Step 1: Create transport with command and environment ✅ FIXED
-    let transport =
-        StdioClientTransport::with_env(&config.command, config.args.iter().collect(), config.env.clone())
-            .await;
+    let transport = StdioClientTransport::with_env(
+        &config.command,
+        config.args.iter().collect(),
+        config.env.clone(),
+    )
+    .await;
 
     let transport = match transport {
         Ok(t) => t,
@@ -228,7 +237,11 @@ pub async fn show_exact_workflow_fix() -> McpResult<()> {
     };
 
     // Step 2: Create client with identification ✅ FIXED
-    let mut client = McpClientBuilder::new().name("vybe".to_string()).version("0.1.0".to_string()).build().map_err(|e| McpError::validation(&format!("Build error: {}", e)))?;
+    let mut client = McpClientBuilder::new()
+        .name("vybe".to_string())
+        .version("0.1.0".to_string())
+        .build()
+        .map_err(|e| McpError::validation(&format!("Build error: {}", e)))?;
 
     // Step 3: Connect (would work with real MCP server)
     if let Ok(_init_result) = client.connect(transport).await {
@@ -239,11 +252,20 @@ pub async fn show_exact_workflow_fix() -> McpResult<()> {
 
         // Step 5: Call a tool ✅ FIXED
         let _result = client
-            .call_tool("read_file".to_string(), Some({let mut map = std::collections::HashMap::new(); map.insert("path".to_string(), json!("/tmp/test.txt")); map}))
+            .call_tool(
+                "read_file".to_string(),
+                Some({
+                    let mut map = std::collections::HashMap::new();
+                    map.insert("path".to_string(), json!("/tmp/test.txt"));
+                    map
+                }),
+            )
             .await;
 
         // Step 6: Read a resource ✅ FIXED
-        let _resource = client.read_resource("file:///tmp/test.txt".to_string()).await;
+        let _resource = client
+            .read_resource("file:///tmp/test.txt".to_string())
+            .await;
 
         // Step 7: Get a prompt ✅ FIXED
         let prompt_args = {
@@ -265,7 +287,7 @@ pub async fn show_exact_workflow_fix() -> McpResult<()> {
 async fn main() -> McpResult<()> {
     // Run the complete integration example
     println!("Running integration example...");
-    
+
     // This is a demonstration - would work with real MCP server
     Ok(())
 }

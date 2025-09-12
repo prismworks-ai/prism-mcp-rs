@@ -12,17 +12,65 @@ use prism_mcp_rs::{
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
+// Simple tool handler implementation
+struct HelloTool;
+
+#[async_trait]
+impl ToolHandler for HelloTool {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let name = arguments
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("World");
+        
+        Ok(ToolResult {
+            content: vec![ContentBlock::Text {
+                text: format!("Hello, {}!", name),
+                annotations: None,
+                meta: None,
+            }],
+            is_error: None,
+            structured_content: None,
+            meta: None,
+        })
+    }
+}
+
+// File system tool handler
+struct ReadFileTool;
+
+#[async_trait]
+impl ToolHandler for ReadFileTool {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let path = arguments
+            .get("path")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("Missing 'path' parameter".to_string()))?;
+
+        match std::fs::read_to_string(path) {
+            Ok(content) => Ok(ToolResult {
+                content: vec![ContentBlock::Text {
+                    text: content,
+                    annotations: None,
+                    meta: None,
+                }],
+                is_error: None,
+                structured_content: None,
+                meta: None,
+            }),
+            Err(e) => Err(McpError::Io(e.to_string())),
+        }
+    }
+}
+
 // Test the corrected add_simple_tool example
 #[tokio::test]
 async fn test_corrected_add_simple_tool_example() {
     let server = McpServer::new("test-server".to_string(), "1.0.0".to_string());
 
-    // This should work exactly as shown in GETTING_STARTED.md
+    // Add tool with proper ToolHandler implementation
     server
-        .add_tool("hello", "Says hello to someone", |args| {
-            let name = args.get("name").and_then(|v| v.as_str()).unwrap_or("World");
-            Ok(vec![ContentBlock::text(format!("Hello, {}!", name))])
-        })
+        .add_tool("hello", Some("Says hello to someone"), serde_json::json!({}), HelloTool)
         .await
         .expect("Failed to add simple tool");
 
@@ -36,19 +84,9 @@ async fn test_corrected_add_simple_tool_example() {
 async fn test_filesystem_example() {
     let server = McpServer::new("filesystem-server".to_string(), "1.0.0".to_string());
 
-    // Add read file tool as shown in documentation
+    // Add read file tool with proper handler
     server
-        .add_tool("read_file", "Read contents of a file", |args| {
-            let path = args
-                .get("path")
-                .and_then(|v| v.as_str())
-                .ok_or_else(|| McpError::InvalidParams("Missing 'path' parameter".to_string()))?;
-
-            match std::fs::read_to_string(path) {
-                Ok(content) => Ok(vec![ContentBlock::text(content)]),
-                Err(e) => Err(McpError::Io(e.to_string())),
-            }
-        })
+        .add_tool("read_file", Some("Read contents of a file"), serde_json::json!({}), ReadFileTool)
         .await
         .expect("Failed to add read_file tool");
 
@@ -153,7 +191,11 @@ fn test_parameter_extraction_patterns() {
 #[test]
 fn test_content_block_patterns() {
     // Text content as shown in docs
-    let text_block = ContentBlock::text("Hello, World!");
+    let text_block = ContentBlock::Text {
+        text: "Hello, World!".to_string(),
+        annotations: None,
+        meta: None,
+    };
 
     // Vector of content blocks as required by add_simple_tool
     let content_vec = vec![text_block];
@@ -167,12 +209,9 @@ async fn test_complete_documentation_flow() {
     // Create server as shown in quick start
     let server = McpServer::new("my-first-server".to_string(), "1.0.0".to_string());
 
-    // Add tool using exact code from documentation
+    // Add tool using proper handler
     server
-        .add_tool("hello", "Says hello to someone", |args| {
-            let name = args.get("name").and_then(|v| v.as_str()).unwrap_or("World");
-            Ok(vec![ContentBlock::text(format!("Hello, {}!", name))])
-        })
+        .add_tool("hello", Some("Says hello to someone"), serde_json::json!({}), HelloTool)
         .await
         .expect("Failed to add hello tool");
 

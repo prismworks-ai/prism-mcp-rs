@@ -118,9 +118,14 @@ mod error_scenario_tests {
                 let tool_name = format!("tool-{i}");
                 let tool_description = format!("Tool number {i}");
                 server_guard
-                    .add_tool(&tool_name, &tool_description, move |_args| {
-                        Ok(vec![ContentBlock::text(format!("Result from tool {i}"))])
-                    })
+                    .add_tool(
+                        &tool_name, 
+                        Some(&tool_description), 
+                        serde_json::json!({}), 
+                        prism_mcp_rs::core::SimpleTool::new(move |_args| {
+                            Ok(vec![ContentBlock::text(format!("Result from tool {i}"))])
+                        })
+                    )
                     .await
                     .unwrap();
             }
@@ -163,17 +168,17 @@ mod error_scenario_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("concurrent-tool", "Tool for concurrency testing", |args| {
-                    let delay_ms = args.get("delay_ms").and_then(|v| v.as_u64()).unwrap_or(10);
-
-                    tokio::spawn(async move {
-                        sleep(Duration::from_millis(delay_ms)).await;
-                    });
-
-                    Ok(vec![ContentBlock::text(format!(
-                        "Processed with {delay_ms}ms delay"
-                    ))])
-                })
+                .add_tool(
+                    "concurrent-tool",
+                    Some("Tool for concurrency testing"),
+                    serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
+                        let delay_ms = args.get("delay_ms").and_then(|v| v.as_u64()).unwrap_or(10);
+                        Ok(vec![ContentBlock::text(format!(
+                            "Processed with {delay_ms}ms delay"
+                        ))])
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -194,7 +199,7 @@ mod error_scenario_tests {
                         "arguments": {
                             "delay_ms": i * 5 // Variable delays
                         }
-                    })),
+                        })),
                 };
 
                 let server_guard = server_clone.lock().await;
@@ -247,7 +252,7 @@ mod error_scenario_tests {
                         "name": "test-client",
                         "version": "1.0.0"
                     }
-                })),
+                    })),
             };
 
             let server_guard = server.lock().await;
@@ -275,8 +280,9 @@ mod error_scenario_tests {
             server_guard
                 .add_tool(
                     "large-input-tool",
-                    "Tool that processes large inputs",
-                    |args| {
+                    Some("Tool that processes large inputs"),
+                    serde_json::json!({}),
+                    SimpleTool::new(|args| {
                         let data_size = args
                             .get("data")
                             .and_then(|v| v.as_str())
@@ -286,7 +292,7 @@ mod error_scenario_tests {
                         Ok(vec![ContentBlock::text(format!(
                             "Processed {data_size} bytes of data"
                         ))])
-                    },
+                    }),
                 )
                 .await
                 .unwrap();
@@ -307,7 +313,7 @@ mod error_scenario_tests {
                     "arguments": {
                         "data": large_data
                     }
-                })),
+                    })),
             };
 
             let start_time = Instant::now();
@@ -345,7 +351,8 @@ mod workflow_simulation_tests {
 
             // File system tool
             server_guard
-                .add_tool("read-file", "Read a file from the filesystem", |args| {
+                .add_tool("read-file", Some("Read a file from the filesystem"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let filename = args
                         .get("filename")
                         .and_then(|v| v.as_str())
@@ -354,7 +361,8 @@ mod workflow_simulation_tests {
                     Ok(vec![ContentBlock::text(format!(
                         "File contents of {filename}"
                     ))])
-                })
+                    })
+                )
                 .await
                 .unwrap();
 
@@ -362,8 +370,15 @@ mod workflow_simulation_tests {
             server_guard
                 .add_tool(
                     "process-data",
-                    "Process data with specific algorithm",
-                    |args| {
+                    Some("Process data with specific algorithm".to_string()),
+                    json!({
+                        "type": "object",
+                        "properties": {
+                            "algorithm": {"type": "string"},
+                            "data": {"type": "string"}
+                        }
+                    }),
+                    SimpleTool::new(|args| {
                         let algorithm = args
                             .get("algorithm")
                             .and_then(|v| v.as_str())
@@ -373,18 +388,20 @@ mod workflow_simulation_tests {
                         Ok(vec![ContentBlock::text(format!(
                             "Processed {data} with {algorithm} algorithm"
                         ))])
-                    },
+                    }),
                 )
                 .await
                 .unwrap();
 
             // Output tool
             server_guard
-                .add_tool("save-result", "Save processing result", |args| {
+                .add_tool("save-result", Some("Save processing result"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let result = args.get("result").and_then(|v| v.as_str()).unwrap_or("");
 
                     Ok(vec![ContentBlock::text(format!("Saved result: {result}"))])
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -410,7 +427,7 @@ mod workflow_simulation_tests {
                 params: Some(json!({
                     "name": tool_name,
                     "arguments": args
-                })),
+                    })),
             };
 
             let server_guard = server.lock().await;
@@ -521,7 +538,7 @@ mod cross_transport_tests {
                     "arguments": {
                         "large_data": large_content
                     }
-                })),
+                    })),
             };
 
             // Test serialization doesn't fail
@@ -557,9 +574,11 @@ mod performance_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("fast-tool", "A very fast tool", |_args| {
+                .add_tool("fast-tool", Some("A very fast tool"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|_args| {
                     Ok(vec![ContentBlock::text("Fast response")])
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -576,7 +595,7 @@ mod performance_tests {
                 params: Some(json!({
                     "name": "fast-tool",
                     "arguments": {}
-                })),
+                    })),
             };
 
             let server_guard = server.lock().await;
@@ -605,14 +624,16 @@ mod performance_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("memory-tool", "Tool that allocates memory", |args| {
+                .add_tool("memory-tool", Some("Tool that allocates memory"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let size = args.get("size").and_then(|v| v.as_u64()).unwrap_or(1024) as usize;
 
                     // Allocate and immediately drop memory
                     let _temp_data = vec![0u8; size];
 
                     Ok(vec![ContentBlock::text(format!("Allocated {size} bytes"))])
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -628,7 +649,7 @@ mod performance_tests {
                     "arguments": {
                         "size": 10240 // 10KB per request
                     }
-                })),
+                    })),
             };
 
             let server_guard = server.lock().await;

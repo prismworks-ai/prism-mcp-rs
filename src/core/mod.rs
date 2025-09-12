@@ -164,7 +164,7 @@ pub use completion_handlers::{
 pub use error::{McpError, McpResult};
 pub use prompt::{Prompt, PromptHandler};
 pub use resource::{Resource, ResourceHandler, ResourceTemplate};
-pub use tool::{Tool, ToolBuilder, ToolHandler};
+pub use tool::{SimpleTool, Tool, ToolBuilder, ToolHandler};
 pub use tool_discovery::{
     DeprecationCleanupPolicy, DiscoveryCriteria, DiscoveryResult, GlobalToolStats, ToolRegistry,
 };

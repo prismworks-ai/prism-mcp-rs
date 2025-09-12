@@ -809,10 +809,13 @@ async fn main() -> McpResult<()> {
     );
     println!();
 
-    server.start().await?;
-    
+    let transport = prism_mcp_rs::transport::stdio::StdioTransport::new();
+    server.start(Box::new(transport)).await?;
+
     // Keep the server running
-    tokio::signal::ctrl_c().await.expect("Failed to listen for ctrl+c");
+    tokio::signal::ctrl_c()
+        .await
+        .expect("Failed to listen for ctrl+c");
     println!("Shutting down server...");
     Ok(())
 }

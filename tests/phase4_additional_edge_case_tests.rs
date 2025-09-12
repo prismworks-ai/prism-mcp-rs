@@ -37,7 +37,8 @@ mod boundary_condition_tests {
             server_guard
                 .add_tool(
                     "empty-string-tool",
-                    "Tool for testing empty strings",
+                    Some("Tool for testing empty strings"),
+                    serde_json::json!({}),
                     |args| {
                         let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
 
@@ -69,7 +70,8 @@ mod boundary_condition_tests {
                 params: Some(json!({
                     "name": "empty-string-tool",
                     "arguments": test_case
-                })),
+                    })
+                )),
             };
 
             let server_guard = server.lock().await;
@@ -94,15 +96,20 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("unicode-tool", "Tool for testing unicode", |args| {
-                    let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
-
-                    Ok(vec![ContentBlock::text(format!(
-                        "Unicode text: {} (chars: {})",
-                        text,
-                        text.chars().count()
-                    ))])
-                })
+                .add_tool(
+                    "unicode-tool", 
+                    Some("Tool for testing unicode"), 
+                    serde_json::json!({}), 
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
+                        let text = args.get("text").and_then(|v| v.as_str()).unwrap_or("");
+                        Ok(vec![ContentBlock::text(format!(
+                            "Unicode text: {} (chars: {})",
+                            text,
+                            text.chars().count()
+                        ))])
+                        })
+                )
+                )
                 .await
                 .unwrap();
         }
@@ -153,7 +160,8 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("numeric-tool", "Tool for testing numeric values", |args| {
+                .add_tool("numeric-tool", Some("Tool for testing numeric values"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let number = args.get("number").and_then(|v| v.as_f64()).unwrap_or(0.0);
 
                     Ok(vec![ContentBlock::text(format!(
@@ -165,7 +173,8 @@ mod boundary_condition_tests {
                             "float"
                         }
                     ))])
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -215,7 +224,8 @@ mod boundary_condition_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("nested-tool", "Tool for testing nested JSON", |args| {
+                .add_tool("nested-tool", Some("Tool for testing nested JSON"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let default_json = json!({});
                     let data = args.get("data").unwrap_or(&default_json);
 
@@ -234,7 +244,8 @@ mod boundary_condition_tests {
                     Ok(vec![ContentBlock::text(format!(
                         "Nested structure depth: {depth}"
                     ))])
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -297,7 +308,8 @@ mod error_recovery_tests {
 
             // Tool that sometimes fails
             server_guard
-                .add_tool("flaky-tool", "A tool that sometimes fails", |args| {
+                .add_tool("flaky-tool", Some("A tool that sometimes fails"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let should_fail = args.get("fail").and_then(|v| v.as_bool()).unwrap_or(false);
 
                     if should_fail {
@@ -305,15 +317,18 @@ mod error_recovery_tests {
                     } else {
                         Ok(vec![ContentBlock::text("Success")])
                     }
-                })
+                    })
+                )
                 .await
                 .unwrap();
 
             // Tool that always succeeds
             server_guard
-                .add_tool("reliable-tool", "A reliable tool", |_args| {
+                .add_tool("reliable-tool", Some("A reliable tool"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|_args| {
                     Ok(vec![ContentBlock::text("Always works")])
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -337,7 +352,8 @@ mod error_recovery_tests {
                 params: Some(json!({
                     "name": tool_name,
                     "arguments": args
-                })),
+                    })
+                )),
             };
 
             let server_guard = server.lock().await;
@@ -370,7 +386,8 @@ mod error_recovery_tests {
             server_guard
                 .add_tool(
                     "cascade-tool",
-                    "Tool that can cause cascading errors",
+                    Some("Tool that can cause cascading errors"),
+                    serde_json::json!({}),
                     |args| {
                         let error_type = args
                             .get("error_type")
@@ -444,7 +461,8 @@ mod error_recovery_tests {
         {
             let server_guard = server.lock().await;
             server_guard
-                .add_tool("resource-tool", "Tool that manages resources", |args| {
+                .add_tool("resource-tool", Some("Tool that manages resources"), serde_json::json!({}),
+                    prism_mcp_rs::core::SimpleTool::new(|args| {
                     let allocate = args
                         .get("allocate")
                         .and_then(|v| v.as_bool())
@@ -468,7 +486,8 @@ mod error_recovery_tests {
                     } else {
                         Ok(vec![ContentBlock::text("No resource allocation needed")])
                     }
-                })
+                    })
+                )
                 .await
                 .unwrap();
         }
@@ -607,7 +626,8 @@ mod malformed_input_tests {
             server_guard
                 .add_tool(
                     "param-tool",
-                    "Tool that expects specific parameters",
+                    Some("Tool that expects specific parameters"),
+                    serde_json::json!({}),
                     |args| {
                         let name = args
                             .get("name")
@@ -644,7 +664,8 @@ mod malformed_input_tests {
                 params: Some(json!({
                     "name": "param-tool",
                     "arguments": params
-                })),
+                    })
+                )),
             };
 
             let server_guard = server.lock().await;
@@ -681,7 +702,8 @@ mod network_failure_tests {
             server_guard
                 .add_tool(
                     "network-tool",
-                    "Tool that simulates network conditions",
+                    Some("Tool that simulates network conditions"),
+                    serde_json::json!({}),
                     |args| {
                         let delay_ms = args.get("delay_ms").and_then(|v| v.as_u64()).unwrap_or(0);
 
@@ -771,7 +793,8 @@ mod network_failure_tests {
             server_guard
                 .add_tool(
                     "shared-tool",
-                    "Tool that simulates shared resource access",
+                    Some("Tool that simulates shared resource access"),
+                    serde_json::json!({}),
                     |args| {
                         let operation_id = args
                             .get("operation_id")
@@ -806,7 +829,8 @@ mod network_failure_tests {
                         "arguments": {
                             "operation_id": i
                         }
-                    })),
+                        })
+                )),
                 };
 
                 let server_guard = server_clone.lock().await;

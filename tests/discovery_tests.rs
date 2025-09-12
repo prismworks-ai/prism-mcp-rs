@@ -3,7 +3,26 @@
 use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::protocol::discovery::*;
 use prism_mcp_rs::server::discovery_handler::DiscoveryHandler;
-use serde_json::json;
+use prism_mcp_rs::core::{ToolHandler, error::McpResult};
+use prism_mcp_rs::protocol::types::{ContentBlock, ToolResult};
+use serde_json::{json, Value};
+use async_trait::async_trait;
+use std::collections::HashMap;
+
+// Test handler implementation following Rust best practices
+struct TestToolHandler;
+
+#[async_trait]
+impl ToolHandler for TestToolHandler {
+    async fn call(&self, _arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        Ok(ToolResult {
+            content: vec![ContentBlock::text("Test response")],
+            is_error: Some(false),
+            meta: None,
+            structured_content: None,
+        })
+    }
+}
 
 #[tokio::test]
 async fn test_discovery_all_methods() {
@@ -320,9 +339,12 @@ async fn test_discovery_with_server_integration() {
 
     // Add a tool to the server
     server
-        .add_tool("test_tool", "A test tool", |_args| {
-            Ok(vec![ContentBlock::text("Test response")])
-        })
+        .add_tool(
+            "test_tool", 
+            Some("A test tool"), 
+            serde_json::json!({}), 
+            TestToolHandler
+        )
         .await
         .unwrap();
 

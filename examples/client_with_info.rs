@@ -23,7 +23,9 @@ async fn main() -> McpResult<()> {
         title: Some("Enhanced MCP Client".to_string()),
     };
 
-    let _client = McpClient::with_client_info(client_info);
+    let _client = McpClientBuilder::new()
+        .with_client_info(client_info)
+        .build();
     info!("Created client with ClientInfo struct");
 
     // Method 2: Create StdioClientTransport with environment variables (when stdio feature is enabled)

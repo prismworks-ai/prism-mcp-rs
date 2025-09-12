@@ -29,6 +29,39 @@ pub trait ToolHandler: Send + Sync {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult>;
 }
 
+/// Simple function-based tool handler for testing and simple use cases
+pub struct SimpleTool<F>
+where
+    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync,
+{
+    handler: F,
+}
+
+impl<F> SimpleTool<F>
+where
+    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync,
+{
+    pub fn new(handler: F) -> Self {
+        Self { handler }
+    }
+}
+
+#[async_trait]
+impl<F> ToolHandler for SimpleTool<F>
+where
+    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync + 'static,
+{
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let content = (self.handler)(&arguments)?;
+        Ok(ToolResult {
+            content,
+            is_error: Some(false),
+            meta: None,
+            structured_content: None,
+        })
+    }
+}
+
 /// A registered tool with its handler, validation, and improved metadata
 pub struct Tool {
     /// Information about the tool

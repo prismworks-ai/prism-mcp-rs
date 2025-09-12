@@ -150,9 +150,14 @@ async fn test_concurrent_server_operations_safety() {
                 0 => {
                     // Add tools
                     let _ = server_guard
-                        .add_simple_tool(&format!("tool-{i}"), "Concurrent test tool", |_args| {
-                            Ok(vec![ContentBlock::text("concurrent response")])
-                        })
+                        .add_tool(
+                            &format!("tool-{i}"), 
+                            Some("Concurrent test tool"), 
+                            serde_json::json!({}), 
+                            prism_mcp_rs::core::SimpleTool::new(|_args| {
+                                Ok(vec![ContentBlock::text("concurrent response")])
+                            })
+                        )
                         .await;
                 }
                 1 => {

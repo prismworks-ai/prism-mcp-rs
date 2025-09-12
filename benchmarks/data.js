@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757633861187,
+  "lastUpdate": 1757640666346,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2519,6 +2519,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 171.04,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "c4637cad6cd3ad9d56a263a98f073d5588fb5a69",
+          "message": "Release v1.0.0 - Major breaking changes release\n\nBREAKING CHANGES:\n- Removed all deprecated client methods (call_tool_simple, read_resource_simple, etc.)\n- Removed server convenience methods (add_simple_tool, run_with_stdio, etc.)\n- New SimpleTool pattern required for closure-based tool handlers\n- add_tool() now requires 4 parameters including JSON schema\n\nFeatures:\n- Enhanced builder pattern with fluent API\n- SimpleTool zero-cost abstraction for tool handlers\n- Improved structured error handling\n- 260 library tests passing\n\nSecurity:\n- Fixed 4 CVEs in dependencies (chrono, tungstenite, h2, rustls)\n\nSee RELEASE_NOTES.md for detailed migration guide",
+          "timestamp": "2025-09-11T21:27:22-04:00",
+          "tree_id": "c744d602bedbb09e6df9ef23d83f199ecd569010",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/c4637cad6cd3ad9d56a263a98f073d5588fb5a69"
+        },
+        "date": 1757640665008,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.845,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 363.35,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.298,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 81.512,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.69,
             "unit": "ns"
           }
         ]

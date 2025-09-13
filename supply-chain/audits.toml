@@ -67,6 +67,12 @@ criteria = "safe-to-deploy"
 version = "1.0.0"
 notes = "Our own crate - Prism MCP SDK for Rust v1.0.0. Major release with comprehensive supply chain audit completed. All unsafe code reviewed and contained within plugin system FFI. No security vulnerabilities identified. Core functionality uses memory-safe Rust with established cryptographic libraries (rustls, ring). Plugin system properly sandboxed with error handling. Developed and maintained by PrismWorks AI."
 
+[[audits.prism-mcp-rs]]
+who = "PrismWorks AI <team@prismworks.ai>"
+criteria = "safe-to-deploy"
+version = "1.1.1"
+notes = "Our own crate - Prism MCP SDK for Rust v1.1.1. Maintenance release with enhanced examples, improved documentation for plugin development and error handling, added test coverage for documentation examples, and minor API refinements to lib.rs exports. No unsafe code changes or security-relevant modifications. All changes are documentation, example fixes, and minor API improvements. Developed and maintained by PrismWorks AI."
+
 [[audits.url]]
 who = "PrismWorks AI <team@prismworks.ai>"
 criteria = "safe-to-deploy"

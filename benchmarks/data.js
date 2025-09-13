@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757737966633,
+  "lastUpdate": 1757738784095,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2666,6 +2666,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.42,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "38002d8cb2e768f29f115101d681ab5e0ec2aa23",
+          "message": "\\Release v1.1.0: Development workflow and CI improvements\n\n- Bump version from 1.0.0 to 1.1.0 in Cargo.toml\n- Update CHANGELOG.md with comprehensive v1.1.0 release notes\n  - Fixed GitHub Actions CI/CD formatting and compilation issues\n  - Added pre-commit hooks for automated code quality\n  - Enhanced development documentation and workflow\n  - Fixed dependency update workflow permissions\n  - Established sustainable development practices\n\nThis release focuses on developer experience improvements and\nCI/CD reliability, building upon the production-ready 1.0.0 foundation.\\",
+          "timestamp": "2025-09-13T00:43:03-04:00",
+          "tree_id": "50342155bd413a91a1f945aa013a0823f07d80f7",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/38002d8cb2e768f29f115101d681ab5e0ec2aa23"
+        },
+        "date": 1757738782608,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.453,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 376.99,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.773,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.917,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.14,
             "unit": "ns"
           }
         ]

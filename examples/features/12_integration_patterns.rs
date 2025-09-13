@@ -16,12 +16,10 @@ impl ToolHandler for DataProcessorTool {
             .get("data_type")
             .and_then(|v| v.as_str())
             .unwrap_or("json");
-            
+
         let default_data = json!({});
-        let input_data = arguments
-            .get("data")
-            .unwrap_or(&default_data);
-        
+        let input_data = arguments.get("data").unwrap_or(&default_data);
+
         let processed_result = match data_type {
             "json" => {
                 json!({
@@ -30,7 +28,7 @@ impl ToolHandler for DataProcessorTool {
                     "timestamp": "2024-01-01T00:00:00Z",
                     "type": "json_processing"
                 })
-            },
+            }
             "csv" => {
                 json!({
                     "rows_processed": 150,
@@ -38,7 +36,7 @@ impl ToolHandler for DataProcessorTool {
                     "data_type": "csv",
                     "status": "completed"
                 })
-            },
+            }
             "xml" => {
                 json!({
                     "elements_parsed": 42,
@@ -46,14 +44,15 @@ impl ToolHandler for DataProcessorTool {
                     "validation_status": "valid",
                     "data_type": "xml"
                 })
-            },
+            }
             _ => {
                 return Err(McpError::validation(format!(
-                    "Unsupported data type: {}", data_type
+                    "Unsupported data type: {}",
+                    data_type
                 )))
             }
         };
-        
+
         Ok(ToolResult {
             content: vec![ContentBlock::Text {
                 text: format!("Processed {} data successfully", data_type),
@@ -77,12 +76,12 @@ impl ToolHandler for ApiIntegrationTool {
             .get("endpoint")
             .and_then(|v| v.as_str())
             .unwrap_or("/api/default");
-            
+
         let method = arguments
             .get("method")
             .and_then(|v| v.as_str())
             .unwrap_or("GET");
-        
+
         // Simulate API call
         let response = json!({
             "endpoint": api_endpoint,
@@ -94,7 +93,7 @@ impl ToolHandler for ApiIntegrationTool {
                 "timestamp": "2024-01-01T00:00:00Z"
             }
         });
-        
+
         Ok(ToolResult {
             content: vec![ContentBlock::Text {
                 text: format!("{} request to {} completed", method, api_endpoint),
@@ -112,31 +111,31 @@ impl ToolHandler for ApiIntegrationTool {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Integration Patterns Example");
     println!("===========================");
-    
+
     let data_tool = DataProcessorTool;
     let api_tool = ApiIntegrationTool;
-    
+
     // Test data processing
     let mut data_args = HashMap::new();
     data_args.insert("data_type".to_string(), json!("json"));
     data_args.insert("data".to_string(), json!({"name": "test", "value": 42}));
-    
+
     match data_tool.call(data_args).await {
         Ok(result) => println!("Data Processing Result: {:?}", result),
         Err(e) => println!("Data Processing Error: {:?}", e),
     }
-    
+
     // Test API integration
     let mut api_args = HashMap::new();
     api_args.insert("endpoint".to_string(), json!("/api/users"));
     api_args.insert("method".to_string(), json!("GET"));
-    
+
     match api_tool.call(api_args).await {
         Ok(result) => println!("API Integration Result: {:?}", result),
         Err(e) => println!("API Integration Error: {:?}", e),
     }
-    
+
     println!("Integration patterns example completed");
-    
+
     Ok(())
 }

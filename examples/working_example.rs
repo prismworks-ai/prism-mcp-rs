@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     println!("Starting Working Example MCP Server...");
 
     // Create server
-    let mut server = McpServer::new("working-example".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("working-example".to_string(), "1.0.0".to_string());
 
     // Add a tool
     server

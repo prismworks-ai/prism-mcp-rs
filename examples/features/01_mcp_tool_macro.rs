@@ -55,7 +55,7 @@ impl ToolHandler for CalculatorTool {
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    let mut server = McpServer::new("tool-example".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("tool-example".to_string(), "1.0.0".to_string());
 
     // Add calculator tool
     server

@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Integration Patterns Example");
     println!("============================");
 
-    let mut server = McpServer::new("integrated-server".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("integrated-server".to_string(), "1.0.0".to_string());
 
     // Register tool - Note: In production, this would be done during server setup
     // server.add_tool() is an async method that would be called like:

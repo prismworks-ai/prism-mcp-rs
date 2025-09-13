@@ -16,12 +16,12 @@ impl ToolHandler for DatabaseTool {
             .get("query_type")
             .and_then(|v| v.as_str())
             .unwrap_or("select");
-            
+
         let table = arguments
             .get("table")
             .and_then(|v| v.as_str())
             .unwrap_or("users");
-        
+
         let result = match query_type {
             "select" => {
                 json!({
@@ -34,7 +34,7 @@ impl ToolHandler for DatabaseTool {
                         {"id": 2, "name": "Bob", "email": "bob@example.com"}
                     ]
                 })
-            },
+            }
             "insert" => {
                 json!({
                     "query_type": "insert",
@@ -43,7 +43,7 @@ impl ToolHandler for DatabaseTool {
                     "execution_time_ms": 12,
                     "last_insert_id": 123
                 })
-            },
+            }
             "update" => {
                 json!({
                     "query_type": "update",
@@ -51,14 +51,15 @@ impl ToolHandler for DatabaseTool {
                     "rows_affected": 3,
                     "execution_time_ms": 18
                 })
-            },
+            }
             _ => {
                 return Err(McpError::validation(format!(
-                    "Unsupported query type: {}", query_type
+                    "Unsupported query type: {}",
+                    query_type
                 )))
             }
         };
-        
+
         Ok(ToolResult {
             content: vec![ContentBlock::Text {
                 text: format!("Executed {} query on {} table", query_type, table),
@@ -76,20 +77,20 @@ impl ToolHandler for DatabaseTool {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Integration Patterns Working Example");
     println!("===================================");
-    
+
     let db_tool = DatabaseTool;
-    
+
     // Test database query
     let mut db_args = HashMap::new();
     db_args.insert("query_type".to_string(), json!("select"));
     db_args.insert("table".to_string(), json!("users"));
-    
+
     match db_tool.call(db_args).await {
         Ok(result) => println!("Database Result: {:?}", result),
         Err(e) => println!("Database Error: {:?}", e),
     }
-    
+
     println!("Integration patterns working example completed");
-    
+
     Ok(())
 }

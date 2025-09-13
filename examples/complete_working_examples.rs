@@ -43,7 +43,11 @@ impl ToolHandler for SafeTool {
                     content: vec![ContentBlock::text("Tool error occurred")],
                     is_error: Some(true),
                     structured_content: None,
-                    meta: Some(vec![("error_type".to_string(), json!("user_requested"))].into_iter().collect()),
+                    meta: Some(
+                        vec![("error_type".to_string(), json!("user_requested"))]
+                            .into_iter()
+                            .collect(),
+                    ),
                 });
             }
         }
@@ -64,14 +68,8 @@ struct MathTool;
 #[async_trait]
 impl ToolHandler for MathTool {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        let a = arguments
-            .get("a")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
-        let b = arguments
-            .get("b")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.0);
+        let a = arguments.get("a").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let b = arguments.get("b").and_then(|v| v.as_f64()).unwrap_or(0.0);
         let operation = arguments
             .get("operation")
             .and_then(|v| v.as_str())
@@ -161,7 +159,11 @@ async fn main() -> McpResult<()> {
     // Create server
     let server = McpServer::new("working-examples".to_string(), "1.0.0".to_string());
 
-    println!("\nServer created: {} v{}", server.info().name, server.info().version);
+    println!(
+        "\nServer created: {} v{}",
+        server.info().name,
+        server.info().version
+    );
     println!("Examples compiled successfully!");
 
     // Test tool handlers

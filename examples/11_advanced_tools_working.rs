@@ -16,12 +16,12 @@ impl ToolHandler for FileSystemTool {
             .get("operation")
             .and_then(|v| v.as_str())
             .unwrap_or("list");
-            
+
         let path = arguments
             .get("path")
             .and_then(|v| v.as_str())
             .unwrap_or(".");
-        
+
         match operation {
             "list" => {
                 let content = format!("Listing files in: {}", path);
@@ -39,7 +39,7 @@ impl ToolHandler for FileSystemTool {
                     })),
                     meta: None,
                 })
-            },
+            }
             "read" => {
                 let content = format!("Reading file: {}", path);
                 Ok(ToolResult {
@@ -56,9 +56,10 @@ impl ToolHandler for FileSystemTool {
                     })),
                     meta: None,
                 })
-            },
+            }
             _ => Err(McpError::validation(format!(
-                "Unsupported operation: {}", operation
+                "Unsupported operation: {}",
+                operation
             ))),
         }
     }
@@ -74,7 +75,7 @@ impl ToolHandler for AdvancedCalculatorTool {
             .get("expression")
             .and_then(|v| v.as_str())
             .ok_or_else(|| McpError::validation("Missing 'expression' parameter"))?;
-        
+
         // Simple expression evaluation (in real implementation, use a proper parser)
         let result = match expression {
             "2+2" => 4.0,
@@ -83,11 +84,12 @@ impl ToolHandler for AdvancedCalculatorTool {
             "3^2" => 9.0,
             _ => {
                 return Err(McpError::validation(format!(
-                    "Unsupported expression: {}", expression
+                    "Unsupported expression: {}",
+                    expression
                 )))
             }
         };
-        
+
         Ok(ToolResult {
             content: vec![ContentBlock::Text {
                 text: format!("{} = {}", expression, result),
@@ -109,30 +111,30 @@ impl ToolHandler for AdvancedCalculatorTool {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Advanced Tools Example");
     println!("=====================");
-    
+
     let fs_tool = FileSystemTool;
     let calc_tool = AdvancedCalculatorTool;
-    
+
     // Test file system tool
     let mut fs_args = HashMap::new();
     fs_args.insert("operation".to_string(), json!("list"));
     fs_args.insert("path".to_string(), json!("/home/user"));
-    
+
     match fs_tool.call(fs_args).await {
         Ok(result) => println!("FS Tool Result: {:?}", result),
         Err(e) => println!("FS Tool Error: {:?}", e),
     }
-    
+
     // Test calculator tool
     let mut calc_args = HashMap::new();
     calc_args.insert("expression".to_string(), json!("2+2"));
-    
+
     match calc_tool.call(calc_args).await {
         Ok(result) => println!("Calc Tool Result: {:?}", result),
         Err(e) => println!("Calc Tool Error: {:?}", e),
     }
-    
+
     println!("Advanced tools example completed");
-    
+
     Ok(())
 }

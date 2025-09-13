@@ -47,7 +47,7 @@ impl ToolHandler for AuthenticatedTool {
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    let mut server = McpServer::new("auth-example".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("auth-example".to_string(), "1.0.0".to_string());
 
     server
         .add_tool(

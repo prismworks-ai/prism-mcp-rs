@@ -1,11 +1,10 @@
 //! Simplified working examples that compile with current API
 
 use prism_mcp_rs::prelude::*;
-use std::path::Path;
 
 // Example 1: Simple tool without macro
 pub async fn example_01_tool() -> McpResult<()> {
-    let mut server = McpServer::new("tool-example".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("tool-example".to_string(), "1.0.0".to_string());
 
     // Tools would be added via server.add_tool() method
     println!("Tool example server created");
@@ -14,7 +13,7 @@ pub async fn example_01_tool() -> McpResult<()> {
 
 // Example 2: Resources
 pub async fn example_02_resources() -> McpResult<()> {
-    let mut server = McpServer::new("resource-example".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("resource-example".to_string(), "1.0.0".to_string());
 
     // Resources would be added via server.add_resource_handler()
     println!("Resource example server created");
@@ -23,7 +22,7 @@ pub async fn example_02_resources() -> McpResult<()> {
 
 // Example 3: Prompts
 pub async fn example_03_prompts() -> McpResult<()> {
-    let mut server = McpServer::new("prompt-example".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("prompt-example".to_string(), "1.0.0".to_string());
 
     // Prompts would be added via server.add_prompt()
     println!("Prompt example server created");

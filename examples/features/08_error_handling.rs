@@ -14,7 +14,7 @@ impl ToolHandler for ErrorDemoTool {
             .get("error_type")
             .and_then(|v| v.as_str())
             .unwrap_or("none");
-        
+
         match error_type {
             "validation" => Err(McpError::validation("Invalid input provided")),
             "internal" => Err(McpError::internal("Internal server error")),
@@ -31,7 +31,7 @@ impl ToolHandler for ErrorDemoTool {
                 meta: None,
             }),
             _ => Err(McpError::validation(format!(
-                "Unknown error type: {}", 
+                "Unknown error type: {}",
                 error_type
             ))),
         }
@@ -42,37 +42,37 @@ impl ToolHandler for ErrorDemoTool {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Error Handling Example");
     println!("=====================");
-    
+
     let tool = ErrorDemoTool;
-    
+
     // Test successful call
     let mut args = HashMap::new();
     args.insert("error_type".to_string(), serde_json::json!("none"));
-    
+
     match tool.call(args).await {
         Ok(result) => println!("Success: {:?}", result),
         Err(e) => println!("Error: {:?}", e),
     }
-    
+
     // Test validation error
     let mut args = HashMap::new();
     args.insert("error_type".to_string(), serde_json::json!("validation"));
-    
+
     match tool.call(args).await {
         Ok(result) => println!("Success: {:?}", result),
         Err(e) => println!("Validation Error: {:?}", e),
     }
-    
+
     // Test internal error
     let mut args = HashMap::new();
     args.insert("error_type".to_string(), serde_json::json!("internal"));
-    
+
     match tool.call(args).await {
         Ok(result) => println!("Success: {:?}", result),
         Err(e) => println!("Internal Error: {:?}", e),
     }
-    
+
     println!("Error handling example completed");
-    
+
     Ok(())
 }

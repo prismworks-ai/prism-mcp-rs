@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757738784095,
+  "lastUpdate": 1757798399282,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2715,6 +2715,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.14,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "c8d8a51127d5baa093ff527cbb06fc8ffc81d869",
+          "message": "\\Release v1.1.1 - Enhanced examples and documentation\\n\\n- Updated and fixed multiple example files with correct API usage\\n- Enhanced plugin guides and error handling documentation\\n- Improved lib.rs exports and transport examples\\n- Added test coverage for documentation examples\\n- Better developer experience with working examples\\",
+          "timestamp": "2025-09-13T17:16:20-04:00",
+          "tree_id": "880ffd97cfdeddd85e0ba7b1ce8320daa7a4cc40",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/c8d8a51127d5baa093ff527cbb06fc8ffc81d869"
+        },
+        "date": 1757798398486,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.471,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 359.98,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.581,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.347,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 170.5,
             "unit": "ns"
           }
         ]

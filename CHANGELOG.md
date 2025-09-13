@@ -5,6 +5,58 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-09-13
+
+### 🚀 Major Improvements
+
+#### GitHub Actions CI/CD Fixes
+- **✅ Fixed Formatting Issues**: Resolved all rustfmt violations across the codebase
+- **✅ Fixed Examples Compilation**: Replaced broken `examples/basic/fixed_example.rs` with working version
+  - Fixed 32+ compilation errors due to syntax issues and wrong API usage
+  - Corrected type imports and struct initialization
+  - All examples now compile successfully
+- **✅ Fixed Example Warnings**: Applied `cargo fix` to resolve compilation warnings in 15 files
+
+#### Development Workflow Enhancements
+- **🔧 Pre-commit Hooks**: Added comprehensive `.pre-commit-config.yaml`
+  - Automated code formatting with `cargo fmt`
+  - Linting with `cargo clippy`
+  - Compilation checks with `cargo check`
+  - File cleanup (trailing whitespace, line endings)
+  - Configuration validation (YAML/TOML)
+- **📚 Enhanced Documentation**: Updated `docs/DEVELOPMENT.md` with:
+  - Code quality workflow section
+  - Pre-commit hook setup instructions
+  - CI failure prevention guide
+  - Manual code quality commands reference
+
+#### Infrastructure Fixes
+- **🔐 Dependency Update Workflow**: Fixed permissions issues
+  - Added `issues: write` permission
+  - Use `PAT_TOKEN` for issue creation to avoid GitHub token limitations
+  - Resolves "Resource not accessible by integration" errors
+- **🛠️ Installation Scripts**: Updated `scripts/install-pre-commit.sh` for pre-commit framework support
+
+### 🛡️ Quality & Reliability
+- **Code Quality**: Established automated code quality checks preventing future CI failures
+- **Developer Experience**: Clear setup instructions and automated tooling
+- **Maintenance**: Robust development workflow with comprehensive validation
+
+### 📊 Impact
+- **Before**: 2 of 13 CI jobs failing, 32 compilation errors in examples
+- **After**: All immediate issues resolved, automated prevention of future problems
+- **Long-term**: Sustainable development workflow with quality gates
+
+## [1.0.0] - 2025-09-13
+
+### 🎉 Production Release
+- **Production-ready MCP SDK**: Complete implementation of Model Context Protocol
+- **Enterprise Features**: Advanced resilience patterns, circuit breakers, adaptive retry policies
+- **Multiple Transports**: HTTP/2, WebSocket, Stdio with compression and authentication
+- **Security**: Comprehensive supply chain security audit and cargo-vet integration
+- **Performance**: Optimized for production workloads with benchmarking
+- **Documentation**: Complete API documentation and usage examples
+
 ## [0.1.4] - 2025-08-25
 
 ### 🎨 Documentation & Presentation

@@ -1,12 +1,24 @@
 #!/bin/bash
 
-# Install pre-commit hook for doc-driven examples validation
+# Install pre-commit hooks for code quality and doc-driven examples validation
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 HOOK_PATH="$PROJECT_ROOT/.git/hooks/pre-commit"
 
-echo "🔧 Installing pre-commit hook for doc-driven examples..."
+# Install pre-commit framework if available
+echo "🔧 Setting up pre-commit hooks..."
+
+if command -v pre-commit &> /dev/null; then
+    echo "📋 Installing pre-commit framework hooks..."
+    pre-commit install
+    echo "✅ Pre-commit framework hooks installed!"
+else
+    echo "⚠️  pre-commit framework not found. Install with: pip install pre-commit"
+    echo "   Then run: pre-commit install"
+fi
+
+echo "📝 Installing doc-driven examples validation hook..."
 
 # Check if we're in a git repository
 if [ ! -d "$PROJECT_ROOT/.git" ]; then

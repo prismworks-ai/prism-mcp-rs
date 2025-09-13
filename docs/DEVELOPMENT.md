@@ -82,6 +82,85 @@ cargo bench            # Run benchmarks
 cargo doc --open       # Build and view docs
 ```
 
+## Code Quality & Pre-commit Hooks
+
+### Automated Code Quality Checks
+
+To prevent CI failures and maintain code quality, set up pre-commit hooks:
+
+```bash
+# Install pre-commit framework
+pip install pre-commit
+
+# Install hooks (includes formatting, linting, and basic checks)
+pre-commit install
+
+# Or use the project script
+./scripts/install-pre-commit.sh
+```
+
+### Manual Code Quality Commands
+
+```bash
+# Format code (fixes rustfmt CI failures)
+cargo fmt
+
+# Check formatting without fixing
+cargo fmt -- --check
+
+# Lint code (checks for common issues)
+cargo clippy --all-features -- -D warnings
+
+# Fix linting warnings automatically
+cargo fix --allow-dirty --all-features
+
+# Run security audit
+cargo audit
+
+# Complete quality check (recommended before commits)
+make quick
+```
+
+### Pre-commit Hook Features
+
+The pre-commit configuration includes:
+
+- **Code Formatting**: `cargo fmt` ensures consistent formatting
+- **Linting**: `cargo clippy` catches common mistakes and suggests improvements
+- **Basic Compilation**: `cargo check` verifies code compiles
+- **File Cleanup**: Removes trailing whitespace, fixes line endings
+- **Configuration Validation**: Checks YAML/TOML syntax
+
+### Preventing Common CI Failures
+
+| Issue | Prevention | Fix |
+|-------|------------|-----|
+| Formatting violations | Run `cargo fmt` before commit | `cargo fmt` |
+| Compilation errors | Use `cargo check` frequently | Fix syntax errors |
+| Clippy warnings | Run `cargo clippy` | Fix warnings or add `#[allow(clippy::...)]` |
+| Test failures | Run `cargo test` before push | Fix failing tests |
+| Example errors | Build examples with `cargo build --examples` | Fix example code |
+
+### Code Quality Workflow
+
+```bash
+# Before making changes
+git pull origin main
+
+# During development
+cargo check          # Quick compilation check
+cargo test           # Run relevant tests
+
+# Before committing (pre-commit hooks run automatically)
+cargo fmt           # Format code
+cargo clippy        # Check for issues
+cargo test --all    # Run all tests
+
+# Before pushing
+make commit-ready   # Full validation
+git push
+```
+
 ## Testing
 
 ### Test Organization

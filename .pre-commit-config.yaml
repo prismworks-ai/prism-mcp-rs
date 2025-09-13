@@ -1,0 +1,41 @@
+# Pre-commit hooks for prism-mcp-rs
+# Run: pre-commit install to set up hooks
+# Run: pre-commit run --all-files to check all files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: Cargo format
+        entry: cargo fmt
+        language: system
+        types: [rust]
+        pass_filenames: false
+        
+      - id: cargo-clippy
+        name: Cargo clippy
+        entry: cargo clippy
+        language: system
+        types: [rust]
+        pass_filenames: false
+        args: ["--all-features", "--", "-D", "warnings"]
+        
+      - id: cargo-check
+        name: Cargo check
+        entry: cargo check
+        language: system
+        types: [rust]
+        pass_filenames: false
+        args: ["--all-features"]

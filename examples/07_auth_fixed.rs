@@ -11,7 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Note: Auth requires 'auth' feature
     // Build with: cargo build --example 07_auth_fixed --features auth
 
-    let server = McpServer::new("auth-server".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("auth-server".to_string(), "1.0.0".to_string());
 
     println!("Server with authentication ready");
 

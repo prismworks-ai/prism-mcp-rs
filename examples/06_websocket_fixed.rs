@@ -11,7 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Note: WebSocket transport requires the 'websocket' feature
     // Build with: cargo build --example 06_websocket_fixed --features websocket
 
-    let server = McpServer::new("websocket-server".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("websocket-server".to_string(), "1.0.0".to_string());
 
     println!("Server ready for WebSocket connections");
 

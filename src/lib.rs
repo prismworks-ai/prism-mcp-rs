@@ -41,12 +41,12 @@
 //!
 //! #[async_trait]
 //! impl ToolHandler for EchoHandler {
-//!     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+//!     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<CallToolResult> {
 //!         let message = arguments.get("message")
 //!             .and_then(|v| v.as_str())
 //!             .unwrap_or("Hello, World!");
 //!
-//!         Ok(ToolResult {
+//!         Ok(CallToolResult {
 //!             content: vec![ContentBlock::text(message)],
 //!             is_error: Some(false),
 //!             structured_content: None,
@@ -71,8 +71,9 @@
 //!         EchoHandler,
 //!     ).await?;
 //!
+//!     // Start server with stdio transport
 //!     #[cfg(feature = "stdio")]
-//!     server.run_with_stdio().await?;
+//!     server.start(StdioTransport::new()).await?;
 //!     
 //!     Ok(())
 //! }

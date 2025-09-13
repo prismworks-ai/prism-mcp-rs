@@ -4,7 +4,7 @@ use prism_mcp_rs::prelude::*;
 
 // Example 1: Simple tool without macro
 pub async fn example_01_tool() -> McpResult<()> {
-    let server = McpServer::new("tool-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("tool-example".to_string(), "1.0.0".to_string());
 
     // Tools would be added via server.add_tool() method
     println!("Tool example server created");
@@ -13,7 +13,7 @@ pub async fn example_01_tool() -> McpResult<()> {
 
 // Example 2: Resources
 pub async fn example_02_resources() -> McpResult<()> {
-    let server = McpServer::new("resource-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("resource-example".to_string(), "1.0.0".to_string());
 
     // Resources would be added via server.add_resource_handler()
     println!("Resource example server created");
@@ -22,7 +22,7 @@ pub async fn example_02_resources() -> McpResult<()> {
 
 // Example 3: Prompts
 pub async fn example_03_prompts() -> McpResult<()> {
-    let server = McpServer::new("prompt-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("prompt-example".to_string(), "1.0.0".to_string());
 
     // Prompts would be added via server.add_prompt()
     println!("Prompt example server created");
@@ -30,9 +30,9 @@ pub async fn example_03_prompts() -> McpResult<()> {
 }
 
 // Example 4: Sampling (if feature enabled)
-#[cfg(feature = "sampling")]
+#[cfg(feature = "stdio")]
 pub async fn example_04_sampling() -> McpResult<()> {
-    let mut server = McpServer::new("sampling-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("sampling-example".to_string(), "1.0.0".to_string());
     println!("Sampling example server created");
     Ok(())
 }
@@ -42,8 +42,8 @@ pub async fn example_04_sampling() -> McpResult<()> {
 pub async fn example_05_http() -> McpResult<()> {
     use prism_mcp_rs::transport::HttpServerTransport;
 
-    let server = McpServer::new("http-example".to_string(), "1.0.0".to_string());
-    let transport = HttpServerTransport::new("127.0.0.1:8080");
+    let _server = McpServer::new("http-example".to_string(), "1.0.0".to_string());
+    let _transport = HttpServerTransport::new("127.0.0.1:8080");
     println!("HTTP transport created at 127.0.0.1:8080");
     Ok(())
 }
@@ -53,8 +53,8 @@ pub async fn example_05_http() -> McpResult<()> {
 pub async fn example_06_websocket() -> McpResult<()> {
     use prism_mcp_rs::transport::WebSocketServerTransport;
 
-    let server = McpServer::new("ws-example".to_string(), "1.0.0".to_string());
-    let transport = WebSocketServerTransport::new("127.0.0.1:9000");
+    let _server = McpServer::new("ws-example".to_string(), "1.0.0".to_string());
+    let _transport = WebSocketServerTransport::new("127.0.0.1:9000");
     println!("WebSocket transport created at 127.0.0.1:9000");
     Ok(())
 }
@@ -62,7 +62,7 @@ pub async fn example_06_websocket() -> McpResult<()> {
 // Example 7: Authentication
 #[cfg(feature = "http")]
 pub async fn example_07_auth() -> McpResult<()> {
-    let server = McpServer::new("auth-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("auth-example".to_string(), "1.0.0".to_string());
     println!("Auth example server created");
     Ok(())
 }
@@ -90,7 +90,7 @@ pub async fn example_09_config() -> McpResult<()> {
         request_timeout_ms: 30000,
     };
 
-    let server = McpServer::with_config("config-example".to_string(), "1.0.0".to_string(), config);
+    let _server = McpServer::with_config("config-example".to_string(), "1.0.0".to_string(), config);
     println!("Configured server created");
     Ok(())
 }
@@ -98,21 +98,21 @@ pub async fn example_09_config() -> McpResult<()> {
 // Example 10: Plugin System
 #[cfg(feature = "plugin")]
 pub async fn example_10_plugin() -> McpResult<()> {
-    let server = McpServer::new("plugin-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("plugin-example".to_string(), "1.0.0".to_string());
     println!("Plugin example server created");
     Ok(())
 }
 
 // Example 11: Advanced Tools
 pub async fn example_11_advanced() -> McpResult<()> {
-    let server = McpServer::new("advanced-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("advanced-example".to_string(), "1.0.0".to_string());
     println!("Advanced example server created");
     Ok(())
 }
 
 // Example 12: Integration Patterns
 pub async fn example_12_integration() -> McpResult<()> {
-    let server = McpServer::new("integration-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("integration-example".to_string(), "1.0.0".to_string());
 
     // Demonstrate async integration
     let handle = tokio::spawn(async move {
@@ -133,7 +133,7 @@ async fn main() -> McpResult<()> {
     example_02_resources().await?;
     example_03_prompts().await?;
 
-    #[cfg(feature = "sampling")]
+    #[cfg(feature = "stdio")]
     example_04_sampling().await?;
 
     #[cfg(feature = "http")]

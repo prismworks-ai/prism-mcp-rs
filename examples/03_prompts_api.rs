@@ -25,15 +25,15 @@ impl PromptHandler for CodeGenPrompt {
         
         let messages = vec![
             PromptMessage {
-                role: Role::System,
-                content: Content::text(format!(
+                role: Role::Assistant,
+                content: ContentBlock::text(format!(
                     "You are a {} code generation assistant.",
                     language
                 )),
             },
             PromptMessage {
                 role: Role::User,
-                content: Content::text(format!(
+                content: ContentBlock::text(format!(
                     "Please {} in {}. Follow best practices and include comments.",
                     task, language
                 )),
@@ -65,14 +65,14 @@ impl PromptHandler for DataAnalysisPrompt {
         
         let messages = vec![
             PromptMessage {
-                role: Role::System,
-                content: Content::text(
+                role: Role::Assistant,
+                content: ContentBlock::text(
                     "You are a data analysis expert. Provide insights and recommendations based on the data."
                 ),
             },
             PromptMessage {
                 role: Role::User,
-                content: Content::text(format!(
+                content: ContentBlock::text(format!(
                     "Perform {} analysis on the {} dataset. Focus on key patterns and anomalies.",
                     analysis_type, dataset
                 )),
@@ -109,7 +109,7 @@ impl PromptHandler for TemplatePrompt {
         let messages = vec![
             PromptMessage {
                 role: Role::User,
-                content: Content::text(result),
+                content: ContentBlock::text(result),
             },
         ];
         
@@ -172,9 +172,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     
     // Create and use prompts with a server
-    let server = McpServerBuilder::new("prompts-example")
-        .version("1.0.0")
-        .build();
+    let server = McpServer::new("prompts-example".to_string(), "1.0.0".to_string());
     
     // Register prompts
     let code_prompt_info = Prompt {

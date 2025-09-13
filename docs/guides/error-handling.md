@@ -53,19 +53,24 @@ pub enum McpError {
 }
 ```
 
-### ToolResult Error Handling
+### CallToolResult Error Handling
 
 Tools can return errors as part of their result:
 
 ```rust
-pub struct ToolResult {
+use prism_mcp_rs::protocol::types::{CallToolResult, ContentBlock};
+use serde_json::Value;
+use std::collections::HashMap;
+
+// CallToolResult is the main type, with ToolResult as an alias
+pub struct CallToolResult {
     pub content: Vec<ContentBlock>,
     pub is_error: Option<bool>,
     pub structured_content: Option<Value>,
     pub meta: Option<HashMap<String, Value>>,
 }
 
-impl ToolResult {
+impl CallToolResult {
     /// Create an error result
     pub fn error(message: impl Into<String>) -> Self {
         Self {
@@ -75,7 +80,20 @@ impl ToolResult {
             meta: None,
         }
     }
+    
+    /// Create a successful text result
+    pub fn text(message: impl Into<String>) -> Self {
+        Self {
+            content: vec![ContentBlock::text(message.into())],
+            is_error: Some(false),
+            structured_content: None,
+            meta: None,
+        }
+    }
 }
+
+// Type alias for compatibility
+pub type ToolResult = CallToolResult;
 ```
 
 ## Error Handling Patterns

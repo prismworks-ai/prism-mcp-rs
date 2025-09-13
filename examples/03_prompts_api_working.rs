@@ -23,11 +23,11 @@ impl PromptHandler for SimplePromptHandler {
             messages: vec![
                 PromptMessage {
                     role: Role::Assistant,
-                    content: Content::text("You are a helpful assistant."),
+                    content: ContentBlock::text("You are a helpful assistant."),
                 },
                 PromptMessage {
                     role: Role::User,
-                    content: Content::text(format!("Tell me about {}", topic)),
+                    content: ContentBlock::text(format!("Tell me about {}", topic)),
                 },
             ],
             meta: None,

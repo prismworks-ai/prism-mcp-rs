@@ -33,28 +33,55 @@ Add to `src/main.rs`:
 
 ```rust
 use prism_mcp_rs::prelude::*;
-use tokio;
+use std::collections::HashMap;
+
+#[derive(Clone)]
+struct HelloToolHandler;
+
+#[async_trait]
+impl ToolHandler for HelloToolHandler {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let name = arguments.get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("World");
+            
+        Ok(ToolResult {
+            content: vec![ContentBlock::text(format!("Hello, {}!", name))],
+            is_error: Some(false),
+            meta: None,
+            structured_content: None,
+        })
+    }
+}
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> McpResult<()> {
     // Create server
-    let server = MCPServer::new("my-first-server", "1.0.0");
+    let mut server = McpServer::new(
+        "my-first-server".to_string(), 
+        "1.0.0".to_string()
+    );
     
-    // Add a simple tool
-    server.add_simple_tool(
-        "hello",
-        "Says hello to someone",
-        |args| {
-            let name = args.get("name")
-                .and_then(|v| v.as_str())
-                .unwrap_or("World");
-            Ok(vec![ContentBlock::text(format!("Hello, {}!", name))])
-        }
-    ).await?;
+    // Add a simple hello tool
+    let tool = Tool::new(
+        "hello".to_string(),
+        Some("Says hello to someone".to_string()),
+        json!({
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name to greet"
+                }
+            }
+        }),
+        HelloToolHandler,
+    );
     
-    // Start server with STDIO transport
-    server.start_stdio().await?;
-    Ok(())
+    server.add_tool(tool);
+    
+    // Start server
+    server.start().await
 }
 ```
 
@@ -161,51 +188,73 @@ For production deployment, follow this comprehensive workflow:
 
 ## Tool Creation Methods
 
-Prism MCP SDK provides two main methods for adding tools to your server:
+Prism MCP SDK provides the `add_tool()` method for adding tools to your server:
 
-### `add_simple_tool()` - Recommended for Most Use Cases
+### `add_tool()` - Complete Tool Definition
 
-The `add_simple_tool()` method is perfect for straightforward tools where you want to focus on the business logic:
+The `add_tool()` method provides full control for defining tools with proper schemas:
 
 ```rust
-server.add_simple_tool(
-    "tool_name",
-    "Tool description",
-    |args| {
-        // Extract parameters from args HashMap
-        let param = args.get("param_name")
+#[derive(Clone)]
+struct MyToolHandler;
+
+#[async_trait]
+impl ToolHandler for MyToolHandler {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        // Extract parameters from arguments HashMap
+        let param = arguments.get("param_name")
             .and_then(|v| v.as_str())
             .unwrap_or("default");
         
-        // Return ContentBlock vector
-        Ok(vec![ContentBlock::text("result")])
+        // Return ToolResult
+        Ok(ToolResult {
+            content: vec![ContentBlock::text(format!("Result: {}", param))],
+            is_error: Some(false),
+            meta: None,
+            structured_content: None,
+        })
     }
+}
+
+// Add tool to server using async method
+server.add_tool(
+    "tool_name",
+    Some("Tool description"),
+    json!({
+        "type": "object",
+        "properties": {
+            "param_name": {"type": "string", "description": "Parameter description"}
+        },
+        "required": ["param_name"]
+    }),
+    MyToolHandler,
 ).await?;
 ```
 
 **Key features:**
-- **Simple closure syntax** - Just write a function that takes arguments and returns content
-- **Automatic schema generation** - SDK handles JSON schema creation
+- **Complete control** - Define input schemas, descriptions, and behavior
 - **Type-safe parameter extraction** - Use `.as_str()`, `.as_i64()`, etc. for parameters
-- **ContentBlock return type** - Wrap results in `ContentBlock::text()`, `ContentBlock::image()`, etc.
-
-### `add_tool()` - For Advanced Use Cases
-
-The `add_tool()` method gives you full control when you need complex schemas or async operations:
+- **Structured output** - Return `ToolResult` with content and optional structured data
+- **Async support** - Full async/await support for complex operations
 
 ```rust
 use prism_mcp_rs::prelude::*;
-use serde_json::{json, HashMap, Value};
 use async_trait::async_trait;
 use std::collections::HashMap;
 
+#[derive(Clone)]
 struct MyToolHandler;
 
 #[async_trait]
 impl ToolHandler for MyToolHandler {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
         // Your async tool logic here
-        Ok(ToolResult::text("result"))
+        Ok(ToolResult {
+            content: vec![ContentBlock::text("result".to_string())],
+            is_error: Some(false),
+            meta: None,
+            structured_content: None,
+        })
     }
 }
 
@@ -218,12 +267,14 @@ let schema = json!({
     "required": ["param"]
 });
 
-server.add_tool(
-    "tool_name",
-    Some("Tool description"),
+let tool = Tool::new(
+    "tool_name".to_string(),
+    Some("Tool description".to_string()),
     schema,
     MyToolHandler
-).await?;
+);
+
+server.add_tool(tool);
 ```
 
 **When to use:**
@@ -238,35 +289,106 @@ server.add_tool(
 
 ```rust
 use prism_mcp_rs::prelude::*;
+use std::collections::HashMap;
+
+#[derive(Clone)]
+struct ReadFileHandler;
+
+#[async_trait]
+impl ToolHandler for ReadFileHandler {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let path = arguments.get("path")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::invalid_request("Missing 'path' parameter"))?;
+        
+        match std::fs::read_to_string(path) {
+            Ok(content) => Ok(ToolResult {
+                content: vec![ContentBlock::text(content)],
+                is_error: Some(false),
+                meta: None,
+                structured_content: None,
+            }),
+            Err(e) => Err(McpError::internal_error(format!("Failed to read file: {}", e)))
+        }
+    }
+}
+
+#[derive(Clone)]
+struct ListDirHandler;
+
+#[async_trait]
+impl ToolHandler for ListDirHandler {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        let path = arguments.get("path")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::invalid_request("Missing 'path' parameter"))?;
+        
+        match std::fs::read_dir(path) {
+            Ok(entries) => {
+                let files: Result<Vec<_>, _> = entries
+                    .map(|entry| entry.map(|e| e.file_name().to_string_lossy().to_string()))
+                    .collect();
+                
+                match files {
+                    Ok(file_list) => Ok(ToolResult {
+                        content: vec![ContentBlock::text(file_list.join(", "))],
+                        is_error: Some(false),
+                        meta: None,
+                        structured_content: None,
+                    }),
+                    Err(e) => Err(McpError::internal_error(format!("Failed to read directory: {}", e)))
+                }
+            },
+            Err(e) => Err(McpError::internal_error(format!("Failed to read directory: {}", e)))
+        }
+    }
+}
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let server = MCPServer::new("filesystem-server", "1.0.0");
+async fn main() -> McpResult<()> {
+    let mut server = McpServer::new(
+        "filesystem-server".to_string(), 
+        "1.0.0".to_string()
+    );
     
-    // Read file tool
-    server.add_simple_tool(
-        "read_file",
-        "Read contents of a file",
+    // Read file tool using closure helper
+    let read_file_tool = closure_tool(
+        "read_file".to_string(),
+        Some("Read contents of a file".to_string()),
+        json!({
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "File path to read"}
+            },
+            "required": ["path"]
+        }),
         |args| {
             let path = args.get("path")
                 .and_then(|v| v.as_str())
-                .ok_or("Missing 'path' parameter")?;
+                .ok_or_else(|| McpError::invalid_request("Missing 'path' parameter"))?;
             
             match std::fs::read_to_string(path) {
                 Ok(content) => Ok(vec![ContentBlock::text(content)]),
-                Err(e) => Err(format!("Failed to read file: {}", e).into())
+                Err(e) => Err(McpError::internal_error(format!("Failed to read file: {}", e)))
             }
         }
-    ).await?;
+    );
     
     // List directory tool
-    server.add_simple_tool(
-        "list_directory",
-        "List contents of a directory",
+    let list_dir_tool = closure_tool(
+        "list_directory".to_string(),
+        Some("List contents of a directory".to_string()),
+        json!({
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Directory path to list"}
+            },
+            "required": ["path"]
+        }),
         |args| {
             let path = args.get("path")
                 .and_then(|v| v.as_str())
-                .ok_or("Missing 'path' parameter")?;
+                .ok_or_else(|| McpError::invalid_request("Missing 'path' parameter"))?;
             
             match std::fs::read_dir(path) {
                 Ok(entries) => {
@@ -276,28 +398,56 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     
                     match files {
                         Ok(file_list) => Ok(vec![ContentBlock::text(file_list.join(", "))]),
-                        Err(e) => Err(format!("Failed to read directory: {}", e).into())
+                        Err(e) => Err(McpError::internal_error(format!("Failed to read directory: {}", e)))
                     }
                 },
-                Err(e) => Err(format!("Failed to read directory: {}", e).into())
+                Err(e) => Err(McpError::internal_error(format!("Failed to read directory: {}", e)))
             }
         }
+    );
+    
+    server.add_tool(
+        "read_file",
+        Some("Read contents of a file"),
+        json!({
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "File path to read"}
+            },
+            "required": ["path"]
+        }),
+        ReadFileHandler,
     ).await?;
     
-    server.start_stdio().await?;
-    Ok(())
+    server.add_tool(
+        "list_directory", 
+        Some("List contents of a directory"),
+        json!({
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Directory path to list"}
+            },
+            "required": ["path"]
+        }),
+        ListDirHandler,
+    ).await?;
+    
+    let transport = StdioServerTransport::new();
+    server.start(transport).await
 }
 ```
 
 ### Example 2: API Client Server (Async Operations)
 
-For operations that require async/await, use the full `add_tool()` method:
+For operations that require async/await, use the full `ToolHandler` trait implementation:
 
 ```rust
 use prism_mcp_rs::prelude::*;
 use reqwest::Client;
 use async_trait::async_trait;
+use std::collections::HashMap;
 
+#[derive(Clone)]
 struct HttpTool {
     client: Client,
 }
@@ -307,30 +457,33 @@ impl ToolHandler for HttpTool {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
         let url = arguments.get("url")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| McpError::InvalidParams("Missing URL parameter".to_string()))?;
+            .ok_or_else(|| McpError::invalid_request("Missing URL parameter"))?;
         
         match self.client.get(url).send().await {
             Ok(response) => {
                 let text = response.text().await
-                    .map_err(|e| McpError::ToolExecution {
-                        tool: "http_get".to_string(),
-                        error: e.to_string(),
-                    })?;
-                Ok(ToolResult::text(text))
+                    .map_err(|e| McpError::internal_error(format!("HTTP response error: {}", e)))?;
+                
+                Ok(ToolResult {
+                    content: vec![ContentBlock::text(text)],
+                    is_error: Some(false),
+                    meta: None,
+                    structured_content: None,
+                })
             }
-            Err(e) => Err(McpError::ToolExecution {
-                tool: "http_get".to_string(),
-                error: e.to_string(),
-            })
+            Err(e) => Err(McpError::internal_error(format!("HTTP request failed: {}", e)))
         }
     }
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let server = MCPServer::new("api-client", "1.0.0");
+async fn main() -> McpResult<()> {
+    let mut server = McpServer::new(
+        "api-client".to_string(), 
+        "1.0.0".to_string()
+    );
     
-    // For async operations, use add_tool with ToolHandler
+    // For async operations, create Tool with ToolHandler
     let schema = json!({
         "type": "object",
         "properties": {
@@ -339,15 +492,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "required": ["url"]
     });
     
-    server.add_tool(
-        "http_get",
-        Some("Make HTTP GET request"),
+    let http_tool = Tool::new(
+        "http_get".to_string(),
+        Some("Make HTTP GET request".to_string()),
         schema,
         HttpTool { client: Client::new() }
-    ).await?;
+    );
     
-    server.start_stdio().await?;
-    Ok(())
+    server.add_tool(http_tool);
+    server.start().await
 }
 ```
 

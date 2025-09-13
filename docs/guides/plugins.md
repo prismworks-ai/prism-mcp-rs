@@ -331,7 +331,7 @@ impl PromptHandler for AnalysisPrompt {
         
         let messages = vec![
             PromptMessage {
-                role: Role::System,
+                role: Role::Assistant,
                 content: Content::text(
                     "You are a data analyst. Provide insights based on the provided data."
                 ),

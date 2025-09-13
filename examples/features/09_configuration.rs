@@ -61,7 +61,7 @@ async fn main() -> McpResult<()> {
         request_timeout_ms: 30000,
     };
 
-    let server = McpServer::with_config(config.server.name, config.server.version, server_config);
+    let _server = McpServer::with_config(config.server.name, config.server.version, server_config);
 
     println!(
         "Configuration example server created on port {}",

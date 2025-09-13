@@ -6,7 +6,7 @@ use prism_mcp_rs::prelude::*;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create server with authentication
-    let server = ServerBuilder::new()
+    let _server = ServerBuilder::new()
         .name("authenticated-server")
         .version("1.0.0")
         .build();

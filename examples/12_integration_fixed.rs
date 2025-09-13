@@ -5,11 +5,12 @@ use async_trait::async_trait;
 use prism_mcp_rs::prelude::*;
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 struct IntegratedTool;
 
 #[async_trait]
 impl ToolHandler for IntegratedTool {
-    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<CallToolResult> {
+    async fn call(&self, _arguments: HashMap<String, Value>) -> McpResult<CallToolResult> {
         Ok(CallToolResult {
             content: vec![ContentBlock::text("Integrated tool executed")],
             is_error: Some(false),

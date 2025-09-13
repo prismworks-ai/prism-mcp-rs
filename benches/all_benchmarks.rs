@@ -6,11 +6,12 @@
 
 #![cfg(feature = "bench")]
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use prism_mcp_rs::plugin::{PluginCapabilities, PluginConfig, PluginMetadata};
 use prism_mcp_rs::protocol::{ContentBlock, Tool, ToolInputSchema};
 use serde_json::json;
 use std::collections::HashMap;
+use std::hint::black_box;
 
 // Core plugin benchmarks (simplified versions of our utility benchmarks)
 fn benchmark_plugin_creation(c: &mut Criterion) {

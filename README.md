@@ -141,80 +141,146 @@ prism-mcp-rs = {
 
 ```rust
 use prism_mcp_rs::prelude::*;
+use std::collections::HashMap;
 
 #[derive(Clone)]
-struct SystemTools;
+struct SystemToolHandler;
 
 #[async_trait]
-impl ToolProvider for SystemTools {
-    async fn call_tool(&self, request: CallToolRequest) -> McpResult<CallToolResult> {
-        match request.name.as_str() {
-            "system_info" => Ok(CallToolResult::text(format!(
-                "Host: {}, OS: {}", 
-                gethostname::gethostname().to_string_lossy(),
-                std::env::consts::OS
-            ))),
+impl ToolHandler for SystemToolHandler {
+    async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
+        match arguments.get("tool_name").and_then(|v| v.as_str()) {
+            Some("system_info") => {
+                let info = format!(
+                    "Host: {}, OS: {}", 
+                    hostname::get().unwrap_or_default().to_string_lossy(),
+                    std::env::consts::OS
+                );
+                Ok(ToolResult {
+                    content: vec![ContentBlock::text(&info)],
+                    is_error: Some(false),
+                    meta: None,
+                    structured_content: None,
+                })
+            },
             _ => Err(McpError::invalid_request("Unknown tool"))
         }
-    }
-
-    async fn list_tools(&self) -> McpResult<ListToolsResult> {
-        Ok(ListToolsResult::from_tools(vec![
-            Tool::new("system_info", "Get system information")
-        ]))
     }
 }
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    McpServer::builder()
-        .with_tool_provider(SystemTools)
-        .with_stdio_transport()
-        .build()
-        .await?
-        .run()
-        .await
+    let mut server = McpServer::new(
+        "system-server".to_string(), 
+        "1.0.0".to_string()
+    );
+    
+    // Add the system_info tool using the async add_tool method
+    server.add_tool(
+        "system_info",
+        Some("Get system information"),
+        json!({"type": "object", "properties": {}}),
+        SystemToolHandler,
+    ).await?;
+    // Start server with STDIO transport
+    let transport = StdioServerTransport::new();
+    server.start(transport).await
 }
 ```
 
 ### Enterprise-Grade Client
 
 ```rust
-use prism_mcp_rs::client::*;
+use prism_mcp_rs::prelude::*;
+use prism_mcp_rs::transport::StdioClientTransport;
 
-let client = ClientSession::builder()
-    .with_circuit_breaker() // Auto fault isolation
-    .with_adaptive_retries() // Smart backoff
-    .with_health_monitoring() // Continuous health checks
-    .connect_stdio("./server")
-    .await?;
+let transport = StdioClientTransport::new("./server");
+let client = McpClient::new(
+    "test-client".to_string(),
+    "1.0.0".to_string()
+);
 
-// Resilient operations with automatic recovery
-let tools = client.list_tools().await?;
-let result = client.call_tool("system_info", json!({})).await?;
+client.initialize().await?;
+client.set_transport(Box::new(transport)).await?;
+
+// Make requests to the server
+let tools_response = client.list_tools(None, None).await?;
+let tool_result = client.call_tool(
+    "system_info".to_string(),
+    json!({})
+).await?;
+
+println!("Available tools: {:?}", tools_response);
+println!("Tool result: {:?}", tool_result);
 ```
 
 ### Hot-Reloadable Plugins
 
 ```rust
+use prism_mcp_rs::prelude::*;
 use prism_mcp_rs::plugin::*;
+use std::any::Any;
 
-#[plugin]
 struct WeatherPlugin {
     api_key: String,
 }
 
 #[async_trait]
 impl ToolPlugin for WeatherPlugin {
-    async fn call_tool(&self, req: CallToolRequest) -> McpResult<CallToolResult> {
-        let weather = self.fetch_weather(&req.args["location"]).await?;
-        Ok(CallToolResult::json(weather))
+    fn metadata(&self) -> PluginMetadata {
+        PluginMetadata {
+            id: "weather-plugin".to_string(),
+            name: "Weather Plugin".to_string(),
+            version: "1.0.0".to_string(),
+            author: Some("Example Author".to_string()),
+            description: Some("Provides weather information".to_string()),
+            homepage: None,
+            license: Some("MIT".to_string()),
+            mcp_version: "1.1.0".to_string(),
+            capabilities: PluginCapabilities::default(),
+            dependencies: vec![],
+        }
+    }
+
+    fn tool_definition(&self) -> Tool {
+        Tool::new(
+            "get_weather".to_string(),
+            Some("Get weather information for a location".to_string()),
+            json!({
+                "type": "object",
+                "properties": {
+                    "location": {"type": "string", "description": "Location to get weather for"}
+                },
+                "required": ["location"]
+            }),
+            EchoTool // Placeholder - would use actual weather handler
+        )
+    }
+
+    async fn execute(&self, arguments: Value) -> McpResult<ToolResult> {
+        let location = arguments["location"].as_str().unwrap_or("Unknown");
+        let weather_data = json!({
+            "location": location,
+            "temperature": "22°C",
+            "condition": "Sunny"
+        });
+        
+        Ok(ToolResult {
+            content: vec![ContentBlock::text(&format!("Weather in {}: {}", location, weather_data))],
+            is_error: Some(false),
+            meta: None,
+            structured_content: Some(weather_data),
+        })
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
 // Runtime plugin management
-let plugin_manager = PluginManager::new();
-plugin_manager.hot_reload("weather_plugin.so").await?; // Zero downtime
+let mut plugin_manager = PluginManager::new();
+plugin_manager.reload_plugin("weather_plugin").await?; // Hot reload support
 ```
 
 ## Architectural Innovations
@@ -223,29 +289,42 @@ plugin_manager.hot_reload("weather_plugin.so").await?; // Zero downtime
 Automatic capability negotiation and runtime schema introspection eliminates manual configuration:
 
 ```rust
-// Client automatically discovers and adapts to server capabilities
-let client = ClientSession::auto_discover("./server").await?;
-let schema = client.introspect().await?; // Full runtime capability discovery
+// Client connects and discovers server capabilities
+let transport = StdioClientTransport::new("./server");
+let client = McpClient::new("discovery-client".to_string(), "1.0.0".to_string());
+
+client.initialize().await?;
+client.set_transport(Box::new(transport)).await?;
+
+// Discover server capabilities through initialization
+let server_info = client.get_server_info().await?;
+println!("Server capabilities: {:?}", server_info.capabilities);
 ```
 
 ### Fault-Tolerant by Design
 Built-in resilience patterns prevent cascading failures in distributed AI systems:
 
 ```rust
-// Circuit breakers, retries, and health checks work together automatically
-let result = client
-    .with_fallback(backup_service)
-    .call_tool_resilient("analyze", data)
-    .await?; // Never fails catastrophically
+// Basic tool call with proper error handling
+let result = match client.call_tool("analyze".to_string(), data).await {
+    Ok(result) => result,
+    Err(e) => {
+        eprintln!("Tool call failed: {}", e);
+        // Implement your own fallback logic here
+        return Err(e);
+    }
+};
 ```
 
 ### Plugin Ecosystem Revolution
 Hot-swappable plugins with ABI stability across Rust versions:
 
 ```rust
-// Live plugin updates without service interruption
-plugin_manager.hot_swap("analyzer_v2.so", "analyzer_v1.so").await?;
-// Automatic dependency resolution and health monitoring
+// Plugin lifecycle management
+plugin_manager.unload_plugin("analyzer_v1").await?;
+plugin_manager.load_plugin("analyzer_v2.so").await?;
+// Plugin health monitoring
+let health = plugin_manager.check_plugin_health("analyzer_v2").await?;
 ```
 
 ## New Use Cases Enabled

@@ -5,6 +5,30 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-09-13
+
+### 🔧 Maintenance & Documentation
+
+#### Examples & Documentation Improvements
+- **📚 Enhanced Examples**: Updated and fixed multiple example files
+  - Corrected API usage in authentication, WebSocket, and plugin examples
+  - Fixed resource handling and prompts API examples
+  - Updated integration tests and working examples
+- **📖 Documentation Updates**: Improved plugin guides and error handling documentation
+  - Enhanced plugin-types.md with clearer examples
+  - Updated plugins.md with latest API patterns
+  - Better error handling documentation
+
+#### Library Improvements
+- **🛠️ API Refinements**: Minor improvements to lib.rs exports
+- **✅ Test Coverage**: Added new test files for documentation examples
+- **🔧 Transport Fixes**: Improved custom transport example
+
+### 📊 Impact
+- **Enhanced Developer Experience**: All examples now demonstrate correct API usage
+- **Better Documentation**: Clearer guides for plugin development and error handling
+- **Improved Reliability**: Better test coverage and working examples
+
 ## [1.1.0] - 2025-09-13
 
 ### 🚀 Major Improvements

@@ -207,7 +207,7 @@ impl PromptHandler for CodeReviewPrompt {
         
         let messages = vec![
             PromptMessage {
-                role: Role::System,
+                role: Role::Assistant,
                 content: Content::text(format!(
                     "You are an expert {} code reviewer focusing on {}.",
                     language, focus

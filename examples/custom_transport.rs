@@ -138,7 +138,7 @@ impl ToolHandler for EchoTool {
             .unwrap_or("No message provided");
 
         Ok(ToolResult {
-            content: vec![Content::text(format!("Echo: {}", message))],
+            content: vec![ContentBlock::text(format!("Echo: {}", message))],
             is_error: Some(false),
             structured_content: None,
             meta: None,

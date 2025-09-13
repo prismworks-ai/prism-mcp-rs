@@ -45,7 +45,7 @@ impl ToolHandler for CalculatorTool {
         };
 
         Ok(ToolResult {
-            content: vec![ContentBlock::text(&format!("Result: {}", result))],
+            content: vec![ContentBlock::text(format!("Result: {}", result))],
             is_error: Some(false),
             meta: None,
             structured_content: None,

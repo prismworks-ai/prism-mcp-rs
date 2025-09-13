@@ -21,7 +21,7 @@ impl Plugin for MathPlugin {
         "math"
     }
 
-    async fn execute(&self, input: serde_json::Value) -> McpResult<serde_json::Value> {
+    async fn execute(&self, _input: serde_json::Value) -> McpResult<serde_json::Value> {
         Ok(serde_json::json!({
             "plugin": "math",
             "result": "calculated"

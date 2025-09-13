@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
     #[cfg(feature = "http")]
     {
         use prism_mcp_rs::transport::HttpServerTransport;
-        let transport = HttpServerTransport::new("127.0.0.1:8080");
+        let _transport = HttpServerTransport::new("127.0.0.1:8080");
         // server.run_with_transport(transport).await?;
     }
 

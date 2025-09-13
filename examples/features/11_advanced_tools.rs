@@ -36,12 +36,12 @@ impl ToolHandler for BatchProcessor {
             println!(
                 "Processed batch {} of {}",
                 i + 1,
-                (items.len() + batch_size - 1) / batch_size
+                items.len().div_ceil(batch_size)
             );
         }
 
         Ok(ToolResult {
-            content: vec![ContentBlock::text(&results.join(", "))],
+            content: vec![ContentBlock::text(results.join(", "))],
             is_error: Some(false),
             meta: None,
             structured_content: None,
@@ -80,7 +80,7 @@ impl ToolHandler for DataTransformer {
         };
 
         Ok(ToolResult {
-            content: vec![ContentBlock::text(&result.to_string())],
+            content: vec![ContentBlock::text(result.to_string())],
             is_error: Some(false),
             meta: None,
             structured_content: None,

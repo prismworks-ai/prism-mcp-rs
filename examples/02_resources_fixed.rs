@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=====================");
 
     // Create server with resource support
-    let server = McpServer::new("resource-server".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("resource-server".to_string(), "1.0.0".to_string());
 
     println!("Server created with resource support");
     println!("Ready to handle resource requests");

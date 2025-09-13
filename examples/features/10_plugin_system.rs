@@ -8,6 +8,7 @@ use tokio::sync::RwLock;
 // Simple plugin trait
 trait Plugin: Send + Sync {
     fn name(&self) -> &str;
+    #[allow(dead_code)]
     fn version(&self) -> &str;
     fn execute(&self, args: HashMap<String, Value>) -> McpResult<Value>;
 }
@@ -74,7 +75,7 @@ impl PluginManager {
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    let server = McpServer::new("plugin-example".to_string(), "1.0.0".to_string());
+    let _server = McpServer::new("plugin-example".to_string(), "1.0.0".to_string());
 
     let plugin_manager = PluginManager::new();
     plugin_manager.register(Box::new(MathPlugin)).await;

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757798399282,
+  "lastUpdate": 1757799991345,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2764,6 +2764,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 170.5,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "af3650db83d9491981130b54669a8fe3b30027b0",
+          "message": "\\fix: add cargo-vet audit for prism-mcp-rs v1.1.1\n\n- Adds security audit entry for version 1.1.1 in supply-chain/audits.toml\n- Certifies as safe-to-deploy with maintenance updates only\n- Resolves CI/CD pipeline failures related to cargo-vet checks\n- No security-relevant code changes in this version\\",
+          "timestamp": "2025-09-13T17:43:32-04:00",
+          "tree_id": "6faf8130992a0901e312cddeac8e936e4171c139",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/af3650db83d9491981130b54669a8fe3b30027b0"
+        },
+        "date": 1757799990654,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.446,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 362.66,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.89,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.333,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 176.94,
             "unit": "ns"
           }
         ]

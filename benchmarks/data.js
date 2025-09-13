@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757736513319,
+  "lastUpdate": 1757737966633,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2617,6 +2617,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 170.32,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "140ce1bb1066662503db630a6c0c1bc9e99af4b5",
+          "message": "\\feat: comprehensive development workflow improvements\n\n- Add pre-commit hooks configuration (.pre-commit-config.yaml)\n  - Automated code formatting with cargo fmt\n  - Linting with cargo clippy\n  - Basic compilation checks with cargo check\n  - File cleanup (trailing whitespace, line endings)\n  - Configuration validation (YAML/TOML)\n\n- Fix dependency update workflow permissions\n  - Add issues: write permission for issue creation\n  - Use PAT_TOKEN for issue creation to avoid GitHub token limitations\n  - Resolves 'Resource not accessible by integration' errors\n\n- Enhanced development documentation (docs/DEVELOPMENT.md)\n  - Comprehensive code quality workflow section\n  - Pre-commit hook setup instructions\n  - Common CI failure prevention guide\n  - Manual code quality commands reference\n  - Step-by-step development workflow\n\n- Update pre-commit installation script\n  - Add support for pre-commit framework installation\n  - Maintain existing doc-driven examples validation\n  - Provide clear setup instructions\n\nThese changes establish a robust development workflow that prevents\ncommon CI failures through automated checks and clear documentation.\\",
+          "timestamp": "2025-09-13T00:29:28-04:00",
+          "tree_id": "b8937ad7880311f19ca22ac346b49f3a4a8b6b87",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/140ce1bb1066662503db630a6c0c1bc9e99af4b5"
+        },
+        "date": 1757737965525,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 12.447,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 365.73,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.71,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.105,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.42,
             "unit": "ns"
           }
         ]

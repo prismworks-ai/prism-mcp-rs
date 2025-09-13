@@ -35,19 +35,12 @@
 //! use std::time::Duration;
 //!
 //! let client = McpClientBuilder::new()
-//!     // .name() is not available
-//!     .with_version("2.0.0")
-//!     .with_connection_config(ConnectionConfig {
-//!         timeout_ms: 30000,
-//!         keep_alive: true,
-//!         compression: false,
-//!     })
-//!     .with_retry_config(RetryConfig {
-//!         max_attempts: Some(3),
-//!         initial_delay_ms: 100,
-//!         max_delay_ms: 5000,
-//!         backoff_multiplier: 2.0,
-//!     })
+//!     .name("my-client")
+//!     .version("2.0.0")
+//!     .timeout(Duration::from_secs(30))
+//!     .max_retries(3)
+//!     .validate_requests(true)
+//!     .validate_responses(true)
 //!     .build();
 //! ```
 //!

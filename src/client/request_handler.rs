@@ -1,111 +1,111 @@
-// ! Client-side request handling for server-initiated requests
-// !
-// ! Module provides the infrastructure for handling requests that the MCP server
-// ! sends to the client, enabling true bidirectional communication as defined in the
-// ! MCP 2025-06-18 specification
-// !
-// ! Key features:
-// ! - Sampling/createMessage request handling (LLM integration)
-// ! - Roots/list request handling (file system access)
-// ! - Elicitation/create request handling (user input forms)
-// ! - Ping request handling (connectivity testing)
-// !
-// ! # Example
-// ! ```rust
-// ! use prism_mcp_rs::client::{McpClient, InteractiveClientRequestHandler};
-// !
-// ! let mut client = McpClient::new("my-app".to_string(), "1.0.0".to_string());
-// ! let handler = InteractiveClientRequestHandler::new("My Application")
-// ! .add_root("file:///home/user", Some("Home Directory"))
-// ! .auto_accept_elicitation(true);
-// ! client.set_request_handler(handler);
-// ! ```
-// !
-// ! # Sampling Integration Example
-// !
-// ! For production LLM integration with OpenAI or Anthropic:
-// !
-// ! ```rust,ignore
-// ! use async_trait::async_trait;
-// ! use openai_api_rust::v1::api::Client as OpenAIClient;
-// ! use prism_mcp_rs::client::ClientRequestHandler;
-// !
-// ! struct OpenAIRequestHandler {
-// !     openai_client: OpenAIClient,
-// !     api_key: String,
-// ! }
-// !
-// ! #[async_trait]
-// ! impl ClientRequestHandler for OpenAIRequestHandler {
-// !     async fn handle_create_message(
-// !         &self,
-// !         params: CreateMessageParams,
-// !     ) -> McpResult<CreateMessageResult> {
-// !         // Convert MCP messages to OpenAI format
-// !         let openai_messages = params.messages.iter().map(|msg| {
-// !             openai_api_rust::v1::chat::ChatCompletionMessage {
-// !                 role: match msg.role {
-// !                     Role::User => "user".to_string(),
-// !                     Role::Assistant => "assistant".to_string(),
-// !                 },
-// !                 content: msg.content.as_text().unwrap_or("").to_string(),
-// !             }
-// !         }).collect();
-// !
-// !         // Call OpenAI API
-// !         let response = self.openai_client.chat_completion(
-// !             openai_api_rust::v1::chat::ChatCompletionRequest {
-// !                 model: params.model_preferences
-// !                     .and_then(|p| p.hints.first().map(|h| h.name.clone()))
-// !                     .unwrap_or("gpt-4".to_string()),
-// !                 messages: openai_messages,
-// !                 max_tokens: Some(params.max_tokens as i32),
-// !                 temperature: params.temperature,
-// !                 // ... other parameters
-// !             }
-// !         ).await?;
-// !
-// !         // Convert OpenAI response to MCP format
-// !         Ok(CreateMessageResult {
-// !             model: response.model,
-// !             stop_reason: Some(StopReason::EndTurn),
-// !             role: Role::Assistant,
-// !             content: SamplingContent::Text {
-// !                 text: response.choices[0].message.content.clone(),
-// !                 annotations: None,
-// !                 meta: None,
-// !             },
-// !             meta: None,
-// !         })
-// !     }
-// !     // ... other handler methods
-// ! }
-// ! ```
-// !
-// ! # Roots Security Model
-// !
-// ! **IMPORTANT**: Roots provide guidance but DO NOT enforce security boundaries.
-// !
-// ! Security considerations:
-// ! - Roots are hints to servers about intended working directories
-// ! - Actual file access is ALWAYS mediated by the client's OS-level permissions
-// ! - Clients should validate all file operations against their security policies
-// ! - Never grant roots to directories containing sensitive data (e.g., ~/.ssh, /etc)
-// ! - Consider implementing additional access controls in your handler
-// !
-// ! Example secure root configuration:
-// ! ```rust
-// ! use prism_mcp_rs::client::InteractiveClientRequestHandler;
-// ! use std::path::PathBuf;
-// !
-// ! let handler = InteractiveClientRequestHandler::new("Secure App")
-// !     // Only grant access to specific project directories
-// !     .add_root("file:///home/user/projects/current", Some("Current Project"))
-// !     // Avoid sensitive directories
-// !     // NEVER: .add_root("file:///home/user/.ssh", Some("SSH Keys"))
-// !     // NEVER: .add_root("file:///etc", Some("System Config"))
-// !     .verbose(true);
-// ! ```
+//! Client-side request handling for server-initiated requests
+//!
+//! Module provides the infrastructure for handling requests that the MCP server
+//! sends to the client, enabling true bidirectional communication as defined in the
+//! MCP 2025-06-18 specification
+//!
+//! Key features:
+//! - Sampling/createMessage request handling (LLM integration)
+//! - Roots/list request handling (file system access)
+//! - Elicitation/create request handling (user input forms)
+//! - Ping request handling (connectivity testing)
+//!
+//! # Example
+//! ```rust
+//! use prism_mcp_rs::client::{McpClient, InteractiveClientRequestHandler};
+//!
+//! let mut client = McpClient::new("my-app".to_string(), "1.0.0".to_string());
+//! let handler = InteractiveClientRequestHandler::new("My Application")
+//! .add_root("file:///home/user", Some("Home Directory"))
+//! .auto_accept_elicitation(true);
+//! client.set_request_handler(handler);
+//! ```
+//!
+//! # Sampling Integration Example
+//!
+//! For production LLM integration with OpenAI or Anthropic:
+//!
+//! ```rust,ignore
+//! use async_trait::async_trait;
+//! use openai_api_rust::v1::api::Client as OpenAIClient;
+//! use prism_mcp_rs::client::ClientRequestHandler;
+//!
+//! struct OpenAIRequestHandler {
+//!     openai_client: OpenAIClient,
+//!     api_key: String,
+//! }
+//!
+//! #[async_trait]
+//! impl ClientRequestHandler for OpenAIRequestHandler {
+//!     async fn handle_create_message(
+//!         &self,
+//!         params: CreateMessageParams,
+//!     ) -> McpResult<CreateMessageResult> {
+//!         // Convert MCP messages to OpenAI format
+//!         let openai_messages = params.messages.iter().map(|msg| {
+//!             openai_api_rust::v1::chat::ChatCompletionMessage {
+//!                 role: match msg.role {
+//!                     Role::User => "user".to_string(),
+//!                     Role::Assistant => "assistant".to_string(),
+//!                 },
+//!                 content: msg.content.as_text().unwrap_or("").to_string(),
+//!             }
+//!         }).collect();
+//!
+//!         // Call OpenAI API
+//!         let response = self.openai_client.chat_completion(
+//!             openai_api_rust::v1::chat::ChatCompletionRequest {
+//!                 model: params.model_preferences
+//!                     .and_then(|p| p.hints.first().map(|h| h.name.clone()))
+//!                     .unwrap_or("gpt-4".to_string()),
+//!                 messages: openai_messages,
+//!                 max_tokens: Some(params.max_tokens as i32),
+//!                 temperature: params.temperature,
+//!                 // ... other parameters
+//!             }
+//!         ).await?;
+//!
+//!         // Convert OpenAI response to MCP format
+//!         Ok(CreateMessageResult {
+//!             model: response.model,
+//!             stop_reason: Some(StopReason::EndTurn),
+//!             role: Role::Assistant,
+//!             content: SamplingContent::Text {
+//!                 text: response.choices[0].message.content.clone(),
+//!                 annotations: None,
+//!                 meta: None,
+//!             },
+//!             meta: None,
+//!         })
+//!     }
+//!     // ... other handler methods
+//! }
+//! ```
+//!
+//! # Roots Security Model
+//!
+//! **IMPORTANT**: Roots provide guidance but DO NOT enforce security boundaries.
+//!
+//! Security considerations:
+//! - Roots are hints to servers about intended working directories
+//! - Actual file access is ALWAYS mediated by the client's OS-level permissions
+//! - Clients should validate all file operations against their security policies
+//! - Never grant roots to directories containing sensitive data (e.g., ~/.ssh, /etc)
+//! - Consider implementing additional access controls in your handler
+//!
+//! Example secure root configuration:
+//! ```rust
+//! use prism_mcp_rs::client::InteractiveClientRequestHandler;
+//! use std::path::PathBuf;
+//!
+//! let handler = InteractiveClientRequestHandler::new("Secure App")
+//!     // Only grant access to specific project directories
+//!     .add_root("file:///home/user/projects/current", Some("Current Project"))
+//!     // Avoid sensitive directories
+//!     // NEVER: .add_root("file:///home/user/.ssh", Some("SSH Keys"))
+//!     // NEVER: .add_root("file:///etc", Some("System Config"))
+//!     .verbose(true);
+//! ```
 
 use async_trait::async_trait;
 use std::collections::HashMap;

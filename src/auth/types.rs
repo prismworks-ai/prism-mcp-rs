@@ -1,7 +1,7 @@
-// ! OAuth 2.1 Types and Data Structures
-// !
-// ! Module contains the core types used in the OAuth 2.1 authorization flow
-// ! for MCP, including metadata structures, token types, and discovery responses.
+//! OAuth 2.1 Types and Data Structures
+//!
+//! Module contains the core types used in the OAuth 2.1 authorization flow
+//! for MCP, including metadata structures, token types, and discovery responses.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

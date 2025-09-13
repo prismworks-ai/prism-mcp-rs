@@ -1,4 +1,4 @@
-// ! complete tests for WebSocket transport
+//! complete tests for WebSocket transport
 
 #[cfg(test)]
 mod tests {

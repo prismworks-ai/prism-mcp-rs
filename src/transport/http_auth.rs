@@ -1,7 +1,7 @@
-// ! HTTP Transport with OAuth 2.1 Authorization Support
-// !
-// ! Module extends the HTTP transport with automatic authorization
-// ! handling, including token refresh and 401 response handling.
+//! HTTP Transport with OAuth 2.1 Authorization Support
+//!
+//! Module extends the HTTP transport with automatic authorization
+//! handling, including token refresh and 401 response handling.
 
 use async_trait::async_trait;
 use std::sync::Arc;

@@ -1,0 +1,8 @@
+src/plugin/loader.rs:        let library = unsafe {
+src/plugin/loader.rs:        let create_fn: Symbol<unsafe extern "C" fn() -> *mut Box<dyn ToolPlugin>> = unsafe {
+src/plugin/loader.rs:        let instance = unsafe {
+src/plugin/api.rs:pub type PluginFactory = unsafe extern "C" fn() -> *mut Box<dyn ToolPlugin>;
+src/plugin/api.rs:        #[unsafe(no_mangle)]
+src/plugin/api.rs:        pub unsafe extern "C" fn _mcp_plugin_create() -> *mut Box<dyn $crate::plugin::ToolPlugin> {
+src/plugin/api.rs:        #[unsafe(no_mangle)]
+src/plugin/api.rs:        #[unsafe(no_mangle)]

@@ -1,4 +1,4 @@
-// ! Plugin system types and traits
+//! Plugin system types and traits
 
 use crate::core::error::McpResult;
 use crate::core::prompt::Prompt;

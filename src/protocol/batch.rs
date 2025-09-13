@@ -1,9 +1,9 @@
-// ! JSON-RPC Batch Request/Response Support (2025-06-18)
-// !
-// ! Module provides support for JSON-RPC batch operations as defined in the
-// ! JSON-RPC 2.0 specification, even though the MCP spec notes "simplified JSON-RPC
-// ! without batching". Implementation is provided for completeness and future
-// ! compatibility
+//! JSON-RPC Batch Request/Response Support (2025-06-18)
+//!
+//! Module provides support for JSON-RPC batch operations as defined in the
+//! JSON-RPC 2.0 specification, even though the MCP spec notes "simplified JSON-RPC
+//! without batching". Implementation is provided for completeness and future
+//! compatibility
 
 use crate::core::error::{McpError, McpResult};
 use crate::protocol::types::*;

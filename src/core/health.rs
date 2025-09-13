@@ -1,11 +1,11 @@
-// ! complete health check system for MCP SDK
-// !
-// ! Module provides production-ready health checking capabilities with:
-// ! - Transport-specific health checks
-// ! - Protocol-level health validation
-// ! - Resource availability monitoring
-// ! - Circuit breaker integration
-// ! - Detailed health reporting
+//! complete health check system for MCP SDK
+//!
+//! Module provides production-ready health checking capabilities with:
+//! - Transport-specific health checks
+//! - Protocol-level health validation
+//! - Resource availability monitoring
+//! - Circuit breaker integration
+//! - Detailed health reporting
 
 use async_trait::async_trait;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

@@ -1,7 +1,7 @@
-// ! complete tests for HTTP transport convenience methods
-// !
-// ! This test suite validates all production-grade convenience methods
-// ! added to HttpClientTransport
+//! complete tests for HTTP transport convenience methods
+//!
+//! This test suite validates all production-grade convenience methods
+//! added to HttpClientTransport
 
 #![cfg(test)]
 #![cfg(not(coverage))]

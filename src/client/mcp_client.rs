@@ -1,8 +1,18 @@
-// ! MCP client implementation
-// !
-// ! Module provides the main MCP client that can connect to MCP servers,
-// ! initialize connections, and perform operations like calling tools, reading resources,
-// ! and executing prompts according to the Model Context Protocol specification.
+//! MCP client implementation
+//!
+//! Module provides the main MCP client that can connect to MCP servers,
+//! initialize connections, and perform operations like calling tools, reading resources,
+//! and executing prompts according to the Model Context Protocol specification.
+//!
+//! # Advanced HTTP Features
+//!
+//! For streaming and large payload support, enable the chunked-encoding feature:
+//! ```toml
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["chunked-encoding"] }
+//! ```
+//!
+//! This enables the streaming HTTP client transport for large payloads.
 
 use serde_json::Value;
 use std::collections::HashMap;

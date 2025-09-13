@@ -1,0 +1,1033 @@
+   Compiling proc-macro2 v1.0.101
+   Compiling unicode-ident v1.0.19
+   Compiling libc v0.2.175
+   Compiling cfg-if v1.0.3
+   Compiling autocfg v1.5.0
+   Compiling smallvec v1.15.1
+   Compiling memchr v2.7.5
+   Compiling pin-project-lite v0.2.16
+   Compiling futures-core v0.3.31
+   Compiling once_cell v1.21.3
+   Compiling regex-syntax v0.8.6
+   Compiling parking_lot_core v0.9.11
+   Compiling scopeguard v1.2.0
+   Compiling stable_deref_trait v1.2.0
+   Compiling bytes v1.10.1
+   Compiling futures-sink v0.3.31
+   Compiling getrandom v0.3.3
+   Compiling itoa v1.0.15
+   Compiling serde v1.0.219
+   Compiling slab v0.4.11
+   Compiling log v0.4.28
+   Compiling hashbrown v0.15.5
+   Compiling equivalent v1.0.2
+   Compiling fnv v1.0.7
+   Compiling futures-channel v0.3.31
+   Compiling pin-utils v0.1.0
+   Compiling tracing-core v0.1.34
+   Compiling litemap v0.8.0
+   Compiling zerocopy v0.8.27
+   Compiling writeable v0.6.1
+   Compiling version_check v0.9.5
+   Compiling typenum v1.18.0
+   Compiling lock_api v0.4.13
+   Compiling futures-io v0.3.31
+   Compiling icu_normalizer_data v2.0.0
+   Compiling aho-corasick v1.1.3
+   Compiling futures-task v0.3.31
+   Compiling icu_properties_data v2.0.1
+   Compiling http v1.3.1
+   Compiling indexmap v2.11.1
+   Compiling generic-array v0.14.7
+   Compiling semver v1.0.26
+   Compiling percent-encoding v2.3.2
+   Compiling serde_json v1.0.143
+   Compiling httparse v1.10.1
+   Compiling lazy_static v1.5.0
+   Compiling ryu v1.0.20
+   Compiling quote v1.0.40
+   Compiling http-body v1.0.1
+   Compiling syn v2.0.106
+   Compiling form_urlencoded v1.2.2
+   Compiling num-traits v0.2.19
+   Compiling try-lock v0.2.5
+   Compiling signal-hook-registry v1.4.6
+   Compiling regex-automata v0.4.10
+   Compiling parking_lot v0.12.4
+   Compiling socket2 v0.6.0
+   Compiling mio v1.0.4
+   Compiling rand_core v0.9.3
+   Compiling rustix v1.1.2
+   Compiling atomic-waker v1.1.2
+   Compiling errno v0.3.14
+   Compiling want v0.3.1
+   Compiling winnow v0.7.13
+   Compiling httpdate v1.0.3
+   Compiling utf8_iter v1.0.4
+   Compiling crossbeam-utils v0.8.21
+   Compiling fastrand v2.3.0
+   Compiling utf8parse v0.2.2
+   Compiling bitflags v2.9.4
+   Compiling toml_datetime v0.6.11
+   Compiling anstyle-parse v0.2.7
+   Compiling getrandom v0.2.16
+   Compiling anstyle-query v1.1.4
+   Compiling anstyle v1.0.11
+   Compiling thiserror v2.0.16
+   Compiling is_terminal_polyfill v1.70.1
+   Compiling anyhow v1.0.99
+   Compiling colorchoice v1.0.4
+   Compiling option-ext v0.2.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling dirs-sys v0.5.0
+   Compiling rustc_version v0.4.1
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.6
+   Compiling ppv-lite86 v0.2.21
+   Compiling rstest_macros v0.26.1
+   Compiling digest v0.10.7
+   Compiling iana-time-zone v0.1.63
+   Compiling anstream v0.6.20
+   Compiling rand_core v0.6.4
+   Compiling num_cpus v1.17.0
+   Compiling wait-timeout v0.2.1
+   Compiling http-body-util v0.1.3
+   Compiling sharded-slab v0.1.7
+   Compiling rand_chacha v0.9.0
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.9
+   Compiling cpufeatures v0.2.17
+   Compiling bit-vec v0.8.0
+   Compiling rand v0.9.2
+   Compiling toml_edit v0.22.27
+   Compiling quick-error v1.2.3
+   Compiling hashbrown v0.14.5
+   Compiling regex v1.11.2
+   Compiling matchers v0.2.0
+   Compiling jiff v0.2.15
+   Compiling glob v0.3.3
+   Compiling synstructure v0.13.2
+   Compiling env_filter v0.1.3
+   Compiling relative-path v1.9.3
+   Compiling similar v2.7.0
+   Compiling sdd v3.0.10
+   Compiling nu-ansi-term v0.50.1
+   Compiling prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+   Compiling base64 v0.22.1
+   Compiling deadpool-runtime v0.1.4
+   Compiling scc v2.4.0
+   Compiling dashmap v6.1.0
+   Compiling env_logger v0.8.4
+   Compiling bit-set v0.8.0
+   Compiling sha2 v0.10.9
+   Compiling rand v0.8.5
+   Compiling dirs v6.0.0
+   Compiling tempfile v3.22.0
+   Compiling rand_xorshift v0.4.0
+   Compiling console v0.15.11
+   Compiling futures-timer v3.0.3
+   Compiling deunicode v1.6.2
+   Compiling rusty-fork v0.3.0
+   Compiling colored v3.0.0
+   Compiling proc-macro-crate v3.3.0
+   Compiling either v1.15.0
+   Compiling unarray v0.1.4
+   Compiling quickcheck v1.0.3
+   Compiling proptest v1.7.0
+   Compiling fake v4.4.0
+   Compiling zerofrom-derive v0.1.6
+   Compiling yoke-derive v0.8.0
+   Compiling zerovec-derive v0.11.1
+   Compiling displaydoc v0.2.5
+   Compiling tokio-macros v2.5.0
+   Compiling serde_derive v1.0.219
+   Compiling futures-macro v0.3.31
+   Compiling tracing-attributes v0.1.30
+   Compiling async-stream-impl v0.3.6
+   Compiling thiserror-impl v2.0.16
+   Compiling pin-project-internal v1.1.10
+   Compiling tokio v1.47.1
+   Compiling async-stream v0.3.6
+   Compiling async-trait v0.1.89
+   Compiling test-log-macros v0.2.18
+   Compiling futures-util v0.3.31
+   Compiling serial_test_derive v3.2.0
+   Compiling quickcheck_macros v1.1.0
+   Compiling zerofrom v0.1.6
+   Compiling pin-project v1.1.10
+   Compiling tracing v0.1.41
+   Compiling env_logger v0.11.8
+   Compiling yoke v0.8.0
+   Compiling test-log v0.2.18
+   Compiling tracing-subscriber v0.3.20
+   Compiling zerovec v0.11.4
+   Compiling zerotrie v0.2.2
+   Compiling futures-executor v0.3.31
+   Compiling rstest v0.26.1
+   Compiling futures v0.3.31
+   Compiling serial_test v3.2.0
+   Compiling tinystr v0.8.1
+   Compiling potential_utf v0.1.3
+   Compiling icu_collections v2.0.0
+   Compiling icu_locale_core v2.0.0
+   Compiling tokio-util v0.7.16
+   Compiling tokio-stream v0.1.17
+   Compiling deadpool v0.12.3
+   Compiling icu_provider v2.0.0
+   Compiling tokio-test v0.4.4
+   Compiling h2 v0.4.12
+   Compiling icu_normalizer v2.0.0
+   Compiling icu_properties v2.0.1
+   Compiling serde_urlencoded v0.7.1
+   Compiling uuid v1.18.1
+   Compiling chrono v0.4.42
+   Compiling insta v1.43.2
+   Compiling assert-json-diff v2.0.2
+   Compiling idna_adapter v1.2.1
+   Compiling idna v1.1.0
+   Compiling url v2.5.7
+   Compiling hyper v1.7.0
+   Compiling hyper-util v0.1.16
+   Compiling wiremock v0.6.5
+   Compiling mockito v1.7.0
+error[E0432]: unresolved import `prism_mcp_rs::protocol::CreateMessageRequest`
+ --> examples/features/04_sampling_api.rs:9:9
+  |
+9 |         CreateMessageRequest, CreateMessageResult,
+  |         ^^^^^^^^^^^^^^^^^^^^
+  |         |
+  |         no `CreateMessageRequest` in `protocol`
+  |         help: a similar name exists in the module: `CreateMessageResult`
+
+error[E0432]: unresolved import `prism_mcp_rs::mcp_tool`
+ --> examples/features/09_configuration.rs:8:5
+  |
+8 |     mcp_tool,
+  |     ^^^^^^^^ no `mcp_tool` in the root
+
+error[E0432]: unresolved imports `prism_mcp_rs::protocol::ListPromptsRequest`, `prism_mcp_rs::protocol::GetPromptRequest`
+  --> examples/features/03_prompts_api.rs:10:9
+   |
+10 |         ListPromptsRequest, GetPromptRequest,
+   |         ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^ no `GetPromptRequest` in `protocol`
+   |         |
+   |         no `ListPromptsRequest` in `protocol`
+   |
+help: a similar name exists in the module
+   |
+10 -         ListPromptsRequest, GetPromptRequest,
+10 +         ListPromptsResult, GetPromptRequest,
+   |
+help: a similar name exists in the module
+   |
+10 -         ListPromptsRequest, GetPromptRequest,
+10 +         ListPromptsRequest, GetPromptResult,
+   |
+
+error: cannot find attribute `mcp_tool` in this scope
+  --> examples/features/01_mcp_tool_macro.rs:10:3
+   |
+10 | #[mcp_tool(
+   |   ^^^^^^^^
+
+error: cannot find attribute `mcp_tool` in this scope
+  --> examples/features/01_mcp_tool_macro.rs:66:3
+   |
+66 | #[mcp_tool(
+   |   ^^^^^^^^
+
+error[E0425]: cannot find value `transport` in this scope
+   --> examples/features/09_configuration.rs:268:35
+    |
+268 |         server.run_with_transport(transport).await?;
+    |                                   ^^^^^^^^^ not found in this scope
+
+error[E0432]: unresolved imports `prism_mcp_rs::protocol::ListResourcesRequest`, `prism_mcp_rs::protocol::ReadResourceRequest`, `prism_mcp_rs::protocol::TextResourceContents`, `prism_mcp_rs::protocol::BlobResourceContents`
+  --> examples/features/02_resources_api.rs:10:9
+   |
+10 |         ListResourcesRequest, ReadResourceRequest,
+   |         ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^ no `ReadResourceRequest` in `protocol`
+   |         |
+   |         no `ListResourcesRequest` in `protocol`
+11 |         Content, TextResourceContents, BlobResourceContents
+   |                  ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^ no `BlobResourceContents` in `protocol`
+   |                  |
+   |                  no `TextResourceContents` in `protocol`
+   |
+help: a similar name exists in the module
+   |
+10 -         ListResourcesRequest, ReadResourceRequest,
+10 +         ListResourcesResult, ReadResourceRequest,
+   |
+help: a similar name exists in the module
+   |
+10 -         ListResourcesRequest, ReadResourceRequest,
+10 +         ListResourcesRequest, ReadResourceResult,
+   |
+help: a similar name exists in the module
+   |
+11 -         Content, TextResourceContents, BlobResourceContents
+11 +         Content, ResourceContents, BlobResourceContents
+   |
+help: a similar name exists in the module
+   |
+11 -         Content, TextResourceContents, BlobResourceContents
+11 +         Content, TextResourceContents, ResourceContents
+   |
+
+error: cannot find attribute `mcp_tool` in this scope
+   --> examples/features/01_mcp_tool_macro.rs:114:3
+    |
+114 | #[mcp_tool(
+    |   ^^^^^^^^
+
+warning: unused imports: `McpServer` and `SamplingMessage`
+  --> examples/features/04_sampling_api.rs:7:14
+   |
+7  |     server::{McpServer, ServerBuilder},
+   |              ^^^^^^^^^
+...
+10 |         SamplingMessage, Role, Content, StopReason,
+   |         ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Value` and `json`
+  --> examples/features/04_sampling_api.rs:15:18
+   |
+15 | use serde_json::{json, Value};
+   |                  ^^^^  ^^^^^
+
+warning: unused imports: `McpServer` and `ServerConfig`
+ --> examples/features/09_configuration.rs:6:14
+  |
+6 |     server::{McpServer, ServerBuilder, ServerConfig},
+  |              ^^^^^^^^^                 ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `McpServer`
+ --> examples/features/03_prompts_api.rs:7:14
+  |
+7 |     server::{McpServer, ServerBuilder},
+  |              ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Value`
+  --> examples/features/03_prompts_api.rs:15:24
+   |
+15 | use serde_json::{json, Value};
+   |                        ^^^^^
+
+warning: unused imports: `Content` and `McpServer`
+  --> examples/features/02_resources_api.rs:7:14
+   |
+7  |     server::{McpServer, ServerBuilder},
+   |              ^^^^^^^^^
+...
+11 |         Content, TextResourceContents, BlobResourceContents
+   |         ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Value`
+  --> examples/features/02_resources_api.rs:15:24
+   |
+15 | use serde_json::{json, Value};
+   |                        ^^^^^
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:33:21
+   |
+33 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:38:21
+   |
+38 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:43:21
+   |
+43 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing fields `meta` and `structured_content` in initializer of `CallToolResult`
+  --> examples/features/01_mcp_tool_macro.rs:44:27
+   |
+44 |                 return Ok(ToolResult {
+   |                           ^^^^^^^^^^ missing `meta` and `structured_content`
+
+error[E0063]: missing fields `meta` and `structured_content` in initializer of `CallToolResult`
+  --> examples/features/01_mcp_tool_macro.rs:52:23
+   |
+52 |             return Ok(ToolResult {
+   |                       ^^^^^^^^^^ missing `meta` and `structured_content`
+
+error[E0063]: missing fields `meta` and `structured_content` in initializer of `CallToolResult`
+  --> examples/features/01_mcp_tool_macro.rs:59:8
+   |
+59 |     Ok(ToolResult {
+   |        ^^^^^^^^^^ missing `meta` and `structured_content`
+
+error[E0063]: missing fields `meta` and `structured_content` in initializer of `CallToolResult`
+   --> examples/features/01_mcp_tool_macro.rs:107:8
+    |
+107 |     Ok(ToolResult {
+    |        ^^^^^^^^^^ missing `meta` and `structured_content`
+
+error[E0063]: missing fields `meta` and `structured_content` in initializer of `CallToolResult`
+   --> examples/features/01_mcp_tool_macro.rs:151:8
+    |
+151 |     Ok(ToolResult {
+    |        ^^^^^^^^^^ missing `meta` and `structured_content`
+
+error[E0063]: missing fields `meta` and `structured_content` in initializer of `CallToolResult`
+   --> examples/features/09_configuration.rs:206:8
+    |
+206 |     Ok(ToolResult {
+    |        ^^^^^^^^^^ missing `meta` and `structured_content`
+
+error[E0063]: missing fields `annotations`, `meta`, `size` and 1 other field in initializer of `prism_mcp_rs::Resource`
+  --> examples/features/02_resources_api.rs:36:13
+   |
+36 |             Resource {
+   |             ^^^^^^^^ missing `annotations`, `meta`, `size` and 1 other field
+
+error[E0063]: missing fields `meta` and `title` in initializer of `prism_mcp_rs::Prompt`
+  --> examples/features/03_prompts_api.rs:29:13
+   |
+29 |             Prompt {
+   |             ^^^^^^ missing `meta` and `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:59:21
+   |
+59 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:64:21
+   |
+64 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing fields `meta` and `title` in initializer of `prism_mcp_rs::Prompt`
+  --> examples/features/03_prompts_api.rs:55:13
+   |
+55 |             Prompt {
+   |             ^^^^^^ missing `meta` and `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:80:21
+   |
+80 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:85:21
+   |
+85 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing field `title` in initializer of `PromptArgument`
+  --> examples/features/03_prompts_api.rs:90:21
+   |
+90 |                     PromptArgument {
+   |                     ^^^^^^^^^^^^^^ missing `title`
+
+error[E0063]: missing fields `meta` and `title` in initializer of `prism_mcp_rs::Prompt`
+  --> examples/features/03_prompts_api.rs:76:13
+   |
+76 |             Prompt {
+   |             ^^^^^^ missing `meta` and `title`
+
+error[E0533]: expected value, found struct variant `ResourceContents::Text`
+  --> examples/features/02_resources_api.rs:45:13
+   |
+45 |             ResourceContents::Text(TextResourceContents {
+   |             ^^^^^^^^^^^^^^^^^^^^^^ not a value
+   |
+help: you might have meant to create a new value of the struct
+   |
+45 -             ResourceContents::Text(TextResourceContents {
+46 -                 uri: "file://config.json".to_string(),
+47 -                 mime_type: Some("application/json".to_string()),
+48 -                 text: json!({
+49 -                     "app_name": "MCP Example",
+50 -                     "version": "1.0.0",
+51 -                     "features": ["resources", "tools", "prompts"]
+52 -                 }).to_string(),
+53 -             }),
+45 +             ResourceContents::Text { uri: /* value */, mime_type: /* value */, text: /* value */, meta: /* value */ },
+   |
+
+error[E0063]: missing fields `annotations`, `meta`, `size` and 1 other field in initializer of `prism_mcp_rs::Resource`
+  --> examples/features/02_resources_api.rs:60:13
+   |
+60 |             Resource {
+   |             ^^^^^^^^ missing `annotations`, `meta`, `size` and 1 other field
+
+error[E0308]: mismatched types
+  --> examples/features/04_sampling_api.rs:39:18
+   |
+39 |         content: Content::text(response),
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^ expected `SamplingContent`, found `ContentBlock`
+
+error[E0063]: missing field `meta` in initializer of `CreateMessageResult`
+  --> examples/features/04_sampling_api.rs:38:8
+   |
+38 |     Ok(CreateMessageResult {
+   |        ^^^^^^^^^^^^^^^^^^^ missing `meta`
+
+error[E0599]: no method named `description` found for struct `prism_mcp_rs::server::ServerBuilder` in the current scope
+   --> examples/features/01_mcp_tool_macro.rs:163:10
+    |
+160 |       let server = ServerBuilder::new()
+    |  __________________-
+161 | |         .name("example")
+162 | |         .version("1.0.0")
+163 | |         .description("Example server demonstrating @mcp_tool macro usage")
+    | |         -^^^^^^^^^^^ method not found in `prism_mcp_rs::server::ServerBuilder`
+    | |_________|
+    |
+
+error[E0027]: pattern does not mention field `additional_hints`
+  --> examples/features/04_sampling_api.rs:57:14
+   |
+57 |         Some(ModelHint { name: Some(name) }) => name.clone(),
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing field `additional_hints`
+   |
+help: include the missing field in the pattern
+   |
+57 |         Some(ModelHint { name: Some(name), additional_hints }) => name.clone(),
+   |                                          ++++++++++++++++++
+help: if you don't care about this missing field, you can explicitly ignore it
+   |
+57 |         Some(ModelHint { name: Some(name), additional_hints: _ }) => name.clone(),
+   |                                          +++++++++++++++++++++
+help: or always ignore missing fields here
+   |
+57 |         Some(ModelHint { name: Some(name), .. }) => name.clone(),
+   |                                          ++++
+
+error[E0061]: this function takes 1 argument but 0 arguments were supplied
+   --> examples/features/01_mcp_tool_macro.rs:164:19
+    |
+164 |         .add_tool(calculator_tool())
+    |                   ^^^^^^^^^^^^^^^-- argument #1 of type `prism_mcp_rs::prelude::Value` is missing
+    |
+note: function defined here
+   --> examples/features/01_mcp_tool_macro.rs:33:10
+    |
+33  | async fn calculator_tool(params: Value) -> Result<ToolResult> {
+    |          ^^^^^^^^^^^^^^^ -------------
+help: provide the argument
+    |
+164 |         .add_tool(calculator_tool(/* prism_mcp_rs::prelude::Value */))
+    |                                   ++++++++++++++++++++++++++++++++++
+
+error[E0533]: expected value, found struct variant `ResourceContents::Blob`
+  --> examples/features/02_resources_api.rs:69:13
+   |
+69 |             ResourceContents::Blob(BlobResourceContents {
+   |             ^^^^^^^^^^^^^^^^^^^^^^ not a value
+   |
+help: you might have meant to create a new value of the struct
+   |
+69 -             ResourceContents::Blob(BlobResourceContents {
+70 -                 uri: "file://logo.png".to_string(),
+71 -                 mime_type: Some("image/png".to_string()),
+72 -                 blob: general_purpose::STANDARD.encode(&image_data),
+73 -             }),
+69 +             ResourceContents::Blob { uri: /* value */, mime_type: /* value */, blob: /* value */, meta: /* value */ },
+   |
+
+error[E0063]: missing fields `annotations`, `meta`, `size` and 1 other field in initializer of `prism_mcp_rs::Resource`
+  --> examples/features/02_resources_api.rs:79:13
+   |
+79 |             Resource {
+   |             ^^^^^^^^ missing `annotations`, `meta`, `size` and 1 other field
+
+error[E0308]: mismatched types
+  --> examples/features/04_sampling_api.rs:79:18
+   |
+79 |         content: Content::text(response),
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^ expected `SamplingContent`, found `ContentBlock`
+
+error[E0063]: missing field `meta` in initializer of `CreateMessageResult`
+  --> examples/features/04_sampling_api.rs:78:8
+   |
+78 |     Ok(CreateMessageResult {
+   |        ^^^^^^^^^^^^^^^^^^^ missing `meta`
+
+error[E0533]: expected value, found struct variant `ResourceContents::Text`
+  --> examples/features/02_resources_api.rs:98:25
+   |
+98 |             return Some(ResourceContents::Text(TextResourceContents {
+   |                         ^^^^^^^^^^^^^^^^^^^^^^ not a value
+   |
+help: you might have meant to create a new value of the struct
+   |
+98 -             return Some(ResourceContents::Text(TextResourceContents {
+99 -                 uri: uri.to_string(),
+100-                 mime_type: Some("application/json".to_string()),
+101-                 text: json!({
+102-                     "username": username,
+103-                     "created": "2024-01-01",
+104-                     "role": "user",
+105-                     "active": true
+106-                 }).to_string(),
+107-             }));
+98 +             return Some(ResourceContents::Text { uri: /* value */, mime_type: /* value */, text: /* value */, meta: /* value */ });
+   |
+
+error[E0063]: missing fields `annotations`, `meta` and `title` in initializer of `prism_mcp_rs::ResourceTemplate`
+   --> examples/features/02_resources_api.rs:115:13
+    |
+115 |             ResourceTemplate {
+    |             ^^^^^^^^^^^^^^^^ missing `annotations`, `meta` and `title`
+
+error[E0061]: this function takes 1 argument but 0 arguments were supplied
+   --> examples/features/01_mcp_tool_macro.rs:165:19
+    |
+165 |         .add_tool(weather_tool())
+    |                   ^^^^^^^^^^^^-- argument #1 of type `prism_mcp_rs::prelude::Value` is missing
+    |
+note: function defined here
+   --> examples/features/01_mcp_tool_macro.rs:89:10
+    |
+89  | async fn weather_tool(params: Value) -> Result<ToolResult> {
+    |          ^^^^^^^^^^^^ -------------
+help: provide the argument
+    |
+165 |         .add_tool(weather_tool(/* prism_mcp_rs::prelude::Value */))
+    |                                ++++++++++++++++++++++++++++++++++
+
+error[E0061]: this function takes 1 argument but 0 arguments were supplied
+   --> examples/features/01_mcp_tool_macro.rs:166:19
+    |
+166 |         .add_tool(validate_email())
+    |                   ^^^^^^^^^^^^^^-- argument #1 of type `prism_mcp_rs::prelude::Value` is missing
+    |
+note: function defined here
+   --> examples/features/01_mcp_tool_macro.rs:135:10
+    |
+135 | async fn validate_email(params: Value) -> Result<ToolResult> {
+    |          ^^^^^^^^^^^^^^ -------------
+help: provide the argument
+    |
+166 |         .add_tool(validate_email(/* prism_mcp_rs::prelude::Value */))
+    |                                  ++++++++++++++++++++++++++++++++++
+
+error[E0433]: failed to resolve: use of undeclared type `StdioTransport`
+   --> examples/features/01_mcp_tool_macro.rs:170:21
+    |
+170 |     let transport = StdioTransport::new();
+    |                     ^^^^^^^^^^^^^^ use of undeclared type `StdioTransport`
+
+error[E0599]: no method named `description` found for struct `ServerBuilder` in the current scope
+   --> examples/features/03_prompts_api.rs:188:10
+    |
+185 |       let server = ServerBuilder::new()
+    |  __________________-
+186 | |         .name("example")
+187 | |         .version("1.0.0")
+188 | |         .description("Example server demonstrating Prompts API")
+    | |         -^^^^^^^^^^^ method not found in `ServerBuilder`
+    | |_________|
+    |
+
+Some errors have detailed explanations: E0061, E0063, E0433, E0599.
+For more information about an error, try `rustc --explain E0061`.
+error[E0599]: no method named `description` found for struct `ServerBuilder` in the current scope
+  --> examples/features/04_sampling_api.rs:92:10
+   |
+89 |       let server = ServerBuilder::new()
+   |  __________________-
+90 | |         .name("example")
+91 | |         .version("1.0.0")
+92 | |         .description("Example server demonstrating Sampling API")
+   | |         -^^^^^^^^^^^ method not found in `ServerBuilder`
+   | |_________|
+   |
+
+error[E0063]: missing field `additional_hints` in initializer of `ModelHint`
+  --> examples/features/04_sampling_api.rs:98:17
+   |
+98 |                 ModelHint {
+   |                 ^^^^^^^^^ missing `additional_hints`
+
+error[E0063]: missing field `additional_hints` in initializer of `ModelHint`
+   --> examples/features/04_sampling_api.rs:101:17
+    |
+101 |                 ModelHint {
+    |                 ^^^^^^^^^ missing `additional_hints`
+
+error[E0560]: struct `ModelPreferences` has no field named `temperature`
+   --> examples/features/04_sampling_api.rs:105:13
+    |
+105 |             temperature: Some(0.7),
+    |             ^^^^^^^^^^^ `ModelPreferences` does not have this field
+    |
+    = note: available fields are: `cost_priority`, `speed_priority`, `intelligence_priority`
+
+error[E0560]: struct `ModelPreferences` has no field named `max_tokens`
+   --> examples/features/04_sampling_api.rs:106:13
+    |
+106 |             max_tokens: Some(2048),
+    |             ^^^^^^^^^^ `ModelPreferences` does not have this field
+    |
+    = note: available fields are: `cost_priority`, `speed_priority`, `intelligence_priority`
+
+error[E0560]: struct `ModelPreferences` has no field named `stop_sequences`
+   --> examples/features/04_sampling_api.rs:107:13
+    |
+107 |             stop_sequences: Some(vec!["\n\n".to_string()]),
+    |             ^^^^^^^^^^^^^^ `ModelPreferences` does not have this field
+    |
+    = note: available fields are: `cost_priority`, `speed_priority`, `intelligence_priority`
+
+error[E0433]: failed to resolve: use of undeclared type `StdioTransport`
+   --> examples/features/04_sampling_api.rs:113:21
+    |
+113 |     let transport = StdioTransport::new();
+    |                     ^^^^^^^^^^^^^^ use of undeclared type `StdioTransport`
+
+warning: unused imports: `JsonRpcError`, `JsonRpcMessage`, `JsonRpcRequest`, `JsonRpcResponse`, and `McpServer`
+ --> examples/features/08_error_handling.rs:6:14
+  |
+6 |     server::{McpServer, ServerBuilder},
+  |              ^^^^^^^^^
+7 |     protocol::{JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, JsonRpcError},
+  |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `JsonRpcMessage`, `JsonRpcRequest`, `JsonRpcResponse`, and `McpServer`
+ --> examples/features/11_advanced_tools.rs:7:14
+  |
+7 |     server::{McpServer, ServerBuilder},
+  |              ^^^^^^^^^
+8 |     protocol::{JsonRpcMessage, JsonRpcRequest, JsonRpcResponse},
+  |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+error: could not compile `prism-mcp-rs` (example "01_mcp_tool_macro") due to 13 previous errors
+warning: build failed, waiting for other jobs to finish...
+warning: unused import: `tokio::sync::mpsc`
+  --> examples/features/11_advanced_tools.rs:12:5
+   |
+12 | use tokio::sync::mpsc;
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::Arc`
+  --> examples/features/11_advanced_tools.rs:14:5
+   |
+14 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+
+error[E0282]: type annotations needed
+  --> examples/features/11_advanced_tools.rs:23:24
+   |
+23 |         .capabilities(|caps| {
+   |                        ^^^^
+24 |             caps.tools = Some(true);
+   |             ---- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+23 |         .capabilities(|caps: /* Type */| {
+   |                            ++++++++++++
+
+warning: unused import: `Value`
+  --> examples/features/08_error_handling.rs:10:24
+   |
+10 | use serde_json::{json, Value};
+   |                        ^^^^^
+
+error[E0282]: type annotations needed
+  --> examples/features/08_error_handling.rs:32:24
+   |
+32 |         .capabilities(|caps| {
+   |                        ^^^^
+33 |             caps.tools = Some(true);
+   |             ---- type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+32 |         .capabilities(|caps: /* Type */| {
+   |                            ++++++++++++
+
+error[E0599]: no method named `description` found for struct `ServerBuilder` in the current scope
+   --> examples/features/02_resources_api.rs:133:10
+    |
+130 |       let server = ServerBuilder::new()
+    |  __________________-
+131 | |         .name("example")
+132 | |         .version("1.0.0")
+133 | |         .description("Example server demonstrating Resources API")
+    | |         -^^^^^^^^^^^ method not found in `ServerBuilder`
+    | |_________|
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `StdioTransport`
+   --> examples/features/02_resources_api.rs:166:21
+    |
+166 |     let transport = StdioTransport::new();
+    |                     ^^^^^^^^^^^^^^ use of undeclared type `StdioTransport`
+
+error[E0061]: this function takes 0 arguments but 1 argument was supplied
+   --> examples/features/09_configuration.rs:224:23
+    |
+224 |     let mut builder = ServerBuilder::new(&config.server.name)
+    |                       ^^^^^^^^^^^^^^^^^^ ------------------- unexpected argument of type `&std::string::String`
+    |
+note: associated function defined here
+   --> /Users/rishirandhawa/prismworks-ai/prism-mcp-rs/src/server/builder.rs:43:12
+    |
+43  |     pub fn new() -> Self {
+    |            ^^^
+help: remove the extra argument
+    |
+224 -     let mut builder = ServerBuilder::new(&config.server.name)
+224 +     let mut builder = ServerBuilder::new()
+    |
+
+Some errors have detailed explanations: E0027, E0063, E0308, E0432, E0433, E0560, E0599.
+For more information about an error, try `rustc --explain E0027`.
+warning: `prism-mcp-rs` (example "04_sampling_api") generated 2 warnings
+error: could not compile `prism-mcp-rs` (example "04_sampling_api") due to 13 previous errors; 2 warnings emitted
+error[E0599]: no method named `tool` found for struct `ServerBuilder` in the current scope
+   --> examples/features/11_advanced_tools.rs:26:10
+    |
+20  |       let server = ServerBuilder::new()
+    |  __________________-
+21  | |         .name("example")
+22  | |         .version("1.0.0")
+23  | |         .capabilities(|caps| {
+24  | |             caps.tools = Some(true);
+25  | |         })
+26  | |         .tool("batch_process", "Processes items in batches with progress", json!({
+    | |_________-^^^^
+    |
+help: there is a method `add_tool` with a similar name, but with different arguments
+   --> /Users/rishirandhawa/prismworks-ai/prism-mcp-rs/src/server/builder.rs:172:5
+    |
+172 |     pub fn add_tool(mut self, tool: Tool) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `tool` found for struct `ServerBuilder` in the current scope
+   --> examples/features/08_error_handling.rs:35:10
+    |
+29  |       let server = ServerBuilder::new()
+    |  __________________-
+30  | |         .name("example")
+31  | |         .version("1.0.0")
+32  | |         .capabilities(|caps| {
+33  | |             caps.tools = Some(true);
+34  | |         })
+35  | |         .tool("safe_divide", "Divides two numbers safely", json!({
+    | |_________-^^^^
+    |
+help: there is a method `add_tool` with a similar name, but with different arguments
+   --> /Users/rishirandhawa/prismworks-ai/prism-mcp-rs/src/server/builder.rs:172:5
+    |
+172 |     pub fn add_tool(mut self, tool: Tool) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0063, E0432, E0433, E0533, E0599.
+For more information about an error, try `rustc --explain E0063`.
+error[E0599]: no method named `clone` found for struct `PromptStore` in the current scope
+   --> examples/features/03_prompts_api.rs:191:38
+    |
+18  | struct PromptStore {
+    | ------------------ method `clone` not found for this struct
+...
+191 |             let store = prompt_store.clone();
+    |                                      ^^^^^ method not found in `PromptStore`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `clone`, perhaps you need to implement it:
+            candidate #1: `Clone`
+
+warning: `prism-mcp-rs` (example "02_resources_api") generated 2 warnings
+error: could not compile `prism-mcp-rs` (example "02_resources_api") due to 10 previous errors; 2 warnings emitted
+error[E0433]: failed to resolve: use of undeclared type `StdioTransport`
+   --> examples/features/08_error_handling.rs:127:21
+    |
+127 |     let transport = StdioTransport::new();
+    |                     ^^^^^^^^^^^^^^ use of undeclared type `StdioTransport`
+
+error[E0433]: failed to resolve: use of undeclared type `StdioTransport`
+   --> examples/features/11_advanced_tools.rs:172:21
+    |
+172 |     let transport = StdioTransport::new();
+    |                     ^^^^^^^^^^^^^^ use of undeclared type `StdioTransport`
+
+error[E0599]: no method named `clone` found for struct `PromptStore` in the current scope
+   --> examples/features/03_prompts_api.rs:203:38
+    |
+18  | struct PromptStore {
+    | ------------------ method `clone` not found for this struct
+...
+203 |             let store = prompt_store.clone();
+    |                                      ^^^^^ method not found in `PromptStore`
+    |
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `clone`, perhaps you need to implement it:
+            candidate #1: `Clone`
+
+error[E0433]: failed to resolve: use of undeclared type `StdioTransport`
+   --> examples/features/03_prompts_api.rs:219:21
+    |
+219 |     let transport = StdioTransport::new();
+    |                     ^^^^^^^^^^^^^^ use of undeclared type `StdioTransport`
+
+error[E0599]: no method named `description` found for struct `ServerBuilder` in the current scope
+   --> examples/features/09_configuration.rs:226:10
+    |
+224 |       let mut builder = ServerBuilder::new(&config.server.name)
+    |  _______________________-
+225 | |         .version(&config.server.version)
+226 | |         .description(&config.server.description);
+    | |         -^^^^^^^^^^^ method not found in `ServerBuilder`
+    | |_________|
+    |
+
+error[E0061]: this function takes 2 arguments but 0 arguments were supplied
+   --> examples/features/09_configuration.rs:232:36
+    |
+232 |         builder = builder.add_tool(config_info());
+    |                                    ^^^^^^^^^^^-- two arguments of type `serde_json::Value` and `AppConfig` are missing
+    |
+note: function defined here
+   --> examples/features/09_configuration.rs:188:10
+    |
+188 | async fn config_info(params: Value, config: AppConfig) -> Result<ToolResult> {
+    |          ^^^^^^^^^^^ -------------  -----------------
+help: provide the arguments
+    |
+232 |         builder = builder.add_tool(config_info(/* serde_json::Value */, /* AppConfig */));
+    |                                                ++++++++++++++++++++++++++++++++++++++++
+
+Some errors have detailed explanations: E0282, E0433, E0599.
+For more information about an error, try `rustc --explain E0282`.
+warning: `prism-mcp-rs` (example "08_error_handling") generated 2 warnings
+error: could not compile `prism-mcp-rs` (example "08_error_handling") due to 3 previous errors; 2 warnings emitted
+warning: unused variable: `count`
+   --> examples/features/11_advanced_tools.rs:206:13
+    |
+206 |     let mut count = 0;
+    |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_count`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `depth`
+   --> examples/features/11_advanced_tools.rs:207:13
+    |
+207 |     let mut depth = 0;
+    |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_depth`
+
+error[E0308]: mismatched types
+   --> examples/features/09_configuration.rs:233:35
+    |
+233 |         capabilities.tools = Some(true);
+    |                              ---- ^^^^ expected `ToolsCapability`, found `bool`
+    |                              |
+    |                              arguments to this enum variant are incorrect
+    |
+help: the type constructed contains `bool` due to the type of the argument passed
+   --> examples/features/09_configuration.rs:233:30
+    |
+233 |         capabilities.tools = Some(true);
+    |                              ^^^^^----^
+    |                                   |
+    |                                   this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library/core/src/option.rs:599:5
+
+warning: variable does not need to be mutable
+   --> examples/features/11_advanced_tools.rs:206:9
+    |
+206 |     let mut count = 0;
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+   --> examples/features/11_advanced_tools.rs:207:9
+    |
+207 |     let mut depth = 0;
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+
+error[E0308]: mismatched types
+   --> examples/features/09_configuration.rs:237:39
+    |
+237 |         capabilities.resources = Some(true);
+    |                                  ---- ^^^^ expected `ResourcesCapability`, found `bool`
+    |                                  |
+    |                                  arguments to this enum variant are incorrect
+    |
+help: the type constructed contains `bool` due to the type of the argument passed
+   --> examples/features/09_configuration.rs:237:34
+    |
+237 |         capabilities.resources = Some(true);
+    |                                  ^^^^^----^
+    |                                       |
+    |                                       this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library/core/src/option.rs:599:5
+
+Some errors have detailed explanations: E0063, E0432, E0433, E0599.
+error[E0308]: mismatched types
+   --> examples/features/09_configuration.rs:241:37
+    |
+241 |         capabilities.prompts = Some(true);
+    |                                ---- ^^^^ expected `PromptsCapability`, found `bool`
+    |                                |
+    |                                arguments to this enum variant are incorrect
+    |
+help: the type constructed contains `bool` due to the type of the argument passed
+   --> examples/features/09_configuration.rs:241:32
+    |
+241 |         capabilities.prompts = Some(true);
+    |                                ^^^^^----^
+    |                                     |
+    |                                     this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library/core/src/option.rs:599:5
+
+error[E0308]: mismatched types
+   --> examples/features/09_configuration.rs:245:38
+    |
+245 |         capabilities.sampling = Some(true);
+    |                                 ---- ^^^^ expected `SamplingCapability`, found `bool`
+    |                                 |
+    |                                 arguments to this enum variant are incorrect
+    |
+help: the type constructed contains `bool` due to the type of the argument passed
+   --> examples/features/09_configuration.rs:245:33
+    |
+245 |         capabilities.sampling = Some(true);
+    |                                 ^^^^^----^
+    |                                      |
+    |                                      this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/29483883eed69d5fb4db01964cdf2af4d86e9cb2/library/core/src/option.rs:599:5
+
+warning: `prism-mcp-rs` (example "03_prompts_api") generated 2 warnings
+error: could not compile `prism-mcp-rs` (example "03_prompts_api") due to 16 previous errors; 2 warnings emitted
+warning: `prism-mcp-rs` (example "11_advanced_tools") generated 7 warnings
+error: could not compile `prism-mcp-rs` (example "11_advanced_tools") due to 3 previous errors; 7 warnings emitted
+Some errors have detailed explanations: E0061, E0063, E0308, E0425, E0432, E0599.
+warning: `prism-mcp-rs` (example "09_configuration") generated 1 warning
+error: could not compile `prism-mcp-rs` (example "09_configuration") due to 10 previous errors; 1 warning emitted

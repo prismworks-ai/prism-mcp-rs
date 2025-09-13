@@ -1,7 +1,7 @@
-// ! Production-grade convenience methods for HttpClientTransport
-// !
-// ! Module extends the basic HttpClientTransport with high-level convenience
-// ! methods expected in a production SDK.
+//! Production-grade convenience methods for HttpClientTransport
+//!
+//! Module extends the basic HttpClientTransport with high-level convenience
+//! methods expected in a production SDK.
 
 use std::collections::HashMap;
 use std::sync::atomic::AtomicU64;

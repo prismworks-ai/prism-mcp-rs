@@ -1,4 +1,4 @@
-// ! Comprehensive tests for plugin modules to achieve 90% coverage
+//! Comprehensive tests for plugin modules to achieve 90% coverage
 
 #[cfg(test)]
 mod tests {

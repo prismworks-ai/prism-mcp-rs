@@ -1,7 +1,7 @@
-// ! Discovery handler for the RPC discovery mechanism
-// !
-// ! Module provides the handler for the `rpc.discover` method, allowing
-// ! clients to introspect server capabilities and available methods at runtime.
+//! Discovery handler for the RPC discovery mechanism
+//!
+//! Module provides the handler for the `rpc.discover` method, allowing
+//! clients to introspect server capabilities and available methods at runtime.
 
 use serde_json::Value;
 use std::collections::HashMap;

@@ -1,7 +1,7 @@
-// ! STDIO transport implementation for MCP
-// !
-// ! Module provides STDIO-based transport for MCP communication,
-// ! which is commonly used for command-line tools and process communication.
+//! STDIO transport implementation for MCP
+//!
+//! Module provides STDIO-based transport for MCP communication,
+//! which is commonly used for command-line tools and process communication.
 
 use async_trait::async_trait;
 use serde_json::Value;

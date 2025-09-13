@@ -1,4 +1,4 @@
-// ! Tests for the plugin manager module
+//! Tests for the plugin manager module
 
 #[cfg(test)]
 mod tests {

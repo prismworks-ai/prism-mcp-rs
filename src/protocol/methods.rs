@@ -1,7 +1,7 @@
-// ! MCP Protocol Method Constants
-// !
-// ! Module contains all the method name constants used in the MCP protocol
-// ! as defined in the 2025-03-26 specification.
+//! MCP Protocol Method Constants
+//!
+//! Module contains all the method name constants used in the MCP protocol
+//! as defined in the 2025-03-26 specification.
 
 // Core protocol methods
 pub const INITIALIZE: &str = "initialize";

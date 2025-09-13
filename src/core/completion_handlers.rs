@@ -1,16 +1,16 @@
-// ! Practical completion handlers for common MCP use cases
-// !
-// ! Module provides ready-to-use completion handlers that servers can use
-// ! to provide smart autocompletion for prompts, tools, and resources.
-// ! These handlers implement the CompletionHandler trait and can be easily
-// ! integrated into any MCP server.
-// !
-// ! # Features
-// ! - File path completion for resource URIs
-// ! - Prompt argument completion with fuzzy matching
-// ! - Tool parameter completion based on schema
-// ! - Database-backed completion with caching
-// ! - Custom completion with validation
+//! Practical completion handlers for common MCP use cases
+//!
+//! Module provides ready-to-use completion handlers that servers can use
+//! to provide smart autocompletion for prompts, tools, and resources.
+//! These handlers implement the CompletionHandler trait and can be easily
+//! integrated into any MCP server.
+//!
+//! # Features
+//! - File path completion for resource URIs
+//! - Prompt argument completion with fuzzy matching
+//! - Tool parameter completion based on schema
+//! - Database-backed completion with caching
+//! - Custom completion with validation
 
 use crate::core::{
     completion::{CompletionContext, CompletionHandler},

@@ -18,6 +18,9 @@ exclude = [
     "examples/",
     "docs/",
     "reports/",
+    ".edit_backups/",
+    "**/*.bak",
+    "**/~*",
     "Makefile",
     ".gitignore",
     "CONTRIBUTING.md",
@@ -145,29 +148,13 @@ tracing-subscriber = []  # Tracing subscriber feature
 
 # Examples
 [[example]]
-name = "advanced_2025_features"
-path = "examples/advanced_2025_features.rs"
+name = "bidirectional_basic"
+path = "examples/bidirectional_basic.rs"
 required-features = ["stdio"]
 
 [[example]]
-name = "advanced_features_showcase"
-path = "examples/advanced_features_showcase.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "bidirectional"
-path = "examples/bidirectional.rs"
-required-features = ["stdio"]
-
-[[example]]
-name = "bidirectional_communication_demo"
-path = "examples/bidirectional_communication_demo.rs"
-required-features = ["stdio"]
-
-
-[[example]]
-name = "convenience_methods_demo"
-path = "examples/convenience_methods_demo.rs"
+name = "closure_handlers"
+path = "examples/closure_handlers.rs"
 required-features = ["stdio"]
 
 [[example]]
@@ -175,25 +162,70 @@ name = "custom_transport"
 path = "examples/custom_transport.rs"
 required-features = ["stdio"]
 
+# Feature examples
 [[example]]
-name = "sse_showcase"
-path = "examples/sse_showcase.rs"
-required-features = ["sse"]
-
-[[example]]
-name = "http2_showcase"
-path = "examples/http2_showcase.rs"
-required-features = ["http2"]
-
-[[example]]
-name = "chunked_encoding_showcase"
-path = "examples/chunked_encoding_showcase.rs"
-required-features = ["chunked-encoding"]
-
-[[example]]
-name = "transport_selection_guide"
-path = "examples/transport_selection_guide.rs"
+name = "01_mcp_tool_macro"
+path = "examples/features/01_mcp_tool_macro.rs"
 required-features = ["stdio"]
+
+[[example]]
+name = "02_resources_api"
+path = "examples/features/02_resources_api.rs"
+required-features = ["stdio"]
+
+[[example]]
+name = "03_prompts_api"
+path = "examples/features/03_prompts_api.rs"
+required-features = ["stdio"]
+
+[[example]]
+name = "04_sampling_api"
+path = "examples/features/04_sampling_api.rs"
+required-features = ["stdio"]
+
+[[example]]
+name = "05_http_transport"
+path = "examples/features/05_http_transport.rs"
+required-features = ["http"]
+
+[[example]]
+name = "06_websocket_transport"
+path = "examples/features/06_websocket_transport.rs"
+required-features = ["websocket"]
+
+[[example]]
+name = "07_authentication"
+path = "examples/features/07_authentication.rs"
+required-features = ["http", "auth"]
+
+[[example]]
+name = "08_error_handling"
+path = "examples/features/08_error_handling.rs"
+required-features = ["stdio"]
+
+[[example]]
+name = "09_configuration"
+path = "examples/features/09_configuration.rs"
+required-features = ["stdio"]
+
+[[example]]
+name = "10_plugin_system"
+path = "examples/features/10_plugin_system.rs"
+required-features = ["stdio", "plugin"]
+
+[[example]]
+name = "11_advanced_tools"
+path = "examples/features/11_advanced_tools.rs"
+required-features = ["stdio"]
+
+[[example]]
+name = "12_integration_patterns"
+path = "examples/features/12_integration_patterns.rs"
+
+[[example]]
+name = "fixed_example"
+path = "examples/basic/fixed_example.rs"
+required-features = ["http"]
 
 # Benchmark utilities (run with: cargo run --bin <benchmark_name> --features bench)
 # Also supports standard cargo bench for CI/CD compatibility

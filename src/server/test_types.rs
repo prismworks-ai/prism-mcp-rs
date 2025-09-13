@@ -1,4 +1,4 @@
-// ! Additional server lifecycle types for complete testing
+//! Additional server lifecycle types for complete testing
 
 #![cfg(not(coverage))]
 #![allow(unexpected_cfgs)]

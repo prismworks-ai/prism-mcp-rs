@@ -1,8 +1,8 @@
-// ! improved Schema Introspection for MCP Protocol (2025-06-18)
-// !
-// ! Module provides complete schema introspection capabilities,
-// ! allowing clients to discover the full structure and capabilities of
-// ! the MCP server at runtime
+//! improved Schema Introspection for MCP Protocol (2025-06-18)
+//!
+//! Module provides complete schema introspection capabilities,
+//! allowing clients to discover the full structure and capabilities of
+//! the MCP server at runtime
 
 use crate::protocol::discovery::*;
 use crate::protocol::types::*;

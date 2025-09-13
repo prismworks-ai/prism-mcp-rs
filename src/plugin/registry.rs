@@ -1,6 +1,6 @@
-// ! Tool registry for managing plugin tools
-// !
-// ! Module maintains a registry of all tools provided by plugins.
+//! Tool registry for managing plugin tools
+//!
+//! Module maintains a registry of all tools provided by plugins.
 
 use crate::core::error::{McpError, McpResult};
 use crate::plugin::{PluginError, PluginResult, ToolPlugin, ToolResult};

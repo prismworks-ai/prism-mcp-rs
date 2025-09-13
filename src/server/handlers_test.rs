@@ -1,4 +1,4 @@
-// ! complete tests for server handlers
+//! complete tests for server handlers
 
 #[cfg(test)]
 mod tests {

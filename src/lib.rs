@@ -6,7 +6,7 @@
 //! A comprehensive Rust SDK for the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 //! version 2025-06-18, providing both server and client implementations with MCP specification
 //! compliance including audio content, annotations, and improved capabilities.
-// !
+//!
 //! ## Features
 //!
 //! - ⚡ **High Performance**: Built with Rust's zero-cost abstractions and async/await
@@ -18,7 +18,7 @@
 //! - 🏷️ **Annotations**: NEW in 2025-06-18 - Tool and content annotations for improved metadata
 //! - 💡 **Autocompletion**: NEW in 2025-06-18 - Argument autocompletion capabilities
 //! - 📁 **Roots Support**: NEW in 2025-06-18 - File system roots for improved resource access
-// !
+//!
 //! ## Quick Start
 //!
 //! The easiest way to get started is with the prelude module:
@@ -90,7 +90,8 @@
 //!     // Create a client
 //!     let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
 //!     
-//!     // Set up transport (stdio feature required)
+//!     // Set up transport - requires "stdio" feature in Cargo.toml:
+//!     // prism-mcp-rs = { version = "*", features = ["stdio"] }
 //!     #[cfg(feature = "stdio")]
 //!     {
 //!         use prism_mcp_rs::transport::StdioClientTransport;
@@ -172,7 +173,7 @@ pub mod prelude {
         CompletionHandler, PromptCompletionHandler, ResourceUriCompletionHandler,
     };
     pub use crate::core::completion_handlers::{
-        CompositeCompletionHandler as completeCompositeCompletionHandler,
+        CompositeCompletionHandler as ExtendedCompositeCompletionHandler,
         FileSystemCompletionHandler, FuzzyCompletionHandler, SchemaCompletionHandler,
     };
 

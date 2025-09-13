@@ -1,7 +1,7 @@
-// ! Token Management and Refresh
-// !
-// ! Module handles access token management, including automatic refresh
-// ! when tokens expire
+//! Token Management and Refresh
+//!
+//! Module handles access token management, including automatic refresh
+//! when tokens expire
 
 use reqwest::Client;
 use std::sync::Arc;

@@ -35,6 +35,8 @@
 //! ```no_run
 //! # #[cfg(feature = "http")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! // Requires "http" feature in Cargo.toml:
+//! // prism-mcp-rs = { version = "*", features = ["http"] }
 //! use prism_mcp_rs::transport::HttpServerTransport;
 //!
 //! // HttpServerTransport takes a bind address directly
@@ -48,6 +50,8 @@
 //! ```no_run
 //! # #[cfg(feature = "websocket")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! // Requires "websocket" feature in Cargo.toml:
+//! // prism-mcp-rs = { version = "*", features = ["websocket"] }
 //! use prism_mcp_rs::transport::WebSocketServerTransport;
 //!
 //! // WebSocketServerTransport uses new() method, not bind()
@@ -70,10 +74,12 @@
 //! # Advanced Features
 //!
 //! - **Authentication**: HTTP transport supports various auth mechanisms
-//! - **Compression**: Streaming HTTP supports gzip/deflate
+//! - **Compression**: Streaming HTTP supports gzip/brotli/zstd (requires "compression" feature)
+//! - **Chunked Encoding**: For large payloads and streaming data (requires "chunked-encoding" feature)
+//! - **Server-Sent Events**: Real-time notifications (requires "sse" feature)
 //! - **Reconnection**: Automatic reconnection with backoff
 //! - **Metrics**: Performance monitoring and statistics
-//! - **HTTP/2**: Multiplexed streaming support
+//! - **HTTP/2**: Multiplexed streaming support (requires "http2" feature)
 //!
 //! # Implementation Note
 //!

@@ -1,8 +1,8 @@
-// ! PKCE (Proof Key for Code Exchange) Implementation
-// !
-// ! Module implements PKCE as defined in RFC 7636 for OAuth 2.1.
-// ! PKCE is mandatory for MCP authorization to prevent authorization code
-// ! interception attacks
+//! PKCE (Proof Key for Code Exchange) Implementation
+//!
+//! Module implements PKCE as defined in RFC 7636 for OAuth 2.1.
+//! PKCE is mandatory for MCP authorization to prevent authorization code
+//! interception attacks
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use rand::Rng;

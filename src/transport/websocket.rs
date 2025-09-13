@@ -1,7 +1,7 @@
-// ! WebSocket transport implementation for MCP
-// !
-// ! Module provides WebSocket-based transport for MCP communication,
-// ! offering bidirectional, real-time communication between clients and servers.
+//! WebSocket transport implementation for MCP
+//!
+//! Module provides WebSocket-based transport for MCP communication,
+//! offering bidirectional, real-time communication between clients and servers.
 
 use async_trait::async_trait;
 use futures::{SinkExt, StreamExt};

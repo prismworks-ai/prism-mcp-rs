@@ -1,7 +1,7 @@
-// ! Roots Types for MCP Protocol (2025-06-18)
-// !
-// ! Module provides the Roots feature types for file system access,
-// ! allowing servers to request access to specific directories or files.
+//! Roots Types for MCP Protocol (2025-06-18)
+//!
+//! Module provides the Roots feature types for file system access,
+//! allowing servers to request access to specific directories or files.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

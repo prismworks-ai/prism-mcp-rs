@@ -1,6 +1,6 @@
-// ! Missing Types Module for Test Compatibility
-// !
-// ! Module provides all the missing types needed by the complete test suite.
+//! Missing Types Module for Test Compatibility
+//!
+//! Module provides all the missing types needed by the complete test suite.
 
 // Module provides additional types needed for compatibility
 

@@ -1,7 +1,7 @@
-// ! Metrics collection for the MCP SDK
-// !
-// ! Module provides structured metrics collection for error tracking,
-// ! performance monitoring, and operational insights.
+//! Metrics collection for the MCP SDK
+//!
+//! Module provides structured metrics collection for error tracking,
+//! performance monitoring, and operational insights.
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};

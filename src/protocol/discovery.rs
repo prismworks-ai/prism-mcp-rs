@@ -1,8 +1,8 @@
-// ! RPC Discovery Module for MCP Protocol
-// !
-// ! Module implements the optional `rpc.discover` mechanism that allows clients
-// ! to dynamically discover available methods, their parameters, and capabilities.
-// ! This enables introspection of the MCP server's capabilities at runtime.
+//! RPC Discovery Module for MCP Protocol
+//!
+//! Module implements the optional `rpc.discover` mechanism that allows clients
+//! to dynamically discover available methods, their parameters, and capabilities.
+//! This enables introspection of the MCP server's capabilities at runtime.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

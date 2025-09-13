@@ -1,11 +1,11 @@
-// ! improved Tool Metadata System
-// !
-// ! Module provides complete metadata features for MCP tools including:
-// ! - Tool behavior hints (readOnly, destructive, idempotent)
-// ! - Tool categorization and tagging
-// ! - Discovery and filtering capabilities
-// ! - Performance metrics and tracking
-// ! - Deprecation warnings and versioning
+//! improved Tool Metadata System
+//!
+//! Module provides complete metadata features for MCP tools including:
+//! - Tool behavior hints (readOnly, destructive, idempotent)
+//! - Tool categorization and tagging
+//! - Discovery and filtering capabilities
+//! - Performance metrics and tracking
+//! - Deprecation warnings and versioning
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

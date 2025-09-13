@@ -1,6 +1,6 @@
-// ! File system watcher for plugin hot reload
-// !
-// ! Module watches plugin files for changes and triggers automatic reloads.
+//! File system watcher for plugin hot reload
+//!
+//! Module watches plugin files for changes and triggers automatic reloads.
 
 use crate::plugin::{PluginError, PluginManager, PluginResult};
 use notify::event::{CreateKind, ModifyKind, RemoveKind};

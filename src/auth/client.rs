@@ -1,8 +1,8 @@
-// ! OAuth 2.1 Authorization Client
-// !
-// ! Module provides the main authorization client for MCP,
-// ! handling the full OAuth 2.1 flow including discovery, registration,
-// ! and token management
+//! OAuth 2.1 Authorization Client
+//!
+//! Module provides the main authorization client for MCP,
+//! handling the full OAuth 2.1 flow including discovery, registration,
+//! and token management
 
 use reqwest::Client;
 use std::sync::Arc;

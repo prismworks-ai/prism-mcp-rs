@@ -1,6 +1,6 @@
-// ! Plugin configuration management
-// !
-// ! Module handles plugin configuration files and manifests.
+//! Plugin configuration management
+//!
+//! Module handles plugin configuration files and manifests.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

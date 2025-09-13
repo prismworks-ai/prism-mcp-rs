@@ -29,30 +29,20 @@ pub trait ToolHandler: Send + Sync {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult>;
 }
 
-/// Simple function-based tool handler for testing and simple use cases
-pub struct SimpleTool<F>
-where
-    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync,
-{
-    handler: F,
-}
+// ============================================================================
+// Flexible tool handler creation support
+// ============================================================================
 
-impl<F> SimpleTool<F>
-where
-    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync,
-{
-    pub fn new(handler: F) -> Self {
-        Self { handler }
-    }
-}
+// Wrapper to convert closures to ToolHandler
+pub struct ClosureWrapper<F>(pub F);
 
 #[async_trait]
-impl<F> ToolHandler for SimpleTool<F>
+impl<F> ToolHandler for ClosureWrapper<F>
 where
-    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync + 'static,
+    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync,
 {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        let content = (self.handler)(&arguments)?;
+        let content = (self.0)(&arguments)?;
         Ok(ToolResult {
             content,
             is_error: Some(false),
@@ -60,6 +50,19 @@ where
             structured_content: None,
         })
     }
+}
+
+/// Extension to create tools with closures
+pub fn closure_tool<F>(
+    name: String,
+    description: Option<String>,
+    input_schema: Value,
+    handler: F,
+) -> Tool
+where
+    F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync + 'static,
+{
+    Tool::new(name, description, input_schema, ClosureWrapper(handler))
 }
 
 /// A registered tool with its handler, validation, and improved metadata
@@ -422,16 +425,18 @@ impl std::fmt::Debug for Tool {
 /// ```
 #[macro_export]
 macro_rules! tool {
-    ($name:expr_2021, $schema:expr_2021, $handler:expr_2021) => {
-        $crate::core::tool::Tool::new($name.to_string(), None, $schema, $handler)
-    };
-    ($name:expr_2021, $description:expr_2021, $schema:expr_2021, $handler:expr_2021) => {
+    // New 4-parameter signature (aligned with current API)
+    ($name:expr, $description:expr, $schema:expr, $handler:expr) => {
         $crate::core::tool::Tool::new(
             $name.to_string(),
             Some($description.to_string()),
             $schema,
             $handler,
         )
+    };
+    // Legacy 3-parameter signature with None description
+    ($name:expr, $schema:expr, $handler:expr) => {
+        $crate::core::tool::Tool::new($name.to_string(), None, $schema, $handler)
     };
 }
 
@@ -808,25 +813,26 @@ impl ToolHandler for ValidationChainTool {
 #[macro_export]
 macro_rules! validated_tool {
     (
-        name: $name:expr_2021,
-        description: $desc:expr_2021,
+        name: $name:expr,
+        description: $desc:expr,
         parameters: {
-            $( $param_name:ident: $param_type:ident $( ( $( $constraint:ident: $value:expr_2021 ),* ) )? ),*
+            $( $param_name:ident: $param_type:ident $( ( $( $constraint:ident: $value:expr ),* ) )? ),*
         },
-        handler: $handler:expr_2021
+        handler: $handler:expr
     ) => {{
         use $crate::core::validation::{create_tool_schema, param_schema};
 
         let params = vec![
             $(
                 {
-                    let base_schema = param_schema!($param_type stringify!($param_name));
-                    // Apply constraints if any
                     $(
-                        // This would need more complex macro expansion for constraints
-                        // For now, we'll use the base schema
+                        // With constraints
+                        param_schema!($param_type stringify!($param_name), $( $constraint: $value ),*)
                     )?
-                    base_schema
+                    $(
+                        // Without constraints (fallback)
+                        param_schema!($param_type stringify!($param_name))
+                    )?
                 }
             ),*
         ];
@@ -1099,7 +1105,7 @@ impl ValidatedToolHandler for TextProcessorTool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Content;
+
     use serde_json::json;
 
     #[tokio::test]
@@ -1110,7 +1116,7 @@ mod tests {
 
         let result = tool.call(args).await.unwrap();
         match &result.content[0] {
-            Content::Text { text, .. } => assert_eq!(text, "test message"),
+            ContentBlock::Text { text, .. } => assert_eq!(text, "test message"),
             _ => panic!("Expected text content"),
         }
     }
@@ -1124,7 +1130,7 @@ mod tests {
 
         let result = tool.call(args).await.unwrap();
         match &result.content[0] {
-            Content::Text { text, .. } => assert_eq!(text, "8"),
+            ContentBlock::Text { text, .. } => assert_eq!(text, "8"),
             _ => panic!("Expected text content"),
         }
     }

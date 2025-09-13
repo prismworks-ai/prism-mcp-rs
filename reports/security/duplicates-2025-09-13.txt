@@ -1,0 +1,74 @@
+env_logger v0.8.4
+└── quickcheck v1.0.3
+    [dev-dependencies]
+    └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+
+env_logger v0.11.8
+└── test-log v0.2.18
+    [dev-dependencies]
+    └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+[dev-dependencies]
+└── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+
+getrandom v0.2.16
+└── rand_core v0.6.4
+    └── rand v0.8.5
+        └── quickcheck v1.0.3 (*)
+
+getrandom v0.3.3
+├── rand_core v0.9.3
+│   ├── rand v0.9.2
+│   │   ├── fake v4.4.0
+│   │   │   [dev-dependencies]
+│   │   │   └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+│   │   ├── mockito v1.7.0
+│   │   │   [dev-dependencies]
+│   │   │   └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+│   │   ├── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+│   │   └── proptest v1.7.0
+│   │       [dev-dependencies]
+│   │       └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+│   ├── rand_chacha v0.9.0
+│   │   ├── proptest v1.7.0 (*)
+│   │   └── rand v0.9.2 (*)
+│   └── rand_xorshift v0.4.0
+│       └── proptest v1.7.0 (*)
+├── tempfile v3.22.0
+│   ├── proptest v1.7.0 (*)
+│   └── rusty-fork v0.3.0
+│       └── proptest v1.7.0 (*)
+│   [dev-dependencies]
+│   └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+└── uuid v1.18.1
+    └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+
+hashbrown v0.14.5
+└── dashmap v6.1.0
+    └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+
+hashbrown v0.15.5
+└── indexmap v2.11.1
+    ├── h2 v0.4.12
+    │   └── hyper v1.7.0
+    │       ├── hyper-util v0.1.16
+    │       │   ├── mockito v1.7.0 (*)
+    │       │   └── wiremock v0.6.5
+    │       │       [dev-dependencies]
+    │       │       └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+    │       ├── mockito v1.7.0 (*)
+    │       └── wiremock v0.6.5 (*)
+    ├── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+    └── toml_edit v0.22.27
+        └── proc-macro-crate v3.3.0
+            └── rstest_macros v0.26.1 (proc-macro)
+                └── rstest v0.26.1
+                    [dev-dependencies]
+                    └── prism-mcp-rs v1.0.0 (/Users/rishirandhawa/prismworks-ai/prism-mcp-rs)
+
+rand v0.8.5 (*)
+
+rand v0.9.2 (*)
+
+rand_core v0.6.4 (*)
+
+rand_core v0.9.3 (*)

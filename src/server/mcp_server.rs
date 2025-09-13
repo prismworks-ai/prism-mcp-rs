@@ -1,8 +1,18 @@
-// ! MCP server implementation
-// !
-// ! Module provides the main MCP server implementation that handles client connections,
-// ! manages resources, tools, and prompts, and processes JSON-RPC requests according to
-// ! the Model Context Protocol specification.
+//! MCP server implementation
+//!
+//! Module provides the main MCP server implementation that handles client connections,
+//! manages resources, tools, and prompts, and processes JSON-RPC requests according to
+//! the Model Context Protocol specification.
+//!
+//! # Plugin System Feature
+//!
+//! To use the plugin system, enable the plugin feature in `Cargo.toml`:
+//! ```toml
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["plugin"] }
+//! ```
+//!
+//! This enables dynamic tool loading and plugin management capabilities.
 
 use serde_json::Value;
 use std::collections::HashMap;
@@ -24,6 +34,9 @@ use crate::transport::traits::ServerTransport;
 use crate::plugin::PluginManager;
 #[cfg(feature = "plugin")]
 use async_trait::async_trait;
+
+// Import ClosureWrapper from tool module for closure support
+use crate::core::tool::ClosureWrapper;
 
 // Plugin tool handler wrapper
 #[cfg(feature = "plugin")]
@@ -351,7 +364,14 @@ impl McpServer {
         self
     }
 
-    /// Add a tool to the server with ergonomic string parameters
+    /// Add a tool to the server with a ToolHandler implementation
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// // With a ToolHandler implementation
+    /// server.add_tool("my_tool", Some("description"), json!({}), MyToolHandler).await?;
+    /// ```
     pub async fn add_tool<H>(
         &self,
         name: impl Into<String>,
@@ -367,6 +387,31 @@ impl McpServer {
         let tool = Tool::new(name.clone(), description, input_schema, handler);
         self.tools.write().await.insert(name, tool);
         Ok(())
+    }
+
+    /// Add a tool using a closure
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// server.add_tool_with_closure("echo", Some("Echo tool"), json!({}), |args| {
+    ///     Ok(vec![ContentBlock::text("Echo!")])
+    /// }).await?;
+    /// ```
+    pub async fn add_tool_with_closure<F>(
+        &self,
+        name: impl Into<String>,
+        description: Option<impl Into<String>>,
+        input_schema: Value,
+        handler: F,
+    ) -> McpResult<()>
+    where
+        F: Fn(&HashMap<String, Value>) -> McpResult<Vec<ContentBlock>> + Send + Sync + 'static,
+    {
+        let name = name.into();
+        let description = description.map(|d| d.into());
+        self.add_tool(name, description, input_schema, ClosureWrapper(handler))
+            .await
     }
 
     /// Add a tool using the ToolBuilder result
@@ -996,33 +1041,9 @@ impl McpServer {
         self.stop().await
     }
 
-    /// Start server with HTTP transport and run until interrupted (convenience method)
-    ///
-    /// This is a convenience method that:
-    /// 1. Creates an HTTP transport bound to the specified address
-    /// 2. Starts the server
-    /// 3. Waits for Ctrl+C signal
-    /// 4. smoothly shuts down the server
-    ///
-    /// # Arguments
-    /// * `bind_addr` - The address to bind the HTTP server to (e.g., "127.0.0.1:3000")
-    ///
-    /// # Example
-    /// ```rust,no_run
-    /// use prism_mcp_rs::prelude::*;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> McpResult<()> {
-    /// let mut server = McpServer::new("my-server".to_string(), "1.0.0".to_string());
-    /// // . add tools, resources, prompts ...
-    /// server.run_with_http("127.0.0.1:3000").await
-    /// }
-    /// ```
-
     // ========================================================================
     // Request Handling
     // ========================================================================
-
     /// Handle an incoming JSON-RPC request
     pub async fn handle_request(&self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
         // Validate the request if configured to do so

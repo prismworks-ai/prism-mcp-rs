@@ -1,7 +1,17 @@
-// ! HTTP transport implementation for MCP
-// !
-// ! Module provides HTTP-based transport for MCP communication,
-// ! including Server-Sent Events (SSE) for real-time communication.
+//! HTTP transport implementation for MCP
+//!
+//! Module provides HTTP-based transport for MCP communication,
+//! including Server-Sent Events (SSE) for real-time communication.
+//!
+//! ## Feature Requirements
+//!
+//! - Basic HTTP transport: Requires "http" feature
+//! - Server-Sent Events: Requires both "http" and "sse" features
+//!
+//! ```toml
+//! # Cargo.toml
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["http", "sse"] }
 
 use async_trait::async_trait;
 use axum::{

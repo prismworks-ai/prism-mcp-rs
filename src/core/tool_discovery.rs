@@ -1,8 +1,8 @@
-// ! Tool Discovery and Management System
-// !
-// ! Module provides complete tool discovery, filtering, and management capabilities
-// ! based on the improved metadata system. It allows smart tool selection,
-// ! categorization, performance monitoring, and lifecycle management.
+//! Tool Discovery and Management System
+//!
+//! Module provides complete tool discovery, filtering, and management capabilities
+//! based on the improved metadata system. It allows smart tool selection,
+//! categorization, performance monitoring, and lifecycle management.
 
 use crate::core::error::{McpError, McpResult};
 use crate::core::tool::Tool;

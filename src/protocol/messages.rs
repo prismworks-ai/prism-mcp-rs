@@ -1,7 +1,7 @@
-// ! MCP Protocol Messages
-// !
-// ! Module defines all protocol message types used in MCP communication,
-// ! aligned with the 2025-03-26 specification.
+//! MCP Protocol Messages
+//!
+//! Module defines all protocol message types used in MCP communication,
+//! aligned with the 2025-03-26 specification.
 
 use crate::protocol::types::*;
 use serde::{Deserialize, Serialize};

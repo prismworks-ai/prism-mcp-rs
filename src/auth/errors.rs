@@ -1,6 +1,6 @@
-// ! Authorization Error Types
-// !
-// ! Module defines error types specific to the OAuth 2.1 authorization flow.
+//! Authorization Error Types
+//!
+//! Module defines error types specific to the OAuth 2.1 authorization flow.
 
 use std::fmt;
 

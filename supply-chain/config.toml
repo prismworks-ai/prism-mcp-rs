@@ -155,7 +155,7 @@ version = "0.3.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.cc]]
-version = "1.2.36"
+version = "1.2.37"
 criteria = "safe-to-deploy"
 
 [[exemptions.cfg-if]]
@@ -475,7 +475,7 @@ version = "0.1.16"
 criteria = "safe-to-deploy"
 
 [[exemptions.iana-time-zone]]
-version = "0.1.63"
+version = "0.1.64"
 criteria = "safe-to-deploy"
 
 [[exemptions.iana-time-zone-haiku]]
@@ -903,7 +903,7 @@ version = "1.12.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.rustls-webpki]]
-version = "0.103.4"
+version = "0.103.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.rustversion]]
@@ -1263,7 +1263,7 @@ version = "0.1.11"
 criteria = "safe-to-deploy"
 
 [[exemptions.windows-core]]
-version = "0.61.2"
+version = "0.62.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.windows-implement]]
@@ -1283,11 +1283,11 @@ version = "0.2.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.windows-result]]
-version = "0.3.4"
+version = "0.4.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.windows-strings]]
-version = "0.4.2"
+version = "0.5.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.windows-sys]]

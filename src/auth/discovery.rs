@@ -1,8 +1,8 @@
-// ! Authorization Server Discovery
-// !
-// ! Module implements discovery mechanisms for OAuth 2.0 authorization servers
-// ! including Protected Resource Metadata (RFC 9728), Authorization Server Metadata
-// ! (RFC 8414), and OpenID Connect Discovery.
+//! Authorization Server Discovery
+//!
+//! Module implements discovery mechanisms for OAuth 2.0 authorization servers
+//! including Protected Resource Metadata (RFC 9728), Authorization Server Metadata
+//! (RFC 8414), and OpenID Connect Discovery.
 
 use reqwest::Client;
 use url::Url;

@@ -1,7 +1,7 @@
-// ! MCP server request handlers
-// !
-// ! Module provides specialized handlers for different types of MCP requests,
-// ! implementing the business logic for each protocol operation.
+//! MCP server request handlers
+//!
+//! Module provides specialized handlers for different types of MCP requests,
+//! implementing the business logic for each protocol operation.
 
 use serde_json::Value;
 use std::collections::HashMap;

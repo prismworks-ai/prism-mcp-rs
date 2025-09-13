@@ -1,17 +1,50 @@
-// ! Advanced HTTP Transport Features
-// !
-// ! This module provides advanced HTTP transport capabilities:
-// ! - Chunked transfer encoding for large payloads (chunked-encoding feature)
-// ! - Response compression: Gzip, Brotli, Zstd (compression feature)
-// ! - HTTP/2 protocol support with multiplexing (http2 feature)
-// ! - Intelligent content analysis and adaptive strategies
-// ! - Backpressure and flow control
-// !
-// ! Ideal for:
-// ! - Large data processing (>100KB payloads)
-// ! - Memory-constrained environments
-// ! - High-performance applications
-// ! - Applications with mixed payload sizes
+//! Advanced HTTP Transport Features
+//!
+//! This module provides advanced HTTP transport capabilities.
+//!
+//! ## Feature Requirements
+//!
+//! ```toml
+//! # Cargo.toml - Streaming HTTP with all advanced features
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["http", "streaming-http", "chunked-encoding", "compression", "http2"] }
+//! ```
+//!
+//! Individual features:
+//!
+//! ### Chunked Encoding Feature
+//! ```toml
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["chunked-encoding"] }
+//! ```
+//! Enables chunked transfer encoding for large payloads and streaming data.
+//!
+//! ### Compression Feature  
+//! ```toml
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["compression"] }
+//! ```
+//! Enables response compression with Gzip, Brotli, and Zstd algorithms.
+//!
+//! ### HTTP/2 Feature
+//! ```toml
+//! [dependencies]
+//! prism-mcp-rs = { version = "*", features = ["http2"] }
+//! ```
+//! Enables HTTP/2 protocol support with multiplexing and server push.
+//!
+//! ## Capabilities
+//! - Chunked transfer encoding for large payloads
+//! - Response compression: Gzip, Brotli, Zstd
+//! - HTTP/2 protocol support with multiplexing
+//! - Intelligent content analysis and adaptive strategies
+//! - Backpressure and flow control
+//!
+//! Ideal for:
+//! - Large data processing (>100KB payloads)
+//! - Memory-constrained environments
+//! - High-performance applications
+//! - Applications with mixed payload sizes
 
 use async_trait::async_trait;
 use serde_json::Value;

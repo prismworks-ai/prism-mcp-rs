@@ -1,10 +1,10 @@
-// ! OAuth 2.1 Authorization Support for MCP Protocol
-// !
-// ! Module implements the authorization flow for HTTP-based MCP transports
-// ! as specified in the MCP Authorization specification (draft).
-// !
-// ! The implementation follows OAuth 2.1, OAuth 2.0 Authorization Server Metadata,
-// ! Dynamic Client Registration, and Protected Resource Metadata specifications.
+//! OAuth 2.1 Authorization Support for MCP Protocol
+//!
+//! Module implements the authorization flow for HTTP-based MCP transports
+//! as specified in the MCP Authorization specification (draft).
+//!
+//! The implementation follows OAuth 2.1, OAuth 2.0 Authorization Server Metadata,
+//! Dynamic Client Registration, and Protected Resource Metadata specifications.
 
 pub mod client;
 pub mod discovery;

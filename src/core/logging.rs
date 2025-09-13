@@ -1,7 +1,7 @@
-// ! Structured logging for the MCP SDK
-// !
-// ! Module provides structured error logging with categorization,
-// ! context preservation, and integration with the metrics system.
+//! Structured logging for the MCP SDK
+//!
+//! Module provides structured error logging with categorization,
+//! context preservation, and integration with the metrics system.
 
 use serde_json::{json, Value};
 use std::collections::HashMap;

@@ -1,7 +1,7 @@
-// ! Client session management
-// !
-// ! Module provides session management for MCP clients, including connection
-// ! state tracking, notification handling, and automatic reconnection capabilities.
+//! Client session management
+//!
+//! Module provides session management for MCP clients, including connection
+//! state tracking, notification handling, and automatic reconnection capabilities.
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};

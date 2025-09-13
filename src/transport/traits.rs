@@ -1,7 +1,7 @@
-// ! Transport layer traits and abstractions
-// !
-// ! Module defines the core transport traits that enable MCP communication
-// ! over different protocols like STDIO, HTTP, and WebSocket.
+//! Transport layer traits and abstractions
+//!
+//! Module defines the core transport traits that enable MCP communication
+//! over different protocols like STDIO, HTTP, and WebSocket.
 
 use crate::core::error::McpResult;
 use crate::protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};

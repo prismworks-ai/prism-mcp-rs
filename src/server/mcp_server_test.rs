@@ -1,4 +1,4 @@
-// ! complete tests for MCP Server
+//! complete tests for MCP Server
 
 #[cfg(test)]
 mod tests {

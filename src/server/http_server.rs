@@ -1,6 +1,6 @@
-// ! HTTP-specific MCP server implementation
-// !
-// ! Module provides a specialized MCP server that integrates directly with HTTP transport.
+//! HTTP-specific MCP server implementation
+//!
+//! Module provides a specialized MCP server that integrates directly with HTTP transport.
 
 use crate::core::error::McpResult;
 use crate::protocol::types::{JsonRpcRequest, JsonRpcResponse};
@@ -193,9 +193,12 @@ mod tests {
 
         // Test adding a tool to verify request handling setup
         server_guard
-            .add_tool("test-tool", Some("Test tool for request handling"), serde_json::json!({}), |_args: &std::collections::HashMap<String, serde_json::Value>| -> crate::core::error::McpResult<Vec<crate::protocol::types::ContentBlock>> {
-                Ok(vec![crate::protocol::types::ContentBlock::text("handled")])
-            })
+            .add_tool_with_closure(
+                "test-tool",
+                Some("Test tool for request handling"),
+                serde_json::json!({}),
+                |_args| Ok(vec![crate::protocol::types::ContentBlock::text("handled")]),
+            )
             .await
             .unwrap();
 

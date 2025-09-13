@@ -1,7 +1,7 @@
-// ! URI handling utilities
-// !
-// ! Module provides utilities for parsing, validating, and manipulating URIs
-// ! used in the MCP protocol for resources and other operations.
+//! URI handling utilities
+//!
+//! Module provides utilities for parsing, validating, and manipulating URIs
+//! used in the MCP protocol for resources and other operations.
 
 use crate::core::error::{McpError, McpResult};
 use std::collections::HashMap;

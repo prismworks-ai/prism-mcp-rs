@@ -1,7 +1,7 @@
-// ! Plugin API definitions
-// !
-// ! Module defines the core traits and types that plugins must implement
-// ! to be compatible with the MCP plugin system.
+//! Plugin API definitions
+//!
+//! Module defines the core traits and types that plugins must implement
+//! to be compatible with the MCP plugin system.
 
 use crate::core::error::McpResult;
 use crate::protocol::types::{CallToolResult as ToolResult, Tool};

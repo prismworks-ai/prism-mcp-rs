@@ -1,8 +1,8 @@
-// ! MCP protocol validation utilities (2025-03-26)
-// !
-// ! Module provides validation functions for MCP protocol messages and types,
-// ! ensuring that requests and responses conform to the 2025-03-26 protocol specification,
-// ! including support for audio content, annotations, and improved capabilities.
+//! MCP protocol validation utilities (2025-03-26)
+//!
+//! Module provides validation functions for MCP protocol messages and types,
+//! ensuring that requests and responses conform to the 2025-03-26 protocol specification,
+//! including support for audio content, annotations, and improved capabilities.
 
 use crate::core::error::{McpError, McpResult};
 use crate::protocol::{messages::*, methods, types::*};

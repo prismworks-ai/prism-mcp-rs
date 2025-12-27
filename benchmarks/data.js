@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766810832213,
+  "lastUpdate": 1766812253030,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3001,6 +3001,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.49,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "48f9e4a66f6286f09b4bc2ea6cb8a505f282c325",
+          "message": "fix: clear cargo cache and use cargo vet check\n\nClear stale cargo cache before running cargo-vet to avoid\nlock file conflicts, and use 'cargo vet check' subcommand.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2025-12-27T00:07:58-05:00",
+          "tree_id": "443574b4a2631559749df7966d6a11db4265f071",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/48f9e4a66f6286f09b4bc2ea6cb8a505f282c325"
+        },
+        "date": 1766812252092,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.383,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 360.28,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.939,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 79.105,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.98,
             "unit": "ns"
           }
         ]

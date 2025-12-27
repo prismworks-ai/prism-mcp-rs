@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 # Cancel in-progress runs when a new push happens
@@ -26,9 +26,9 @@ jobs:
   test:
     name: Test Suite (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45  # Prevent hanging jobs
+    timeout-minutes: 45 # Prevent hanging jobs
     strategy:
-      fail-fast: false  # Continue other jobs if one fails
+      fail-fast: false # Continue other jobs if one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
@@ -39,19 +39,19 @@ jobs:
             timeout: 50
           - os: ubuntu-latest
             timeout: 40
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           # Fetch minimal history for faster checkout
           fetch-depth: 1
-      
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-      
+
       # Improved caching strategy with better keys and error handling
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
@@ -69,7 +69,7 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
           # Prevent cache corruption issues
           cache-all-crates: true
-      
+
       # Add disk space cleanup for runners with limited space
       - name: Free disk space (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -79,7 +79,7 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo docker system prune -af
           df -h
-      
+
       - name: Configure cargo for reliability (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -94,7 +94,7 @@ jobs:
           echo "" >> ~/.cargo/config.toml
           echo "[term]" >> ~/.cargo/config.toml
           echo "color = \"always\"" >> ~/.cargo/config.toml
-      
+
       - name: Configure cargo for reliability (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -110,13 +110,13 @@ jobs:
           Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value ""
           Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "[term]"
           Add-Content -Path "$env:USERPROFILE\.cargo\config.toml" -Value "color = `"always`""
-      
+
       - name: Update and check toolchain
         run: |
           rustc --version
           cargo --version
           echo "Rust toolchain successfully installed"
-      
+
       # Build with timeout and retry logic
       - name: Build project
         timeout-minutes: 20
@@ -125,7 +125,7 @@ jobs:
           cargo build --verbose ${{ env.CARGO_BUILD_FLAGS }}
         env:
           RUST_LOG: warn
-      
+
       # Run tests with proper timeout
       - name: Run unit tests
         timeout-minutes: 15
@@ -134,7 +134,7 @@ jobs:
           cargo test --verbose ${{ env.CARGO_BUILD_FLAGS }} --lib
         env:
           RUST_LOG: warn
-      
+
       - name: Run integration tests
         timeout-minutes: 10
         run: |
@@ -142,7 +142,7 @@ jobs:
           cargo test --verbose ${{ env.CARGO_BUILD_FLAGS }} --tests
         env:
           RUST_LOG: warn
-      
+
       - name: Run doc tests
         timeout-minutes: 10
         run: |
@@ -150,7 +150,7 @@ jobs:
           cargo test --doc --verbose ${{ env.CARGO_BUILD_FLAGS }}
         env:
           RUST_LOG: warn
-      
+
       # Add step to verify the build artifacts
       - name: Verify build artifacts (Unix)
         if: runner.os != 'Windows'
@@ -162,7 +162,7 @@ jobs:
           else
             echo "Warning: Debug build artifacts not found"
           fi
-      
+
       - name: Verify build artifacts (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -174,7 +174,7 @@ jobs:
           } else {
             Write-Host "Warning: Debug build artifacts not found"
           }
-  
+
   # Test with minimal features (more robust)
   minimal:
     name: Minimal Features Test
@@ -185,34 +185,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: minimal-features-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Configure cargo
         run: |
           mkdir -p ~/.cargo
           echo '[net]' >> ~/.cargo/config.toml
           echo 'retry = 3' >> ~/.cargo/config.toml
           echo 'timeout = 60' >> ~/.cargo/config.toml
-      
+
       - name: Build with no features
         timeout-minutes: 10
         run: |
           echo "🔨 Building with no default features..."
           cargo build --verbose --no-default-features
-      
+
       - name: Test with no features
         timeout-minutes: 10
         run: |
           echo "🧪 Testing with no default features..."
           cargo test --verbose --no-default-features
-  
+
   # Code coverage with better error handling
   coverage:
     name: Code Coverage
@@ -223,33 +223,33 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: llvm-tools-preview
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: coverage-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-llvm-cov
-      
+
       - name: Install additional tools
         run: |
           sudo apt-get update
           sudo apt-get install -y bc jq
-      
+
       - name: Generate code coverage
         timeout-minutes: 15
         run: |
           echo "📊 Generating code coverage..."
           cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
-      
+
       - name: Generate coverage report
         run: |
           if [ -f "scripts/ci/generate-coverage-report.sh" ]; then
@@ -260,7 +260,7 @@ jobs:
             chmod +x scripts/ci/simple-coverage.sh
             ./scripts/ci/simple-coverage.sh || true
           fi
-      
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
@@ -270,7 +270,7 @@ jobs:
             reports/coverage-report.md
             lcov.info
           retention-days: 7
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -280,7 +280,7 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
-  
+
   # Code formatting check
   fmt:
     name: Rustfmt Check
@@ -291,17 +291,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-      
+
       - name: Check formatting
         run: |
           echo "🎨 Checking code formatting..."
           cargo fmt -- --check
-  
+
   # Lint with clippy
   clippy:
     name: Clippy Lints
@@ -312,23 +312,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: clippy-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Run clippy
         timeout-minutes: 10
         run: |
           echo "🔍 Running Clippy lints..."
           cargo clippy ${{ env.CARGO_BUILD_FLAGS }} -- -D warnings
-  
+
   # Build documentation
   doc:
     name: Documentation Build
@@ -339,15 +339,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: docs-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Build documentation
         timeout-minutes: 10
         run: |
@@ -355,7 +355,7 @@ jobs:
           cargo doc --no-deps ${{ env.CARGO_BUILD_FLAGS }}
         env:
           RUSTDOCFLAGS: -D warnings
-      
+
       - name: Upload documentation
         uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
@@ -363,7 +363,7 @@ jobs:
           name: documentation
           path: target/doc/
           retention-days: 7
-  
+
   # Supply chain audit with cargo-vet
   vet:
     name: Supply Chain Audit
@@ -374,27 +374,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Install cargo-vet
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-vet
-      
+
       - name: Run cargo vet
         run: |
           echo "🔐 Running supply chain audit with cargo-vet..."
-          # For library crates, we need to generate Cargo.lock first
-          cargo generate-lockfile
-          cargo vet
-      
+          cargo vet --locked
+
       - name: Check for unvetted dependencies
         run: |
           echo "📊 Supply chain audit summary:"
-          cargo vet | tail -1
-  
+          cargo vet --locked | tail -1
+
   # Security audit with better error handling
   security:
     name: Security Audit
@@ -405,20 +403,20 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-audit
-      
+
       - name: Security audit
         run: |
           echo "🔒 Running security audit..."
           cargo audit || (echo "Security audit found issues" && exit 1)
-  
+
   # Package verification
   check:
     name: Package Check
@@ -429,26 +427,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: package-check-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Check package
         run: |
           echo "📦 Checking package contents..."
           cargo package --list
-      
+
       - name: Verify build
         timeout-minutes: 10
         run: |
           echo "✅ Verifying package build..."
           cargo check ${{ env.CARGO_BUILD_FLAGS }}
-  
+
   # Examples testing with better organization
   examples:
     name: Examples Testing
@@ -459,15 +457,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: examples-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Build examples
         timeout-minutes: 10
         run: |
@@ -477,7 +475,7 @@ jobs:
           else
             echo "No examples directory found, skipping..."
           fi
-      
+
       - name: Test examples
         timeout-minutes: 10
         run: |
@@ -487,7 +485,7 @@ jobs:
           else
             echo "No examples to test, skipping..."
           fi
-  
+
   # Benchmarks with better error handling
   bench:
     name: Benchmarks
@@ -500,20 +498,20 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: benchmarks-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Install additional tools
         run: |
           sudo apt-get update
           sudo apt-get install -y bc jq
-      
+
       - name: Build benchmarks
         timeout-minutes: 10
         run: |
@@ -523,7 +521,7 @@ jobs:
           else
             echo "No benches directory found, skipping..."
           fi
-      
+
       - name: Run benchmarks
         timeout-minutes: 15
         run: |
@@ -537,7 +535,7 @@ jobs:
               cargo bench ${{ env.CARGO_BUILD_FLAGS }} || echo "Some benchmarks failed"
             fi
           fi
-      
+
       - name: Upload benchmark report
         uses: actions/upload-artifact@v4
         if: always()
@@ -552,22 +550,22 @@ jobs:
   full-features:
     name: Full Features Test
     runs-on: ubuntu-latest
-    timeout-minutes: 60  # Longer timeout for comprehensive test
-    continue-on-error: true  # Don't fail CI if this takes too long
+    timeout-minutes: 60 # Longer timeout for comprehensive test
+    continue-on-error: true # Don't fail CI if this takes too long
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: full-features-${{ hashFiles('Cargo.lock') }}
-      
+
       - name: Test with all features
         timeout-minutes: 50
         run: |
@@ -586,10 +584,10 @@ jobs:
       - name: Check all jobs
         run: |
           echo "Checking status of all jobs..."
-          
+
           # Required jobs that must pass
           required_jobs=("test" "minimal" "fmt" "clippy" "vet" "security" "check")
-          
+
           for job in "${required_jobs[@]}"; do
             case "$job" in
               "test")
@@ -637,14 +635,14 @@ jobs:
             esac
             echo "✅ Required job '$job' passed"
           done
-          
+
           # Optional jobs (warn but don't fail)
           if [ "${{ needs.doc.result }}" != "success" ]; then
             echo "⚠️ Optional job 'doc' failed, but not blocking CI"
           fi
-          
+
           if [ "${{ needs.examples.result }}" != "success" ]; then
             echo "⚠️ Optional job 'examples' failed, but not blocking CI"
           fi
-          
+
           echo "🎉 All required CI checks passed!"

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766808920298,
+  "lastUpdate": 1766810832213,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2954,6 +2954,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 172.82,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "52466ed8efb129adf99f5be6dfbae504f600f5da",
+          "message": "fix: remove --locked from cargo-vet to fix supply chain audit\n\nThe --locked flag prevents cargo metadata updates which causes\ncargo-vet to fail when the crates.io index needs refreshing.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2025-12-26T23:44:13-05:00",
+          "tree_id": "7fe804ea933bb273ea0fb8e55521b4e9eaf3ed19",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/52466ed8efb129adf99f5be6dfbae504f600f5da"
+        },
+        "date": 1766810831499,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.388,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 377.29,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.035,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.362,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.49,
             "unit": "ns"
           }
         ]

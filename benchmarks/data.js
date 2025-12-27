@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766807054714,
+  "lastUpdate": 1766808269727,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2860,6 +2860,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 169.3,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "3f1dbe3047037888d3dd5ba010190101d3459db4",
+          "message": "chore: regenerate cargo-vet exemptions",
+          "timestamp": "2025-12-26T23:01:01-05:00",
+          "tree_id": "9e1fc6a87df69eca5c5917a56e7988fa9f37def8",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/3f1dbe3047037888d3dd5ba010190101d3459db4"
+        },
+        "date": 1766808268219,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.385,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 364.77,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.568,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.454,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 170.58,
             "unit": "ns"
           }
         ]

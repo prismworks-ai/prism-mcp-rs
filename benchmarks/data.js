@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757799991345,
+  "lastUpdate": 1766807054714,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2813,6 +2813,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 176.94,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "d5d451fdb4183b8f860e9c03642dece10641120b",
+          "message": "fix: stop requesting deprecated cargo-edit component",
+          "timestamp": "2025-12-26T22:39:47-05:00",
+          "tree_id": "af138f76105a3e06c12a42d84ecb8ecab6fa4b79",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/d5d451fdb4183b8f860e9c03642dece10641120b"
+        },
+        "date": 1766807054023,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.389,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 370.35,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.08,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.471,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.3,
             "unit": "ns"
           }
         ]

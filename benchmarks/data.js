@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766808269727,
+  "lastUpdate": 1766808920298,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -2907,6 +2907,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 170.58,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "f6baf2e2f5c8aab5ca6d91f57af5c6b459e38e2a",
+          "message": "fix: run cargo-vet against locked deps",
+          "timestamp": "2025-12-26T23:12:02-05:00",
+          "tree_id": "97d1848795c5a9e1f02fa1a598bcc258bf8c0719",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/f6baf2e2f5c8aab5ca6d91f57af5c6b459e38e2a"
+        },
+        "date": 1766808918980,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.385,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 369.51,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.352,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.7,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 172.82,
             "unit": "ns"
           }
         ]

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766812535764,
+  "lastUpdate": 1766813123875,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3095,6 +3095,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 169.93,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "eec11f40852af0bbc0a38d35bae3777678be58db",
+          "message": "fix: make cargo-vet job non-blocking in CI\n\nThe supply chain audit now runs with continue-on-error since it reports\ninformational warnings about unvetted dependencies rather than blocking\nbuilds. This allows CI to pass while still showing audit results.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2025-12-27T00:22:22-05:00",
+          "tree_id": "126e90816a447eaca5715e6ec32932b4d8057782",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/eec11f40852af0bbc0a38d35bae3777678be58db"
+        },
+        "date": 1766813123138,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.382,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 368.85,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.978,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.421,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.69,
             "unit": "ns"
           }
         ]

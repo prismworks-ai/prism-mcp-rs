@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766813123875,
+  "lastUpdate": 1766844063760,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3142,6 +3142,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 169.69,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "bb85e29925f703c6f5b47f43115fb4ff7b30a4d1",
+          "message": "Release v1.1.2\n\n- Code quality: rustfmt + clippy with zero warnings\n- API consistency: Standardized ContentBlock::text() and ToolResult\n- Example fixes: Type alias mismatches in prompts and transport\n- Test coverage: Documentation examples compile and verify",
+          "timestamp": "2025-12-27T08:57:44-05:00",
+          "tree_id": "910eb3bc0a227ab937c22625bf4566d62d69f441",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/bb85e29925f703c6f5b47f43115fb4ff7b30a4d1"
+        },
+        "date": 1766844062894,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.387,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 365.19,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.974,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.258,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.63,
             "unit": "ns"
           }
         ]

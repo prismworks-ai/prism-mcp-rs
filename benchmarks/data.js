@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766812253030,
+  "lastUpdate": 1766812535764,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3048,6 +3048,53 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 169.98,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "committer": {
+            "email": "dev@vybecode.com",
+            "name": "VybeCode Developer"
+          },
+          "distinct": true,
+          "id": "215e8d45390a821c94731f5e0b3f3878352ffa0d",
+          "message": "fix: run cargo generate-lockfile before cargo vet\n\nThe crates.io index update causes cargo metadata to require a lock file\nupdate. Running cargo generate-lockfile first synchronizes the lock file\nwith the current index before cargo-vet runs.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2025-12-27T00:12:36-05:00",
+          "tree_id": "847d59ae25d237235d340cc42bc4fcf50844eda8",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/215e8d45390a821c94731f5e0b3f3878352ffa0d"
+        },
+        "date": 1766812534795,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.389,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 359.42,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.301,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.802,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.93,
             "unit": "ns"
           }
         ]

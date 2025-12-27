@@ -50,6 +50,15 @@ async fn main() -> McpResult<()> {
         .await?;
 
     println!("Starting MCP server with corrected API patterns...");
-    let transport = StdioServerTransport::new();
-    server.start(transport).await
+    #[cfg(feature = "stdio")]
+    {
+        let transport = StdioServerTransport::new();
+        return server.start(transport).await;
+    }
+
+    #[cfg(not(feature = "stdio"))]
+    {
+        eprintln!("stdio feature is disabled; skipping server start.");
+        Ok(())
+    }
 }

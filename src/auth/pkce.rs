@@ -5,7 +5,7 @@
 //! interception attacks
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
-use rand::Rng;
+use rand::RngExt;
 use sha2::{Digest, Sha256};
 
 use crate::core::error::{McpError, McpResult};

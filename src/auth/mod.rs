@@ -95,7 +95,7 @@ impl AuthConfig {
     /// Generate a state parameter
     pub fn generate_state(&self) -> String {
         // Default: generate random state
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
         let state: String = (0..32)
             .map(|_| {

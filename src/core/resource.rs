@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::types::{Resource as ResourceInfo, ResourceContents};
+use crate::protocol::types::{Icon, Resource as ResourceInfo, ResourceContents};
 
 /// Template for parameterized resources
 #[derive(Debug, Clone, PartialEq)]
@@ -466,6 +466,8 @@ pub struct ResourceBuilder {
     name: String,
     description: Option<String>,
     mime_type: Option<String>,
+    title: Option<String>,
+    icons: Option<Vec<Icon>>,
 }
 
 impl ResourceBuilder {
@@ -476,6 +478,8 @@ impl ResourceBuilder {
             name: name.into(),
             description: None,
             mime_type: None,
+            title: None,
+            icons: None,
         }
     }
 
@@ -491,6 +495,24 @@ impl ResourceBuilder {
         self
     }
 
+    /// Set the resource title (for UI display)
+    pub fn title<S: Into<String>>(mut self, title: S) -> Self {
+        self.title = Some(title.into());
+        self
+    }
+
+    /// Set resource icons (for UI display)
+    pub fn icons(mut self, icons: Vec<Icon>) -> Self {
+        self.icons = Some(icons);
+        self
+    }
+
+    /// Add a single resource icon (for UI display)
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icons.get_or_insert_with(Vec::new).push(icon);
+        self
+    }
+
     /// Build the resource with the given handler
     pub fn build<H>(self, handler: H) -> Resource
     where
@@ -503,8 +525,8 @@ impl ResourceBuilder {
             mime_type: self.mime_type,
             annotations: None,
             size: None,
-            icons: None,
-            title: None,
+            icons: self.icons,
+            title: self.title,
             meta: None,
         };
 
@@ -592,6 +614,12 @@ mod tests {
         let resource = ResourceBuilder::new("test://resource", "Test Resource")
             .description("A test resource")
             .mime_type("text/plain")
+            .title("Test Resource Title")
+            .icon(Icon {
+                src: "https://example.com/resource-icon.svg".to_string(),
+                mime_type: Some("image/svg+xml".to_string()),
+                sizes: None,
+            })
             .build(TextResource::new("test".to_string(), None));
 
         assert_eq!(resource.info.uri, "test://resource");
@@ -601,5 +629,7 @@ mod tests {
             Some("A test resource".to_string())
         );
         assert_eq!(resource.info.mime_type, Some("text/plain".to_string()));
+        assert_eq!(resource.info.title, Some("Test Resource Title".to_string()));
+        assert_eq!(resource.info.icons.as_ref().map(Vec::len), Some(1));
     }
 }

@@ -677,6 +677,236 @@ impl InitializeResult {
     }
 }
 
+impl CreateMessageParams {
+    /// Create minimal sampling/createMessage params.
+    pub fn new(messages: Vec<SamplingMessage>, max_tokens: u32) -> Self {
+        Self {
+            messages,
+            max_tokens,
+            system_prompt: None,
+            include_context: None,
+            temperature: None,
+            stop_sequences: None,
+            model_preferences: None,
+            tools: None,
+            tool_choice: None,
+            metadata: None,
+            meta: None,
+        }
+    }
+
+    /// Set system prompt.
+    pub fn with_system_prompt<S: Into<String>>(mut self, system_prompt: S) -> Self {
+        self.system_prompt = Some(system_prompt.into());
+        self
+    }
+
+    /// Set context inclusion strategy.
+    pub fn with_include_context<S: Into<String>>(mut self, include_context: S) -> Self {
+        self.include_context = Some(include_context.into());
+        self
+    }
+
+    /// Set sampling temperature.
+    pub fn with_temperature(mut self, temperature: f32) -> Self {
+        self.temperature = Some(temperature);
+        self
+    }
+
+    /// Set stop sequences.
+    pub fn with_stop_sequences(mut self, stop_sequences: Vec<String>) -> Self {
+        self.stop_sequences = Some(stop_sequences);
+        self
+    }
+
+    /// Set model preferences.
+    pub fn with_model_preferences(mut self, model_preferences: ModelPreferences) -> Self {
+        self.model_preferences = Some(model_preferences);
+        self
+    }
+
+    /// Set available tools for sampling.
+    pub fn with_tools(mut self, tools: Vec<Tool>) -> Self {
+        self.tools = Some(tools);
+        self
+    }
+
+    /// Add a single available tool for sampling.
+    pub fn add_tool(mut self, tool: Tool) -> Self {
+        self.tools.get_or_insert_with(Vec::new).push(tool);
+        self
+    }
+
+    /// Set tool choice behavior for sampling.
+    pub fn with_tool_choice(mut self, tool_choice: SamplingToolChoice) -> Self {
+        self.tool_choice = Some(tool_choice);
+        self
+    }
+
+    /// Set provider metadata.
+    pub fn with_metadata(mut self, metadata: HashMap<String, serde_json::Value>) -> Self {
+        self.metadata = Some(metadata);
+        self
+    }
+
+    /// Set request metadata.
+    pub fn with_meta(mut self, meta: HashMap<String, serde_json::Value>) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+}
+
+impl ElicitParams {
+    /// Create a minimal elicitation request.
+    pub fn new<S: Into<String>>(message: S) -> Self {
+        Self {
+            message: message.into(),
+            mode: None,
+            url: None,
+            requested_schema: None,
+            meta: None,
+        }
+    }
+
+    /// Create a form-based elicitation request.
+    pub fn form<S: Into<String>>(message: S, requested_schema: ElicitationSchema) -> Self {
+        Self {
+            message: message.into(),
+            mode: Some(ElicitationMode::Form),
+            url: None,
+            requested_schema: Some(requested_schema),
+            meta: None,
+        }
+    }
+
+    /// Create a URL-based elicitation request.
+    pub fn url<M: Into<String>, U: Into<String>>(message: M, url: U) -> Self {
+        Self {
+            message: message.into(),
+            mode: Some(ElicitationMode::Url),
+            url: Some(url.into()),
+            requested_schema: None,
+            meta: None,
+        }
+    }
+
+    /// Set elicitation mode.
+    pub fn with_mode(mut self, mode: ElicitationMode) -> Self {
+        self.mode = Some(mode);
+        self
+    }
+
+    /// Set URL for URL-mode elicitation.
+    pub fn with_url<S: Into<String>>(mut self, url: S) -> Self {
+        self.url = Some(url.into());
+        self
+    }
+
+    /// Set requested form schema for form-mode elicitation.
+    pub fn with_requested_schema(mut self, requested_schema: ElicitationSchema) -> Self {
+        self.requested_schema = Some(requested_schema);
+        self
+    }
+
+    /// Set request metadata.
+    pub fn with_meta(mut self, meta: HashMap<String, serde_json::Value>) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+}
+
+impl ElicitResult {
+    /// Create an accepted elicitation result.
+    pub fn accepted(content: HashMap<String, serde_json::Value>) -> Self {
+        Self {
+            action: ElicitationAction::Accept,
+            content: Some(content),
+            meta: None,
+        }
+    }
+
+    /// Create a declined elicitation result.
+    pub fn declined() -> Self {
+        Self {
+            action: ElicitationAction::Decline,
+            content: None,
+            meta: None,
+        }
+    }
+
+    /// Create a cancelled elicitation result.
+    pub fn cancelled() -> Self {
+        Self {
+            action: ElicitationAction::Cancel,
+            content: None,
+            meta: None,
+        }
+    }
+
+    /// Set response metadata.
+    pub fn with_meta(mut self, meta: HashMap<String, serde_json::Value>) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+}
+
+impl ElicitationCompleteParams {
+    /// Create a new elicitation completion notification payload.
+    pub fn new(result: ElicitResult) -> Self {
+        Self { result }
+    }
+}
+
+impl TaskSendParams {
+    /// Create a new task send request payload.
+    pub fn new<S: Into<String>>(task_id: S, task: serde_json::Value) -> Self {
+        Self {
+            task_id: task_id.into(),
+            task,
+            meta: None,
+        }
+    }
+
+    /// Set request metadata.
+    pub fn with_meta(mut self, meta: HashMap<String, serde_json::Value>) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+}
+
+impl TaskCancelParams {
+    /// Create a new task cancel request payload.
+    pub fn new<S: Into<String>>(task_id: S) -> Self {
+        Self {
+            task_id: task_id.into(),
+            meta: None,
+        }
+    }
+
+    /// Set request metadata.
+    pub fn with_meta(mut self, meta: HashMap<String, serde_json::Value>) -> Self {
+        self.meta = Some(meta);
+        self
+    }
+}
+
+impl TaskStatusUpdateParams {
+    /// Create a new task status update notification payload.
+    pub fn new<T: Into<String>, S: Into<String>>(task_id: T, status: S) -> Self {
+        Self {
+            task_id: task_id.into(),
+            status: status.into(),
+            detail: None,
+        }
+    }
+
+    /// Set status detail payload.
+    pub fn with_detail(mut self, detail: serde_json::Value) -> Self {
+        self.detail = Some(detail);
+        self
+    }
+}
+
 impl Root {
     pub fn new(uri: String) -> Self {
         Self { uri, name: None }
@@ -1029,6 +1259,76 @@ mod tests {
 
         let root_with_name = root.with_name("Root Name".to_string());
         assert_eq!(root_with_name.name, Some("Root Name".to_string()));
+
+        // Test CreateMessageParams constructors/builders
+        let create_params =
+            CreateMessageParams::new(vec![SamplingMessage::user_text("Hello")], 256)
+                .with_system_prompt("You are helpful")
+                .with_include_context("thisServer")
+                .with_temperature(0.5)
+                .with_stop_sequences(vec!["STOP".to_string()])
+                .with_tool_choice(SamplingToolChoice::Auto)
+                .add_tool(Tool::new("echo", "Echo tool"));
+        assert_eq!(create_params.max_tokens, 256);
+        assert_eq!(
+            create_params.system_prompt,
+            Some("You are helpful".to_string())
+        );
+        assert_eq!(create_params.tools.as_ref().map(Vec::len), Some(1));
+        assert_eq!(create_params.tool_choice, Some(SamplingToolChoice::Auto));
+
+        // Test ElicitParams constructors/builders
+        let mut properties = HashMap::new();
+        properties.insert(
+            "name".to_string(),
+            PrimitiveSchemaDefinition::String {
+                title: Some("Name".to_string()),
+                description: None,
+                min_length: None,
+                max_length: None,
+                format: None,
+                enum_values: None,
+                enum_names: None,
+            },
+        );
+        let schema = ElicitationSchema {
+            schema_type: "object".to_string(),
+            properties,
+            required: Some(vec!["name".to_string()]),
+        };
+        let form_elicit = ElicitParams::form("Need your name", schema.clone());
+        assert_eq!(form_elicit.mode, Some(ElicitationMode::Form));
+        assert!(form_elicit.url.is_none());
+        assert!(form_elicit.requested_schema.is_some());
+
+        let url_elicit = ElicitParams::url("Continue setup", "https://example.com/setup");
+        assert_eq!(url_elicit.mode, Some(ElicitationMode::Url));
+        assert_eq!(
+            url_elicit.url,
+            Some("https://example.com/setup".to_string())
+        );
+        assert!(url_elicit.requested_schema.is_none());
+
+        // Test ElicitResult and completion params constructors
+        let accepted_result =
+            ElicitResult::accepted(HashMap::from([("name".to_string(), json!("Alice"))]));
+        assert_eq!(accepted_result.action, ElicitationAction::Accept);
+        assert!(accepted_result.content.is_some());
+
+        let completion = ElicitationCompleteParams::new(ElicitResult::declined());
+        assert_eq!(completion.result.action, ElicitationAction::Decline);
+
+        // Test task message constructors
+        let task_send = TaskSendParams::new("task-123", json!({"kind":"review"}));
+        assert_eq!(task_send.task_id, "task-123");
+
+        let task_cancel = TaskCancelParams::new("task-123");
+        assert_eq!(task_cancel.task_id, "task-123");
+
+        let task_status =
+            TaskStatusUpdateParams::new("task-123", "running").with_detail(json!({"progress": 42}));
+        assert_eq!(task_status.status, "running");
+        assert!(task_status.detail.is_some());
     }
 
     #[test]

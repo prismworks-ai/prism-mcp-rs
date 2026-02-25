@@ -9,8 +9,8 @@ use std::collections::HashMap;
 
 use crate::core::error::{McpError, McpResult};
 use crate::protocol::types::{
-    Content, GetPromptResult as PromptResult, Prompt as PromptInfo, PromptArgument, PromptMessage,
-    Role,
+    Content, GetPromptResult as PromptResult, Icon, Prompt as PromptInfo, PromptArgument,
+    PromptMessage, Role,
 };
 
 /// Trait for implementing prompt handlers
@@ -249,6 +249,8 @@ pub struct PromptBuilder {
     name: String,
     description: Option<String>,
     arguments: Vec<PromptArgument>,
+    title: Option<String>,
+    icons: Option<Vec<Icon>>,
 }
 
 impl PromptBuilder {
@@ -258,12 +260,32 @@ impl PromptBuilder {
             name: name.into(),
             description: None,
             arguments: Vec::new(),
+            title: None,
+            icons: None,
         }
     }
 
     /// Set the prompt description
     pub fn description<S: Into<String>>(mut self, description: S) -> Self {
         self.description = Some(description.into());
+        self
+    }
+
+    /// Set the prompt title (for UI display)
+    pub fn title<S: Into<String>>(mut self, title: S) -> Self {
+        self.title = Some(title.into());
+        self
+    }
+
+    /// Set prompt icons (for UI display)
+    pub fn icons(mut self, icons: Vec<Icon>) -> Self {
+        self.icons = Some(icons);
+        self
+    }
+
+    /// Add a single prompt icon (for UI display)
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icons.get_or_insert_with(Vec::new).push(icon);
         self
     }
 
@@ -302,8 +324,8 @@ impl PromptBuilder {
             } else {
                 Some(self.arguments)
             },
-            icons: None,
-            title: None,
+            icons: self.icons,
+            title: self.title,
             meta: None,
         };
 
@@ -428,12 +450,20 @@ mod tests {
     fn test_prompt_builder() {
         let prompt = PromptBuilder::new("test")
             .description("A test prompt")
+            .title("Test Prompt Title")
+            .icon(Icon {
+                src: "https://example.com/prompt-icon.svg".to_string(),
+                mime_type: Some("image/svg+xml".to_string()),
+                sizes: None,
+            })
             .required_arg("input", Some("Input text"))
             .optional_arg("format", Some("Output format"))
             .build(GreetingPrompt);
 
         assert_eq!(prompt.info.name, "test");
         assert_eq!(prompt.info.description, Some("A test prompt".to_string()));
+        assert_eq!(prompt.info.title, Some("Test Prompt Title".to_string()));
+        assert_eq!(prompt.info.icons.as_ref().map(Vec::len), Some(1));
 
         let args = prompt.info.arguments.unwrap();
         assert_eq!(args.len(), 2);

@@ -14,7 +14,7 @@ use crate::core::tool_metadata::{
     CategoryFilter, ImprovedToolMetadata, ToolBehaviorHints, ToolCategory, ToolDeprecation,
 };
 use crate::core::validation::{ParameterValidator, ValidationConfig};
-use crate::protocol::types::{ContentBlock, ToolInfo, ToolInputSchema, ToolResult};
+use crate::protocol::types::{ContentBlock, Icon, ToolInfo, ToolInputSchema, ToolResult};
 
 /// Trait for implementing tool handlers
 #[async_trait]
@@ -531,6 +531,7 @@ pub struct ToolBuilder {
     input_schema: Option<Value>,
     validation_config: Option<ValidationConfig>,
     title: Option<String>,
+    icons: Option<Vec<Icon>>,
     behavior_hints: ToolBehaviorHints,
     category: Option<ToolCategory>,
     version: Option<String>,
@@ -548,6 +549,7 @@ impl ToolBuilder {
             input_schema: None,
             validation_config: None,
             title: None,
+            icons: None,
             behavior_hints: ToolBehaviorHints::new(),
             category: None,
             version: None,
@@ -566,6 +568,18 @@ impl ToolBuilder {
     /// Set the tool title (for UI display)
     pub fn title<S: Into<String>>(mut self, title: S) -> Self {
         self.title = Some(title.into());
+        self
+    }
+
+    /// Set tool icons (for UI display)
+    pub fn icons(mut self, icons: Vec<Icon>) -> Self {
+        self.icons = Some(icons);
+        self
+    }
+
+    /// Add a single tool icon (for UI display)
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icons.get_or_insert_with(Vec::new).push(icon);
         self
     }
 
@@ -737,6 +751,9 @@ impl ToolBuilder {
         // Set title if provided
         if let Some(title) = self.title {
             tool.info.title = Some(title);
+        }
+        if let Some(icons) = self.icons {
+            tool.info.icons = Some(icons);
         }
 
         // Apply improved metadata
@@ -1191,12 +1208,18 @@ mod tests {
     fn test_tool_builder() {
         let tool = ToolBuilder::new("test")
             .description("A test tool")
+            .icon(Icon {
+                src: "https://example.com/tool-icon.svg".to_string(),
+                mime_type: Some("image/svg+xml".to_string()),
+                sizes: None,
+            })
             .schema(json!({"type": "object", "properties": {"x": {"type": "number"}}}))
             .build(EchoTool)
             .unwrap();
 
         assert_eq!(tool.info.name, "test");
         assert_eq!(tool.info.description, Some("A test tool".to_string()));
+        assert_eq!(tool.info.icons.as_ref().map(Vec::len), Some(1));
         assert!(tool.validator.is_some());
     }
 

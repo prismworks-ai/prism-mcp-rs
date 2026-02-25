@@ -196,7 +196,9 @@ pub mod prelude {
     #[cfg(feature = "plugin")]
     pub use crate::plugin::{LoadResult, LoadedPluginInfo, PluginManager};
 
-    // Tool builder
+    // Core builders
+    pub use crate::core::prompt::PromptBuilder;
+    pub use crate::core::resource::ResourceBuilder;
     pub use crate::core::tool::ToolBuilder;
 
     // Essential external types

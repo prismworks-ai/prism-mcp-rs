@@ -363,9 +363,18 @@ Follows [Semantic Versioning](https://semver.org/):
 2. Update `CHANGELOG.md`
 3. Run full test suite
 4. Generate documentation
-5. Create Git tag
-6. Publish to crates.io
-7. Create GitHub release
+5. Push to `main` (auto-tag workflow creates `vX.Y.Z` when version changes)
+6. Verify `Release` workflow completes (GitHub release + crates.io publication)
+7. Confirm package is visible on crates.io and docs.rs
+
+### Automated Publishing Rules
+
+- A crates.io publish is triggered by the `Release` workflow on tags matching `v*`.
+- Tags are auto-created by `Auto Tag Release` only when:
+  - `Cargo.toml` version changes in a push to `main`
+  - matching `vX.Y.Z` tag does not already exist
+  - version is not already published on crates.io
+- Non-version changes (docs/CI/workflow-only changes) do not publish a new crate.
 
 ## Community Standards
 

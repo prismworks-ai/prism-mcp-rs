@@ -1,0 +1,89 @@
+name: Auto Tag Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-tag:
+    name: Create Release Tag When Version Changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version and release eligibility
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          TAG="v${VERSION}"
+          BEFORE="${{ github.event.before }}"
+          HEAD_SHA="${{ github.sha }}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+          # Ensure this push actually changed the version line in Cargo.toml.
+          if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
+            echo "should_tag=false" >> "$GITHUB_OUTPUT"
+            echo "reason=no-comparable-before-sha" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git diff "$BEFORE" "$HEAD_SHA" -- Cargo.toml | grep -E '^[+-][[:space:]]*version[[:space:]]*=' >/dev/null; then
+            echo "should_tag=false" >> "$GITHUB_OUTPUT"
+            echo "reason=cargo-version-not-changed" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Skip if tag already exists.
+          if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}$"; then
+            echo "should_tag=false" >> "$GITHUB_OUTPUT"
+            echo "reason=tag-already-exists" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Skip if the version is already on crates.io.
+          if curl -sf "https://crates.io/api/v1/crates/prism-mcp-rs/${VERSION}" >/dev/null; then
+            echo "should_tag=false" >> "$GITHUB_OUTPUT"
+            echo "reason=version-already-published" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_tag=true" >> "$GITHUB_OUTPUT"
+          echo "reason=ready-to-tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        if: steps.gate.outputs.should_tag == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.gate.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "✅ Created and pushed $TAG"
+
+      - name: Summarize decision
+        shell: bash
+        run: |
+          echo "## Auto Tag Release Decision" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Version: \`${{ steps.gate.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: \`${{ steps.gate.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Should tag: \`${{ steps.gate.outputs.should_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Reason: \`${{ steps.gate.outputs.reason }}\`" >> "$GITHUB_STEP_SUMMARY"

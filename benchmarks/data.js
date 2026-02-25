@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772039465079,
+  "lastUpdate": 1772040224076,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3541,6 +3541,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 175.21,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "6a9d66de439502ba096d92a45a2bde59f9e9c1a4",
+          "message": "Fix clippy warning in HTTP integration test",
+          "timestamp": "2026-02-25T12:20:30-05:00",
+          "tree_id": "fcb19e3bc7cd59c6a66185d8fe0444a1750428d0",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/6a9d66de439502ba096d92a45a2bde59f9e9c1a4"
+        },
+        "date": 1772040221368,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.389,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 361.74,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.798,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 80.678,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.54,
             "unit": "ns"
           }
         ]

@@ -114,6 +114,7 @@ mod e2e_websocket_tests {
                     mime_type: Some("text/plain".to_string()),
                     annotations: None,
                     size: None,
+                    icons: None,
                     title: Some(format!("WebSocket Resource: {uri}")),
                     meta: None,
                 })

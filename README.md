@@ -13,16 +13,16 @@
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square&logo=rust)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
 [![dependency status](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs/status.svg)](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs)
 [![Total Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=total%20downloads&color=success)](https://crates.io/crates/prism-mcp-rs)
-[![API Stability](https://img.shields.io/badge/API-v0.1.5-orange.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
+[![API Stability](https://img.shields.io/badge/API-1.x-brightgreen.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
 
 [![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
 [![Last Commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)
 [![Release](https://img.shields.io/github/v/release/prismworks-ai/prism-mcp-rs.svg?style=flat-square&include_prereleases)](https://github.com/prismworks-ai/prism-mcp-rs/releases)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865f2?style=flat-square&logo=discord)](https://discord.gg/prismworks)
 
-[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg?style=flat-square)](https://github.com/rust-secure-code/safety-dance/)
-
 **prism-mcp-rs** is a production-grade Rust implementation of the Model Context Protocol (MCP) SDK with enterprise-class features for building secure, scalable MCP servers and clients.
+
+Safety note: core library paths are safe Rust; plugin loading uses a narrow, audited `unsafe` FFI boundary.
 
 
 ## Why Prism MCP?
@@ -53,7 +53,7 @@
 ### 3. Plugin System Architecture
 
 - **Hot Reload Support**: Update plugins without service interruption
-- **ABI-Stable Interface**: Binary compatibility across Rust versions
+- **C ABI Plugin Boundary**: Dynamic plugin interface with runtime compatibility checks
 - **Plugin Isolation**: Sandboxed execution with resource limits
 - **Dynamic Discovery**: Runtime plugin loading with dependency resolution
 - **Lifecycle Management**: Automated plugin health monitoring and recovery
@@ -99,7 +99,7 @@
 
 ```toml
 [dependencies]
-prism-mcp-rs = "0.1.0"
+prism-mcp-rs = "1"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 async-trait = "0.1"
@@ -121,14 +121,14 @@ async-trait = "0.1"
 # High-performance configuration
 [dependencies]
 prism-mcp-rs = { 
-    version = "0.1.0", 
+    version = "1", 
     features = ["http2", "compression", "plugin", "auth", "tls"] 
 }
 
 # Memory-constrained environments
 [dependencies]
 prism-mcp-rs = { 
-    version = "0.1.0", 
+    version = "1", 
     default-features = false,
     features = ["stdio"] 
 }

@@ -15,7 +15,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
-  # Use reasonable feature set for CI instead of --all-features (too slow)
+  # Use a representative feature set for most CI jobs.
   CARGO_BUILD_FLAGS: --features="stdio,http,auth,compression"
   # Add timeout and retry configurations
   CARGO_NET_RETRY: 3
@@ -327,7 +327,7 @@ jobs:
         timeout-minutes: 10
         run: |
           echo "🔍 Running Clippy lints..."
-          cargo clippy ${{ env.CARGO_BUILD_FLAGS }} -- -D warnings
+          cargo clippy --all-targets --all-features -- -D warnings
 
   # Build documentation
   doc:

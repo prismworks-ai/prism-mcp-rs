@@ -114,7 +114,7 @@ jobs:
       - name: Create source tarball
         run: |
           # First create a crate package (what would be published to crates.io)
-          cargo package --no-verify
+          cargo package
           cp target/package/prism-mcp-rs-${{ steps.version.outputs.version }}.crate ./
           
           # Then create clean source distribution (after cargo package to avoid dirty working dir)
@@ -245,7 +245,7 @@ jobs:
       - name: Verify package integrity
         run: |
           echo "🔍 Running package verification..."
-          cargo package --no-verify
+          cargo package
           echo "✅ Package verification completed"
 
       - name: Check if version already published
@@ -270,7 +270,7 @@ jobs:
           cargo login ${{ secrets.CRATES_IO_TOKEN }}
           
           # Publish the crate
-          cargo publish --no-verify
+          cargo publish
           
           echo "✅ Successfully published to crates.io!"
           echo "📦 Package: https://crates.io/crates/prism-mcp-rs"

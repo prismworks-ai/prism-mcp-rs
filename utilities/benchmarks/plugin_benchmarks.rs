@@ -77,6 +77,7 @@ fn benchmark_tool_registration(c: &mut Criterion) {
                 output_schema: None,
                 annotations: None,
                 title: None,
+                icons: None,
                 meta: None,
             };
             tools.insert(black_box("calculator".to_string()), tool);
@@ -102,6 +103,7 @@ fn benchmark_tool_registration(c: &mut Criterion) {
                     output_schema: None,
                     annotations: None,
                     title: None,
+                    icons: None,
                     meta: None,
                 };
                 tools.insert(format!("tool_{}", i), tool);
@@ -129,6 +131,7 @@ fn benchmark_tool_registration(c: &mut Criterion) {
                     output_schema: None,
                     annotations: None,
                     title: None,
+                    icons: None,
                     meta: None,
                 };
                 tools.insert(format!("tool_{}", i), tool);
@@ -160,6 +163,7 @@ fn benchmark_tool_lookup(c: &mut Criterion) {
                     output_schema: None,
                     annotations: None,
                     title: None,
+                    icons: None,
                     meta: None,
                 },
             )
@@ -182,6 +186,7 @@ fn benchmark_tool_lookup(c: &mut Criterion) {
                     output_schema: None,
                     annotations: None,
                     title: None,
+                    icons: None,
                     meta: None,
                 },
             )
@@ -204,6 +209,7 @@ fn benchmark_tool_lookup(c: &mut Criterion) {
                     output_schema: None,
                     annotations: None,
                     title: None,
+                    icons: None,
                     meta: None,
                 },
             )

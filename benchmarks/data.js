@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772038249274,
+  "lastUpdate": 1772038791396,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3443,6 +3443,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 208.64,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "62b392037d927f1bad5dd309eb7e7e0636b84f36",
+          "message": "Fix lint issues",
+          "timestamp": "2026-02-25T11:56:43-05:00",
+          "tree_id": "375d539593e92460c3608e3d0005ca1df532d1a8",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/62b392037d927f1bad5dd309eb7e7e0636b84f36"
+        },
+        "date": 1772038789909,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 11.381,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 460.04,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 18.686,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 68.98,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 147.22,
             "unit": "ns"
           }
         ]

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772035395172,
+  "lastUpdate": 1772037102799,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3336,6 +3336,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 170.73,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "4eec2f4e60cfc926719892721ec1a31bb058e83a",
+          "message": "Update protocol compatibility",
+          "timestamp": "2026-02-25T11:30:05-05:00",
+          "tree_id": "7d4824ea33955cc95916610d1941f6e66354f1fe",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4eec2f4e60cfc926719892721ec1a31bb058e83a"
+        },
+        "date": 1772037101814,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "dummy_benchmark",
+            "value": 100,
             "unit": "ns"
           }
         ]

@@ -23,7 +23,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      issues: write
 
     steps:
       - name: Checkout repository
@@ -165,25 +164,15 @@ jobs:
           branch: ${{ github.ref }}
           file_pattern: "Cargo.lock Cargo.toml supply-chain/"
 
-      - name: Create issue if update fails
+      - name: Report failure in workflow summary
         if: failure()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "⚠️ Nightly dependency update failed",
-              body: `The automated dependency update workflow failed.
-
-            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            **Date:** ${{ github.event.head_commit.timestamp }}
-            **Update type:** ${{ github.event.inputs.update_type || 'compatible' }}
-
-            Please investigate and fix the issue.`,
-              labels: ['dependencies', 'automated']
-            })
+        run: |
+          echo "## ⚠️ Nightly dependency update failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Update type: ${{ github.event.inputs.update_type || 'compatible' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please investigate the failed job logs." >> $GITHUB_STEP_SUMMARY
 
       - name: Notify on security updates
         if: steps.security_check.outputs.has_vulnerabilities == 'true' && steps.update.outputs.updates_available == 'true'

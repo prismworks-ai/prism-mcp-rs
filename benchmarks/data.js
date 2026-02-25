@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772038791396,
+  "lastUpdate": 1772039465079,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3492,6 +3492,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 147.22,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "4247e1bb99dee7ada991b3421b28967a4d99e5b7",
+          "message": "Enable cancel-in-progress across workflows",
+          "timestamp": "2026-02-25T12:07:35-05:00",
+          "tree_id": "e4a4dfcf6d59b35ac30d9d0b763118c44a0c3e8e",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4247e1bb99dee7ada991b3421b28967a4d99e5b7"
+        },
+        "date": 1772039463955,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.395,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 401.78,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.854,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 83.708,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 175.21,
             "unit": "ns"
           }
         ]

@@ -16,6 +16,10 @@ on:
           - latest # Update to latest versions
           - security # Only security updates
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-dependencies:
     name: Update Rust Dependencies

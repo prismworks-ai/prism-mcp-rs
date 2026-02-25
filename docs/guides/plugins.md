@@ -158,7 +158,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-prism-mcp-rs = "0.1.0"
+prism-mcp-rs = "1"
 async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -442,7 +442,7 @@ tar -czf plugin-v1.0.0-linux-x64.tar.gz \
   "author": "Your Name",
   "license": "MIT",
   "mcp_version": "2025-11-25",
-  "sdk_version": "0.1.0",
+  "sdk_version": "1.1.2",
   "entry_point": "libexample_plugin.so",
   "capabilities": {
     "tools": true,
@@ -452,8 +452,8 @@ tar -czf plugin-v1.0.0-linux-x64.tar.gz \
     "hot_reload": true
   },
   "requirements": {
-    "min_sdk_version": "0.1.0",
-    "max_sdk_version": "1.0.0"
+    "min_sdk_version": "1.0.0",
+    "max_sdk_version": "2.0.0"
   }
 }
 ```
@@ -546,7 +546,7 @@ use semver::{Version, VersionReq};
 
 impl Plugin for MyPlugin {
     fn is_compatible(&self, sdk_version: &str) -> bool {
-        let req = VersionReq::parse(">=0.1.0, <2.0.0").unwrap();
+        let req = VersionReq::parse(">=1.0.0, <2.0.0").unwrap();
         let version = Version::parse(sdk_version).unwrap();
         req.matches(&version)
     }

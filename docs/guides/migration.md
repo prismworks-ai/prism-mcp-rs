@@ -143,7 +143,7 @@ prism-mcp-rs uses feature flags for optional functionality:
 ```toml
 [dependencies]
 prism-mcp-rs = {
-    version = "0.1.0",
+    version = "1",
     features = [
         "stdio",      # STDIO transport (default)
         "http",       # HTTP/SSE transport
@@ -302,12 +302,14 @@ mod tests {
 
 - **Documentation**: [docs.rs/prism-mcp-rs](https://docs.rs/prism-mcp-rs)
 - **Examples**: See the `examples/` directory
-- **Issues**: [GitHub Issues](https://github.com/PrismAI/prism-mcp-rs/issues)
-- **Discord**: [Join our Discord](https://discord.gg/prism-ai)
+- **Issues**: [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
+- **Discord**: [Join our Discord](https://discord.gg/prismworks)
 
 ## Compatibility Notes
 
 - prism-mcp-rs implements MCP protocol version 2025-11-25
 - All core MCP features are supported
+- Metadata and UI fields (`title`, `icons`, `_meta`) are supported across core types
+- Sampling, elicitation, and task-status/cancellation flows are included in the typed API
 - Additional convenience methods don't break protocol compatibility
 - The SDK is wire-compatible with other MCP implementations

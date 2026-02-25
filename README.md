@@ -5,6 +5,7 @@
 [![Documentation](https://img.shields.io/docsrs/prism-mcp-rs?style=flat-square&label=docs)](https://docs.rs/prism-mcp-rs)
 [![CI](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/ci.yml?style=flat-square&label=CI&logo=github)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![MCP](https://img.shields.io/badge/MCP-2025--11--25%20Compliant-0A7EA4?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/docs/guides/migration.md#compatibility-notes)
 [![Performance](https://img.shields.io/badge/performance-tracked-brightgreen?style=flat-square)](https://prismworks-ai.github.io/prism-mcp-rs/benchmarks/)
 [![Security Audit](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/security.yml?style=flat-square&label=security&logo=shield)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
 [![codecov](https://img.shields.io/codecov/c/github/prismworks-ai/prism-mcp-rs?style=flat-square&logo=codecov)](https://codecov.io/gh/prismworks-ai/prism-mcp-rs)
@@ -20,20 +21,46 @@
 [![Release](https://img.shields.io/github/v/release/prismworks-ai/prism-mcp-rs.svg?style=flat-square&include_prereleases)](https://github.com/prismworks-ai/prism-mcp-rs/releases)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865f2?style=flat-square&logo=discord)](https://discord.gg/prismworks)
 
-**prism-mcp-rs** is a production-grade Rust implementation of the Model Context Protocol (MCP) SDK with enterprise-class features for building secure, scalable MCP servers and clients.
+**prism-mcp-rs** is a production-grade Rust SDK for building MCP servers and clients with typed protocol models, multi-transport support, and operational controls for real deployments.
 
 Safety note: core library paths are safe Rust; plugin loading uses a narrow, audited `unsafe` FFI boundary.
 
 
-## Why Prism MCP?
+## Why prism-mcp-rs
 
-**The first MCP SDK designed for production AI systems.** While other implementations focus on basic protocol compliance, Prism MCP brings enterprise-grade reliability patterns, zero-downtime operations, and plugin ecosystems that scale.
+This SDK targets teams that need more than baseline protocol wiring. It combines MCP conformance with reliability, observability, and security defaults expected in enterprise environments.
 
-**Built for the AI-first world**: Where services need to be fault-tolerant, discoverable, and composable. Where hot-swapping capabilities matters more than cold starts. Where observability isn't optional—it's survival.
+### MCP 2025-11-25 Compliance Snapshot
 
-**From prototype to production in minutes**: Clean APIs that hide complexity, but expose power when you need it.
+| Area | Status |
+|------|--------|
+| Core JSON-RPC + lifecycle | Implemented |
+| Metadata/UI fields (`title`, `icons`, `_meta`) | Implemented |
+| Sampling updates (`tool_choice`, `stopReason`) | Implemented |
+| Elicitation (form + URL modes) + completion notification | Implemented |
+| Task status updates + cancellation notifications | Implemented |
+| Auth challenge handling (HTTP `401`/`403`) | Implemented |
 
-## Core Differentiators
+### What Differentiates It
+
+1. **Production-first runtime controls**: Circuit breakers, adaptive retries, and health checks are part of the SDK, not external glue code.
+2. **Rust-native typed protocol surface**: Strong typing and convenience builders reduce runtime drift from MCP message contracts.
+3. **Transport flexibility**: STDIO, HTTP/SSE, WebSocket, and HTTP/2 support are available under one crate.
+4. **Supply-chain and quality gates**: CI, clippy (`-D warnings`), security workflows, and audit tooling are built into the project baseline.
+5. **Optional plugin runtime**: Hot-reloadable plugin capabilities for extensible deployments without forcing plugin complexity on all users.
+
+### How It Fits with Agent Frameworks
+
+`prism-mcp-rs` complements orchestration frameworks; it does not replace them.
+
+| Layer | Responsibility |
+|------|----------------|
+| Agent framework (LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, etc.) | Planning, orchestration, workflow logic |
+| `prism-mcp-rs` | MCP protocol runtime, transport handling, server/client implementation, reliability primitives |
+
+Use this SDK when your services are in Rust and need deterministic MCP behavior under real operational load.
+
+## Detailed Capabilities
 
 ### 1. Advanced Resilience Patterns
 

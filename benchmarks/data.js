@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772040224076,
+  "lastUpdate": 1772040695801,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3590,6 +3590,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 169.54,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "992e5e09d14a3c0112dd91363461210082d0cbc2",
+          "message": "Address clippy regressions in integration tests",
+          "timestamp": "2026-02-25T12:28:37-05:00",
+          "tree_id": "342aee3e70b5db0701ee2bb80926ed0e6da4215d",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/992e5e09d14a3c0112dd91363461210082d0cbc2"
+        },
+        "date": 1772040694755,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.413,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 393.66,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.031,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 79.562,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.04,
             "unit": "ns"
           }
         ]

@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772034579544,
+  "lastUpdate": 1772035395172,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3287,6 +3287,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 151.79,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "4d9b4e6cd454e46dd98377dac9e26f43baf26893",
+          "message": "chore: update dependency constraints",
+          "timestamp": "2026-02-25T10:59:22-05:00",
+          "tree_id": "b6b3af30ec927e3a7e03c113a594acc7d390b772",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4d9b4e6cd454e46dd98377dac9e26f43baf26893"
+        },
+        "date": 1772035393479,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.384,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 371.8,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.83,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.631,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 170.73,
             "unit": "ns"
           }
         ]

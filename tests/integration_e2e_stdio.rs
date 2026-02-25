@@ -252,9 +252,8 @@ mod e2e_stdio_tests {
         let mut success_count = 0;
         for handle in handles {
             let result = handle.await.unwrap();
-            if result.is_ok() {
+            if let Ok(tool_result) = result {
                 success_count += 1;
-                let tool_result = result.unwrap();
                 assert!(
                     tool_result.is_error.is_none() || !tool_result.is_error.unwrap(),
                     "Tool call should succeed"

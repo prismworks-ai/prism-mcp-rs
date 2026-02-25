@@ -12,8 +12,7 @@
 //!     use prism_mcp_rs::test_utils::*;
 //!     use prism_mcp_rs::protocol::JsonRpcMessage;
 //!     
-//!     #[test]
-//!     fn test_error_response() {
+//!     fn example_error_response_assertion() {
 //!         let request = mock_request("unknown_method");
 //!         // Process request...
 //!         let response = JsonRpcMessage::Error(

@@ -799,8 +799,8 @@ mod tests {
         // Let's just check that start can be called again
         let result2 = transport.start().await;
         // The behavior depends on the implementation - it might succeed or fail
-        if result2.is_err() {
-            match result2.unwrap_err() {
+        if let Err(err) = result2 {
+            match err {
                 McpError::WebSocket(msg) => assert!(msg.contains("bind")),
                 _ => panic!("Expected WebSocket error"),
             }

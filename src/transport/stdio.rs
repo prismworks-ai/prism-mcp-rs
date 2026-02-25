@@ -645,8 +645,7 @@ mod tests {
 
         // The command should start but may exit immediately
         // We're testing the transport creation logic
-        if result.is_ok() {
-            let transport = result.unwrap();
+        if let Ok(transport) = result {
             assert_eq!(transport.config.read_timeout_ms, Some(5000));
             assert_eq!(transport.config.max_message_size, Some(2048));
         }

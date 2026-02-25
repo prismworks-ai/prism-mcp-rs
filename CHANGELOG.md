@@ -5,6 +5,17 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- N/A
+
+### Changed
+- N/A
+
+### Fixed
+- N/A
+
 ## [1.1.2] - 2025-12-27
 
 ### Maintenance & Quality
@@ -184,7 +195,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated plugin documentation with AI tool deployment workflow
 - Complete validation: 264 tests passing, no clippy warnings, all security checks green
 
-## [Unreleased]
+## [2.0.0] - 2026-02-25
 
 ### Added
 - Circuit breaker pattern for fault tolerance
@@ -265,6 +276,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Contributors
 - Prismworks AI Team
 
-[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.2...v2.0.0
 [1.1.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.0...v1.1.1

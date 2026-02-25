@@ -442,7 +442,7 @@ tar -czf plugin-v1.0.0-linux-x64.tar.gz \
   "author": "Your Name",
   "license": "MIT",
   "mcp_version": "2025-11-25",
-  "sdk_version": "1.1.2",
+  "sdk_version": "2.0.0",
   "entry_point": "libexample_plugin.so",
   "capabilities": {
     "tools": true,

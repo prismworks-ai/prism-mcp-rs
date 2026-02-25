@@ -191,7 +191,7 @@ mod cross_transport_tests {
     #[tokio::test]
     async fn test_json_rpc_compliance() {
         // Test JSON-RPC protocol compliance
-        let json_rpc_tests = vec![
+        let json_rpc_tests = [
             // Valid requests
             JsonRpcRequest {
                 jsonrpc: "2.0".to_string(),
@@ -283,7 +283,7 @@ mod cross_transport_tests {
         let resource_content = Content::resource_link("file:///test.txt", "test.txt");
 
         // Test serialization/deserialization
-        for content in vec![text_content, image_content, audio_content, resource_content] {
+        for content in [text_content, image_content, audio_content, resource_content] {
             let serialized = serde_json::to_string(&content).unwrap();
             let deserialized: Content = serde_json::from_str(&serialized).unwrap();
             assert_eq!(content, deserialized);

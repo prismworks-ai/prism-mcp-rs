@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772037102799,
+  "lastUpdate": 1772037534414,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3360,6 +3360,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4eec2f4e60cfc926719892721ec1a31bb058e83a"
         },
         "date": 1772037101814,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "dummy_benchmark",
+            "value": 100,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "608efaad4afc13a2e8b801da3ea47d864a0aa168",
+          "message": "Enhance API ergonomics",
+          "timestamp": "2026-02-25T11:37:15-05:00",
+          "tree_id": "2dd58df8738465b9c20f6176af63642573399244",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/608efaad4afc13a2e8b801da3ea47d864a0aa168"
+        },
+        "date": 1772037533223,
         "tool": "customSmallerIsBetter",
         "benches": [
           {

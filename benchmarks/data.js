@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772041577432,
+  "lastUpdate": 1772042314168,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3688,6 +3688,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 177.9,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "9cfcc93bbfb8bf0862e37f243eceb80c371da57c",
+          "message": "release: cut v2.0.0 for protocol update",
+          "timestamp": "2026-02-25T12:54:58-05:00",
+          "tree_id": "47e43f1c093e8e8a76026cdd8c5971bff99b84bd",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/9cfcc93bbfb8bf0862e37f243eceb80c371da57c"
+        },
+        "date": 1772042313570,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.709,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 364.89,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.654,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.676,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 169.99,
             "unit": "ns"
           }
         ]

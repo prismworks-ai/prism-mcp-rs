@@ -96,7 +96,7 @@ fn benchmark_plugin_lifecycle(c: &mut Criterion) {
                 description: Some("Test plugin for benchmarking".to_string()),
                 homepage: None,
                 license: Some("MIT".to_string()),
-                mcp_version: "2025-06-18".to_string(),
+                mcp_version: "2025-11-25".to_string(),
                 capabilities: PluginCapabilities {
                     hot_reload: true,
                     configurable: true,

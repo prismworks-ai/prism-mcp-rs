@@ -236,7 +236,7 @@ impl HttpClientTransport {
             jsonrpc: "2.0".to_string(),
             method: "initialize".to_string(),
             params: Some(serde_json::json!({
-                "protocolVersion": "2025-06-18",
+                "protocolVersion": "2025-11-25",
                 "capabilities": {},
                 "clientInfo": {
                     "name": "prism-mcp-rs",

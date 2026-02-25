@@ -73,6 +73,7 @@ mod protocol_types_tests {
             },
             output_schema: None,
             annotations: None,
+            icons: None,
             title: None,
             meta: None,
         };
@@ -90,6 +91,7 @@ mod protocol_types_tests {
             mime_type: Some("text/plain".to_string()),
             annotations: None,
             size: Some(1024),
+            icons: None,
             title: None,
             meta: None,
         };
@@ -161,7 +163,7 @@ mod protocol_constants_tests {
 
     #[test]
     fn test_protocol_version() {
-        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-06-18");
+        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-11-25");
         assert_eq!(JSONRPC_VERSION, "2.0");
     }
 

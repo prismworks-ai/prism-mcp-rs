@@ -320,7 +320,7 @@ pub fn validate_create_message_params(params: &CreateMessageParams) -> McpResult
     Ok(())
 }
 
-/// Validates sampling content (2025-06-18)
+/// Validates sampling content (2025-11-25)
 pub fn validate_sampling_content(content: &SamplingContent) -> McpResult<()> {
     match content {
         SamplingContent::Text {
@@ -379,7 +379,7 @@ pub fn validate_sampling_content(content: &SamplingContent) -> McpResult<()> {
     Ok(())
 }
 
-/// Validates content (2025-06-18 with ContentBlock)
+/// Validates content (2025-11-25 with ContentBlock)
 pub fn validate_content(content: &ContentBlock) -> McpResult<()> {
     match content {
         ContentBlock::Text {
@@ -508,7 +508,7 @@ pub fn validate_content(content: &ContentBlock) -> McpResult<()> {
     Ok(())
 }
 
-/// Validates annotations (2025-06-18)
+/// Validates annotations (2025-11-25)
 pub fn validate_annotations(annotations: &Annotations) -> McpResult<()> {
     // Validate priority is in valid range
     if let Some(priority) = annotations.priority {
@@ -533,7 +533,7 @@ pub fn validate_annotations(annotations: &Annotations) -> McpResult<()> {
     Ok(())
 }
 
-/// Validates tool annotations (2025-06-18 Updated for ToolAnnotations)
+/// Validates tool annotations (2025-11-25 Updated for ToolAnnotations)
 pub fn validate_tool_annotations(
     _annotations: &crate::protocol::types::ToolAnnotations,
 ) -> McpResult<()> {
@@ -859,6 +859,7 @@ mod tests {
             },
             output_schema: None,
             annotations: None,
+            icons: None,
             title: Some("Test Tool".to_string()),
             meta: None,
         };
@@ -876,6 +877,7 @@ mod tests {
             output_schema: None,
             annotations: None,
             title: None,
+            icons: None,
             meta: None,
         };
         assert!(validate_tool_info(&invalid_tool).is_err());
@@ -891,6 +893,8 @@ mod tests {
             max_tokens: 100,
             temperature: None,
             stop_sequences: None,
+            tools: None,
+            tool_choice: None,
             metadata: None,
             meta: None,
         };
@@ -904,6 +908,8 @@ mod tests {
             max_tokens: 0, // Invalid max_tokens
             temperature: None,
             stop_sequences: None,
+            tools: None,
+            tool_choice: None,
             metadata: None,
             meta: None,
         };

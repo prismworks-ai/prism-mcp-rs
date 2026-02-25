@@ -69,7 +69,7 @@
 //!
 //! # Features
 //!
-//! - **Protocol Compliance**: Full MCP 2025-06-18 specification support
+//! - **Protocol Compliance**: Full MCP 2025-11-25 specification support
 //! - **Capability Management**: Dynamic capability negotiation
 //! - **Lifecycle Handling**: Proper initialization and shutdown
 //! - **Error Handling**: Comprehensive error responses

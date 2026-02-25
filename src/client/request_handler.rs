@@ -2,7 +2,7 @@
 //!
 //! Module provides the infrastructure for handling requests that the MCP server
 //! sends to the client, enabling true bidirectional communication as defined in the
-//! MCP 2025-06-18 specification
+//! MCP 2025-11-25 specification
 //!
 //! Key features:
 //! - Sampling/createMessage request handling (LLM integration)
@@ -559,8 +559,26 @@ impl ClientRequestHandler for InteractiveClientRequestHandler {
             });
         }
 
+        // URL-mode elicitation is a client UX flow; this simple handler cannot launch
+        // URLs, so it fails safely.
+        if matches!(params.mode, Some(ElicitationMode::Url)) {
+            return Ok(ElicitResult {
+                action: ElicitationAction::Decline,
+                content: None,
+                meta: None,
+            });
+        }
+
+        let Some(requested_schema) = params.requested_schema.as_ref() else {
+            return Ok(ElicitResult {
+                action: ElicitationAction::Cancel,
+                content: None,
+                meta: None,
+            });
+        };
+
         // Collect form data
-        let form_data = match self.collect_form_data(&params.requested_schema).await {
+        let form_data = match self.collect_form_data(requested_schema).await {
             Ok(data) => data,
             Err(_) => {
                 return Ok(ElicitResult {
@@ -670,10 +688,27 @@ impl ClientRequestHandler for AutomatedClientRequestHandler {
     }
 
     async fn handle_elicit(&self, params: ElicitParams) -> McpResult<ElicitResult> {
+        // URL-mode elicitation can't be actioned in automated mode.
+        if matches!(params.mode, Some(ElicitationMode::Url)) {
+            return Ok(ElicitResult {
+                action: ElicitationAction::Decline,
+                content: None,
+                meta: None,
+            });
+        }
+
+        let Some(requested_schema) = params.requested_schema.as_ref() else {
+            return Ok(ElicitResult {
+                action: ElicitationAction::Cancel,
+                content: None,
+                meta: None,
+            });
+        };
+
         // Generate form data using defaults or empty values
         let mut form_data = HashMap::new();
 
-        for (field_name, field_def) in &params.requested_schema.properties {
+        for (field_name, field_def) in &requested_schema.properties {
             let value = if let Some(default_value) = self.default_responses.get(field_name) {
                 default_value.clone()
             } else {
@@ -737,6 +772,8 @@ mod tests {
             temperature: None,
             stop_sequences: None,
             model_preferences: None,
+            tools: None,
+            tool_choice: None,
             metadata: None,
             meta: None,
         };
@@ -746,11 +783,13 @@ mod tests {
         // Test elicit (should fail)
         let elicit_params = ElicitParams {
             message: "Test message".to_string(),
-            requested_schema: ElicitationSchema {
+            mode: Some(ElicitationMode::Form),
+            url: None,
+            requested_schema: Some(ElicitationSchema {
                 schema_type: "object".to_string(),
                 properties: HashMap::new(),
                 required: None,
-            },
+            }),
             meta: None,
         };
         let elicit_result = handler.handle_elicit(elicit_params).await;
@@ -777,11 +816,13 @@ mod tests {
         // Test elicit with auto-accept
         let elicit_params = ElicitParams {
             message: "Test message".to_string(),
-            requested_schema: ElicitationSchema {
+            mode: Some(ElicitationMode::Form),
+            url: None,
+            requested_schema: Some(ElicitationSchema {
                 schema_type: "object".to_string(),
                 properties: HashMap::new(),
                 required: None,
-            },
+            }),
             meta: None,
         };
         let elicit_result = handler.handle_elicit(elicit_params).await;
@@ -825,11 +866,13 @@ mod tests {
 
         let _elicit_params = ElicitParams {
             message: "Please provide your email".to_string(),
-            requested_schema: ElicitationSchema {
+            mode: Some(ElicitationMode::Form),
+            url: None,
+            requested_schema: Some(ElicitationSchema {
                 schema_type: "object".to_string(),
                 properties,
                 required: Some(vec!["email".to_string()]), // email is required
-            },
+            }),
             meta: None,
         };
 
@@ -872,11 +915,13 @@ mod tests {
 
         let elicit_params = ElicitParams {
             message: "Test message".to_string(),
-            requested_schema: ElicitationSchema {
+            mode: Some(ElicitationMode::Form),
+            url: None,
+            requested_schema: Some(ElicitationSchema {
                 schema_type: "object".to_string(),
                 properties,
                 required: None,
-            },
+            }),
             meta: None,
         };
 

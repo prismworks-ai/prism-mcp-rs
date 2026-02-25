@@ -1,7 +1,7 @@
 // Copyright (c) 2025 MCP Rust Contributors
 // SPDX-License-Identifier: MIT
 
-// ! improved schema compliance tests for 100% MCP 2025-06-18 coverage
+// ! improved schema compliance tests for 100% MCP 2025-11-25 coverage
 // !
 // ! This test suite focuses on areas that need deeper validation:
 // ! - Elicitation system complete testing
@@ -726,7 +726,7 @@ mod improved_schema_compliance {
 
     #[test]
     fn test_tool_output_schema_validation() {
-        // Test tool with output schema (new in 2025-06-18)
+        // Test tool with output schema (new in 2025-11-25)
         let tool_with_output_schema = json!({
             "name": "data_processor",
             "description": "Processes data and returns structured output",

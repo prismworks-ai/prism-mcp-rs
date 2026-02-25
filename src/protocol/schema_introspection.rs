@@ -1,4 +1,4 @@
-//! improved Schema Introspection for MCP Protocol (2025-06-18)
+//! improved Schema Introspection for MCP Protocol (2025-11-25)
 //!
 //! Module provides complete schema introspection capabilities,
 //! allowing clients to discover the full structure and capabilities of
@@ -355,7 +355,7 @@ pub struct SchemaBuilder {
 }
 
 impl SchemaBuilder {
-    /// Create a new schema builder for MCP 2025-06-18
+    /// Create a new schema builder for MCP 2025-11-25
     pub fn new() -> Self {
         Self {
             protocol: ProtocolInfo {
@@ -365,7 +365,7 @@ impl SchemaBuilder {
                 supported_versions: vec![
                     "2024-11-05".to_string(),
                     "2025-03-26".to_string(),
-                    "2025-06-18".to_string(),
+                    "2025-11-25".to_string(),
                 ],
                 version_features: Self::build_version_features(),
             },
@@ -418,7 +418,7 @@ impl SchemaBuilder {
         );
 
         features.insert(
-            "2025-06-18".to_string(),
+            "2025-11-25".to_string(),
             vec![
                 "elicitation".to_string(),
                 "audio-content".to_string(),
@@ -519,7 +519,7 @@ impl IntrospectionProvider {
         }
     }
 
-    /// Build introspection for MCP 2025-06-18
+    /// Build introspection for MCP 2025-11-25
     pub fn build_complete_introspection(&self) -> IntrospectionResult {
         let mut builder = SchemaBuilder::new();
 
@@ -607,7 +607,7 @@ impl IntrospectionProvider {
                 schema: serde_json::json!({}),
                 enabled_methods: vec!["elicitation/create".to_string()],
                 dependencies: vec![],
-                since_version: "2025-06-18".to_string(),
+                since_version: "2025-11-25".to_string(),
             });
 
         builder.build()
@@ -633,11 +633,11 @@ mod tests {
         let builder = SchemaBuilder::new();
         let result = builder.build();
 
-        assert_eq!(result.protocol.version, "2025-06-18");
+        assert_eq!(result.protocol.version, "2025-11-25");
         assert!(result
             .protocol
             .supported_versions
-            .contains(&"2025-06-18".to_string()));
+            .contains(&"2025-11-25".to_string()));
     }
 
     #[test]
@@ -672,8 +672,8 @@ mod tests {
     fn test_version_features() {
         let features = SchemaBuilder::build_version_features();
 
-        assert!(features.contains_key("2025-06-18"));
-        let v2025_features = &features["2025-06-18"];
+        assert!(features.contains_key("2025-11-25"));
+        let v2025_features = &features["2025-11-25"];
         assert!(v2025_features.contains(&"elicitation".to_string()));
         assert!(v2025_features.contains(&"audio-content".to_string()));
         assert!(v2025_features.contains(&"oauth-2.1".to_string()));

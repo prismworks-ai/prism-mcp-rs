@@ -169,9 +169,9 @@ pub struct McpServer {
     tools: Arc<RwLock<HashMap<String, Tool>>>,
     /// Registered prompts
     prompts: Arc<RwLock<HashMap<String, Prompt>>>,
-    /// Resource templates (New in 2025-06-18)
+    /// Resource templates (New in 2025-11-25)
     resource_templates: Arc<RwLock<HashMap<String, ResourceTemplate>>>,
-    /// Completion handlers (New in 2025-06-18)
+    /// Completion handlers (New in 2025-11-25)
     completion_handlers: Arc<RwLock<HashMap<String, Box<dyn CompletionHandler>>>>,
     /// Active transport
     transport: Arc<Mutex<Option<Box<dyn ServerTransport>>>>,
@@ -461,6 +461,7 @@ impl McpServer {
             mime_type: None,
             annotations: None,
             size: None,
+            icons: None,
             title: None,
             meta: None,
         };
@@ -665,7 +666,7 @@ impl McpServer {
     }
 
     // ========================================================================
-    // Resource Template Management (New in 2025-06-18)
+    // Resource Template Management (New in 2025-11-25)
     // ========================================================================
 
     /// Add a resource template to the server
@@ -709,7 +710,7 @@ impl McpServer {
     }
 
     // ========================================================================
-    // Completion Management (New in 2025-06-18)
+    // Completion Management (New in 2025-11-25)
     // ========================================================================
 
     /// Add completion handler for a specific reference type
@@ -751,7 +752,7 @@ impl McpServer {
     }
 
     // ========================================================================
-    // Bidirectional Communication (New in 2025-06-18)
+    // Bidirectional Communication (New in 2025-11-25)
     // ========================================================================
 
     /// Send a request to the client (server-initiated)
@@ -1281,7 +1282,7 @@ impl McpServer {
         Ok(serde_json::to_value(result)?)
     }
 
-    /// Handle resource templates list request (New in 2025-06-18)
+    /// Handle resource templates list request (New in 2025-11-25)
     async fn handle_resource_templates_list(&self, params: Option<Value>) -> McpResult<Value> {
         let _params: ListResourceTemplatesParams = match params {
             Some(p) => serde_json::from_value(p)?,
@@ -1298,7 +1299,7 @@ impl McpServer {
         Ok(serde_json::to_value(result)?)
     }
 
-    /// Handle completion request (New in 2025-06-18)
+    /// Handle completion request (New in 2025-11-25)
     async fn handle_completion_complete(&self, params: Option<Value>) -> McpResult<Value> {
         let params: CompleteParams = match params {
             Some(p) => serde_json::from_value(p)?,
@@ -1547,6 +1548,7 @@ mod tests {
             ClientInfo {
                 name: "test-client".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Client".to_string()),
             },
         );

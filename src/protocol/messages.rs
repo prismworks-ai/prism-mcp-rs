@@ -135,7 +135,7 @@ pub struct PingParams {
     pub meta: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// Parameters for list resource templates request (New in 2025-06-18)
+/// Parameters for list resource templates request (New in 2025-11-25)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ListResourceTemplatesParams {
     /// Pagination cursor
@@ -146,7 +146,7 @@ pub struct ListResourceTemplatesParams {
     pub meta: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// Parameters for list roots request (New in 2025-06-18)
+/// Parameters for list roots request (New in 2025-11-25)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ListRootsParams {
     /// Request metadata
@@ -211,6 +211,12 @@ pub struct CreateMessageParams {
     /// Model preferences
     #[serde(rename = "modelPreferences", skip_serializing_if = "Option::is_none")]
     pub model_preferences: Option<ModelPreferences>,
+    /// Optional tools that the model may call while sampling.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tools: Option<Vec<Tool>>,
+    /// Optional strategy for choosing tools during sampling.
+    #[serde(rename = "toolChoice", skip_serializing_if = "Option::is_none")]
+    pub tool_choice: Option<SamplingToolChoice>,
     /// Provider-specific metadata
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<HashMap<String, serde_json::Value>>,
@@ -229,17 +235,31 @@ pub struct SetLoggingLevelParams {
     pub meta: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// Parameters for elicitation request (2025-06-18 NEW)
+/// Parameters for elicitation request (2025-11-25 NEW)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ElicitParams {
     /// Message to present to the user
     pub message: String,
+    /// Interaction mode used by the client UI.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<ElicitationMode>,
+    /// URL to open when mode is `url`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
     /// Schema describing the requested form fields
-    #[serde(rename = "requestedSchema")]
-    pub requested_schema: ElicitationSchema,
+    #[serde(rename = "requestedSchema", skip_serializing_if = "Option::is_none")]
+    pub requested_schema: Option<ElicitationSchema>,
     /// Request metadata
     #[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
     pub meta: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Elicitation interaction mode.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum ElicitationMode {
+    Form,
+    Url,
 }
 
 // ============================================================================
@@ -377,7 +397,7 @@ pub struct SetLoggingLevelResult {
     pub meta: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// Result for elicitation request (2025-06-18 NEW)
+/// Result for elicitation request (2025-11-25 NEW)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ElicitResult {
     /// User action in response to elicitation
@@ -496,6 +516,50 @@ pub struct PromptListChangedParams {
     /// Response metadata
     #[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
     pub meta: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Parameters for elicitation completion notification.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ElicitationCompleteParams {
+    /// Final elicitation result payload.
+    pub result: ElicitResult,
+}
+
+/// Parameters for tasks/send.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TaskSendParams {
+    /// Task identifier.
+    #[serde(rename = "taskId")]
+    pub task_id: String,
+    /// Task payload.
+    pub task: serde_json::Value,
+    /// Request metadata.
+    #[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
+    pub meta: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Parameters for tasks/cancel.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TaskCancelParams {
+    /// Task identifier.
+    #[serde(rename = "taskId")]
+    pub task_id: String,
+    /// Request metadata.
+    #[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
+    pub meta: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Parameters for notifications/tasks/status/update.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TaskStatusUpdateParams {
+    /// Task identifier.
+    #[serde(rename = "taskId")]
+    pub task_id: String,
+    /// Task status value.
+    pub status: String,
+    /// Optional status detail payload.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<serde_json::Value>,
 }
 
 /// Parameters for progress notification (alias for better naming)
@@ -637,33 +701,35 @@ mod tests {
     #[test]
     fn test_initialize_params_serialization() {
         let params = InitializeParams {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: Implementation {
                 name: "test-client".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Client".to_string()),
             },
             meta: None,
         };
 
         let json = serde_json::to_value(&params).unwrap();
-        assert_eq!(json["protocolVersion"], "2025-06-18");
+        assert_eq!(json["protocolVersion"], "2025-11-25");
         assert_eq!(json["clientInfo"]["name"], "test-client");
 
         // Test round-trip
         let deserialized: InitializeParams = serde_json::from_value(json).unwrap();
-        assert_eq!(deserialized.protocol_version, "2025-06-18");
+        assert_eq!(deserialized.protocol_version, "2025-11-25");
     }
 
     #[test]
     fn test_initialize_result_serialization() {
         let result = InitializeResult {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ServerCapabilities::default(),
             server_info: Implementation {
                 name: "test-server".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Server".to_string()),
             },
             instructions: Some("Test instructions".to_string()),
@@ -671,7 +737,7 @@ mod tests {
         };
 
         let json = serde_json::to_value(&result).unwrap();
-        assert_eq!(json["protocolVersion"], "2025-06-18");
+        assert_eq!(json["protocolVersion"], "2025-11-25");
         assert_eq!(json["serverInfo"]["name"], "test-server");
         assert_eq!(json["instructions"], "Test instructions");
     }
@@ -746,6 +812,8 @@ mod tests {
             temperature: Some(0.7),
             stop_sequences: None,
             model_preferences: None,
+            tools: None,
+            tool_choice: None,
             metadata: None,
             meta: None,
         };
@@ -874,7 +942,7 @@ mod tests {
             (
                 "InitializeParams",
                 json!({
-                    "protocolVersion": "2025-06-18",
+                    "protocolVersion": "2025-11-25",
                     "capabilities": {},
                     "clientInfo": {
                         "name": "test",
@@ -914,7 +982,7 @@ mod tests {
         meta.insert("custom".to_string(), json!("value"));
 
         let params = InitializeParams {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: Implementation::new("test", "1.0.0"),
             meta: Some(meta),
@@ -995,11 +1063,13 @@ mod tests {
 
         let elicit_params = ElicitParams {
             message: "Please fill out the form".to_string(),
-            requested_schema: ElicitationSchema {
+            mode: Some(ElicitationMode::Form),
+            url: None,
+            requested_schema: Some(ElicitationSchema {
                 schema_type: "object".to_string(),
                 properties,
                 required: Some(vec!["name".to_string()]),
-            },
+            }),
             meta: None,
         };
         let json = serde_json::to_value(&elicit_params).unwrap();
@@ -1066,6 +1136,7 @@ mod tests {
                 mime_type: Some("text/plain".to_string()),
                 annotations: None,
                 size: None,
+                icons: None,
                 title: None,
                 meta: None,
             }],

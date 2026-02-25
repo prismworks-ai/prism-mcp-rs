@@ -131,6 +131,7 @@ impl Tool {
                 },
                 output_schema: None,
                 annotations: None,
+                icons: None,
                 title: None,
                 meta: None,
             },

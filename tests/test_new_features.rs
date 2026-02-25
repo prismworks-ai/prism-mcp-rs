@@ -75,11 +75,11 @@ fn test_schema_introspection() {
     let builder = SchemaBuilder::new();
     let result = builder.build();
 
-    assert_eq!(result.protocol.version, "2025-06-18");
+    assert_eq!(result.protocol.version, "2025-11-25");
     assert!(result
         .protocol
         .supported_versions
-        .contains(&"2025-06-18".to_string()));
+        .contains(&"2025-11-25".to_string()));
 
     // Test introspection provider
     let provider = IntrospectionProvider::new();
@@ -116,7 +116,7 @@ fn test_messages_have_metadata() {
 
     // Test that request types have metadata fields
     let init_params = InitializeParams {
-        protocol_version: "2025-06-18".to_string(),
+        protocol_version: "2025-11-25".to_string(),
         capabilities: ClientCapabilities::default(),
         client_info: Implementation::new("test", "1.0.0"),
         meta: Some(HashMap::from([("test".to_string(), json!("value"))])),
@@ -126,7 +126,7 @@ fn test_messages_have_metadata() {
 
     // Test that response types have metadata fields
     let init_result = InitializeResult {
-        protocol_version: "2025-06-18".to_string(),
+        protocol_version: "2025-11-25".to_string(),
         capabilities: ServerCapabilities::default(),
         server_info: Implementation::new("test-server", "1.0.0"),
         instructions: None,

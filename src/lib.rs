@@ -1,10 +1,10 @@
 // Copyright (c) 2025 Prismworks AI Inc.
 // SPDX-License-Identifier: MIT
 
-//! # MCP Rust SDK (2025-06-18)
+//! # MCP Rust SDK (2025-11-25)
 //!
 //! A comprehensive Rust SDK for the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-//! version 2025-06-18, providing both server and client implementations with MCP specification
+//! version 2025-11-25, providing both server and client implementations with MCP specification
 //! compliance including audio content, annotations, and improved capabilities.
 //!
 //! ## Features
@@ -12,12 +12,12 @@
 //! - ⚡ **High Performance**: Built with Rust's zero-cost abstractions and async/await
 //! - 🛡️ **Type Safety**: Leverages Rust's type system to prevent runtime errors
 //! - 🔌 **Multiple Transports**: Support for STDIO, HTTP/SSE, and WebSocket transports
-//! - ✅ **MCP 2025-06-18 Compliance**: Comprehensive implementation of the latest MCP specification
+//! - ✅ **MCP 2025-11-25 Compliance**: Comprehensive implementation of the latest MCP specification
 //! - 🚀 **Rich Ecosystem**: Tools, resources, prompts, and sampling support
-//! - 🎵 **Audio Support**: NEW in 2025-06-18 - Audio content support for multimodal interactions
-//! - 🏷️ **Annotations**: NEW in 2025-06-18 - Tool and content annotations for improved metadata
-//! - 💡 **Autocompletion**: NEW in 2025-06-18 - Argument autocompletion capabilities
-//! - 📁 **Roots Support**: NEW in 2025-06-18 - File system roots for improved resource access
+//! - 🎵 **Audio Support**: NEW in 2025-11-25 - Audio content support for multimodal interactions
+//! - 🏷️ **Annotations**: NEW in 2025-11-25 - Tool and content annotations for improved metadata
+//! - 💡 **Autocompletion**: NEW in 2025-11-25 - Argument autocompletion capabilities
+//! - 📁 **Roots Support**: NEW in 2025-11-25 - File system roots for improved resource access
 //!
 //! ## Quick Start
 //!
@@ -122,7 +122,7 @@
 //!
 //! - [`core`]: Core abstractions for resources, tools, prompts, and errors
 //! - plugin: Plugin system for dynamic tool loading
-//! - [`protocol`]: MCP protocol types and message definitions (2025-06-18)
+//! - [`protocol`]: MCP protocol types and message definitions (2025-11-25)
 //! - [`transport`]: Transport layer implementations (STDIO, HTTP, WebSocket)
 //! - [`server`]: MCP server implementation and lifecycle management
 //! - [`client`]: MCP client implementation and session management
@@ -146,7 +146,7 @@ pub use protocol::{
     ErrorObject, JsonRpcError, JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, ServerCapabilities,
 };
 
-/// Prelude module for convenient imports (2025-06-18)
+/// Prelude module for convenient imports (2025-11-25)
 ///
 /// Module re-exports the most commonly used types and traits for easy access.
 /// Use `use prism_mcp_rs::prelude::*;` to import everything you need.

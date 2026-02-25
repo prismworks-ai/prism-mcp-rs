@@ -80,7 +80,7 @@
 | Component | Description | Key Features |
 |-----------|-------------|-------------|
 | **Transport Layer** | Multi-protocol transport abstraction | STDIO, HTTP/1.1, HTTP/2, WebSocket, SSE |
-| **Protocol Engine** | MCP 2025-06-18 implementation | JSON-RPC, batch operations, streaming |
+| **Protocol Engine** | MCP 2025-11-25 implementation | JSON-RPC, batch operations, streaming |
 | **Plugin Runtime** | Dynamic extension system | Hot reload, sandboxing, versioning |
 | **Resilience Core** | Fault tolerance mechanisms | Circuit breakers, retries, health checks |
 | **Security Module** | Authentication and authorization | JWT, OAuth2, mTLS, rate limiting |

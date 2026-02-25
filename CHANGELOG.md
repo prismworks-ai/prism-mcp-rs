@@ -199,7 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Convenience methods for `ContentBlock::text()`, `ContentBlock::image()`, `ContentBlock::audio()`, `ContentBlock::resource_link()`
 - Convenience methods for `ToolResult::text()`, `ToolResult::error()`, `ToolResult::with_content()`, `ToolResult::with_structured()`
 - Comprehensive plugin architecture for runtime component loading
-- Support for MCP 2025-06-18 specification
+- Support for MCP 2025-11-25 specification
 - Multiple transport implementations (STDIO, HTTP, WebSocket, HTTP/2)
 - Bidirectional communication support
 - Streaming capabilities for large payloads
@@ -258,7 +258,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Specifications
 - **Rust Version**: MSRV 1.85
-- **MCP Version**: 2025-06-18
+- **MCP Version**: 2025-11-25
 - **License**: MIT
 - **Dependencies**: Minimal, with optional features for additional transports
 

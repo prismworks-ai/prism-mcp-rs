@@ -168,6 +168,7 @@ fn test_schema_types() -> Result<(), Box<dyn std::error::Error>> {
         },
         output_schema: None,
         annotations: None,
+        icons: None,
         title: None,
         meta: None,
     };

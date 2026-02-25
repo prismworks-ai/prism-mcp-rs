@@ -61,7 +61,9 @@ async fn main() -> McpResult<()> {
 
     let elicit_params = ElicitParams {
         message: "We need some information to continue:".to_string(),
-        requested_schema: elicitation_schema,
+        mode: Some(ElicitationMode::Form),
+        url: None,
+        requested_schema: Some(elicitation_schema),
         meta: None,
     };
     println!(

@@ -221,7 +221,7 @@ impl fmt::Display for ClientInfo {
 }
 
 // Implementation struct moved to types.rs to avoid duplication
-// Using the standard Implementation from types.rs which includes the title field per 2025-06-18 spec
+// Using the standard Implementation from types.rs which includes the title field per 2025-11-25 spec
 
 /// Default protocol version
 pub static DEFAULT_PROTOCOL_VERSION: Lazy<String> = Lazy::new(|| "2024-11-05".to_string());

@@ -31,6 +31,7 @@ impl ResourceHandler for TextResourceHandler {
             mime_type: Some("text/plain".to_string()),
             annotations: None,
             size: None,
+            icons: None,
             title: None,
             meta: None,
         }])

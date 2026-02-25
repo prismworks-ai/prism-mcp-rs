@@ -4,7 +4,7 @@
 // ! complete tests for MCP protocol schema compliance and JSON schema validation
 // !
 // ! Note: JSON schema files have been moved to /docs for better organization:
-// ! - docs/mcp-schema-2025-06-18.json (current specification)
+// ! - docs/mcp-schema-2025-11-25.json (current specification)
 // ! - docs/mcp-schema-2025-03-26.json (legacy specification)
 // ! - docs/reference/legacy-types/ (deprecated Rust type definitions)
 
@@ -16,16 +16,16 @@ mod schema_tests {
 
     #[test]
     fn test_current_schema_compliance() {
-        // Test that current schema remains compliant with 2025-06-18 specification
+        // Test that current schema remains compliant with 2025-11-25 specification
         // This test validates our current implementation against the expected schema format
         // Schema compliance verified - no explicit assertion needed
     }
 
     #[test]
     fn test_current_protocol_version() {
-        // Test that we're using the current protocol version (2025-06-18)
+        // Test that we're using the current protocol version (2025-11-25)
         let test_data = json!({
-            "protocolVersion": "2025-06-18",
+            "protocolVersion": "2025-11-25",
             "capabilities": {},
             "clientInfo": {
                 "name": "test-client",
@@ -34,7 +34,7 @@ mod schema_tests {
         });
 
         assert!(test_data.is_object());
-        assert_eq!(test_data["protocolVersion"], "2025-06-18");
+        assert_eq!(test_data["protocolVersion"], "2025-11-25");
     }
 
     #[test]
@@ -45,7 +45,7 @@ mod schema_tests {
             "id": "init-1",
             "method": "initialize",
             "params": {
-                "protocolVersion": "2025-06-18",
+                "protocolVersion": "2025-11-25",
                 "capabilities": {},
                 "clientInfo": {
                     "name": "test-client",
@@ -179,7 +179,7 @@ mod schema_tests {
 
     #[test]
     fn test_resource_link_schema() {
-        // Test resource link schema (2025-06-18 NEW)
+        // Test resource link schema (2025-11-25 NEW)
         let resource_link = json!({
             "type": "resource_link",
             "uri": "file://example.txt",

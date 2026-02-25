@@ -307,7 +307,7 @@ mod tests {
 
 ## Compatibility Notes
 
-- prism-mcp-rs implements MCP protocol version 2025-06-18
+- prism-mcp-rs implements MCP protocol version 2025-11-25
 - All core MCP features are supported
 - Additional convenience methods don't break protocol compatibility
 - The SDK is wire-compatible with other MCP implementations

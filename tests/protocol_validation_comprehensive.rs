@@ -1,7 +1,7 @@
 // Copyright (c) 2025 MCP Rust Contributors
 // SPDX-License-Identifier: MIT
 
-// ! Protocol-level validation tests for 100% MCP 2025-06-18 compliance
+// ! Protocol-level validation tests for 100% MCP 2025-11-25 compliance
 // !
 // ! This test suite focuses on protocol-level validation:
 // ! - Complete message flow validation
@@ -35,7 +35,7 @@ mod protocol_validation_complete {
             "id": "init-1",
             "method": "initialize",
             "params": {
-                "protocolVersion": "2025-06-18",
+                "protocolVersion": "2025-11-25",
                 "capabilities": {
                     "roots": {
                         "listChanged": true
@@ -62,7 +62,7 @@ mod protocol_validation_complete {
         // Validate request structure
         assert_eq!(init_request["jsonrpc"], "2.0");
         assert_eq!(init_request["method"], "initialize");
-        assert_eq!(init_request["params"]["protocolVersion"], "2025-06-18");
+        assert_eq!(init_request["params"]["protocolVersion"], "2025-11-25");
         assert!(init_request["params"]["capabilities"].is_object());
         assert!(init_request["params"]["clientInfo"].is_object());
 
@@ -71,7 +71,7 @@ mod protocol_validation_complete {
             "jsonrpc": "2.0",
             "id": "init-1",
             "result": {
-                "protocolVersion": "2025-06-18",
+                "protocolVersion": "2025-11-25",
                 "capabilities": {
                     "prompts": {
                         "listChanged": true
@@ -104,7 +104,7 @@ mod protocol_validation_complete {
         assert_eq!(init_response["jsonrpc"], "2.0");
         assert_eq!(init_response["id"], "init-1");
         assert!(init_response["result"].is_object());
-        assert_eq!(init_response["result"]["protocolVersion"], "2025-06-18");
+        assert_eq!(init_response["result"]["protocolVersion"], "2025-11-25");
         assert!(init_response["result"]["capabilities"].is_object());
         assert!(init_response["result"]["serverInfo"].is_object());
         assert!(init_response["result"]["instructions"].is_string());
@@ -590,7 +590,7 @@ mod protocol_validation_complete {
 
         println!("\n=== PROTOCOL COMPLIANCE SUMMARY ===\n");
         println!("[x] JSON-RPC 2.0: Full compliance with request/response/notification patterns");
-        println!("[x] MCP 2025-06-18: All protocol features implemented and tested");
+        println!("[x] MCP 2025-11-25: All protocol features implemented and tested");
         println!("[x] Message Flows: Complete lifecycle testing for all operations");
         println!("[x] Error Handling: complete error scenario coverage");
         println!("[x] Content Types: All content block variants validated");

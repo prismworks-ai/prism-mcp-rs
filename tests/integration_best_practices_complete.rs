@@ -191,6 +191,7 @@ mod best_practices_tests {
                     mime_type: Some("application/json".to_string()),
                     annotations: None,
                     size: None,
+                    icons: None,
                     title: None,
                     meta: None,
                 })

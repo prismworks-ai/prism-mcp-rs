@@ -1,7 +1,7 @@
-//! MCP protocol implementation (2025-06-18)
+//! MCP protocol implementation (2025-11-25)
 //!
 //! This module contains the core protocol types and message handling for the
-//! Model Context Protocol version 2025-06-18, including JSON-RPC message
+//! Model Context Protocol version 2025-11-25, including JSON-RPC message
 //! serialization, validation, and new features like improved content system,
 //! annotations, improved capabilities, full metadata support, batch operations,
 //! and complete schema introspection.
@@ -88,7 +88,7 @@ pub mod roots_types;
 pub mod schema_introspection;
 pub mod types;
 // NOTE: types_2025 is temporarily disabled to resolve ContentBlock duplication conflicts
-// during schema upgrade to 2025-06-18. Will be removed after consolidation.
+// during schema upgrade to 2025-11-25. Will be removed after consolidation.
 // pub mod types_2025;
 pub mod validation;
 
@@ -114,7 +114,7 @@ pub use types::{
     error_codes, AnnotationAudience, Annotations, AudioContent, BaseMetadata, CallToolResult,
     ClientCapabilities, ClientInfo, CompletionsCapability, Content, ContentBlock,
     CreateMessageResult, Cursor, DangerLevel, ElicitationAction, ElicitationCapability,
-    ElicitationSchema, EmbeddedResource, ErrorObject, GetPromptResult, ImageContent,
+    ElicitationSchema, EmbeddedResource, ErrorObject, GetPromptResult, Icon, ImageContent,
     Implementation, JsonRpcBatchRequest, JsonRpcBatchResponse, JsonRpcError, JsonRpcId,
     JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcRequestOrNotification,
     JsonRpcResponse, JsonRpcResponseOrError, LoggingCapability, LoggingLevel, ModelHint,
@@ -122,21 +122,22 @@ pub use types::{
     PrimitiveSchemaDefinition, ProgressToken, Prompt, PromptArgument, PromptInfo, PromptMessage,
     PromptResult, PromptsCapability, Request, RequestId, RequestMeta, RequestParams, Resource,
     ResourceContents, ResourceInfo, ResourceLink, ResourceTemplate, ResourcesCapability, Role,
-    RootsCapability, SamplingCapability, SamplingContent, SamplingMessage, ServerCapabilities,
-    ServerInfo, StopReason, TextContent, Tool, ToolAnnotations, ToolInfo, ToolInputSchema,
-    ToolOutputSchema, ToolResult, ToolsCapability, JSONRPC_VERSION, LATEST_PROTOCOL_VERSION,
-    PROTOCOL_VERSION,
+    RootsCapability, SamplingCapability, SamplingContent, SamplingMessage, SamplingToolChoice,
+    ServerCapabilities, ServerInfo, StopReason, TextContent, Tool, ToolAnnotations, ToolInfo,
+    ToolInputSchema, ToolOutputSchema, ToolResult, ToolsCapability, JSONRPC_VERSION,
+    LATEST_PROTOCOL_VERSION, PROTOCOL_VERSION,
 };
 
 pub use validation::*;
 
 // Re-export method constants for convenience
 pub use methods::{
-    CANCELLED, COMPLETION_COMPLETE, INITIALIZE, INITIALIZED, LOGGING_MESSAGE, LOGGING_SET_LEVEL,
-    PING, PROGRESS, PROMPTS_GET, PROMPTS_LIST, PROMPTS_LIST_CHANGED, RESOURCES_LIST,
-    RESOURCES_LIST_CHANGED, RESOURCES_READ, RESOURCES_SUBSCRIBE, RESOURCES_TEMPLATES_LIST,
-    RESOURCES_UNSUBSCRIBE, RESOURCES_UPDATED, ROOTS_LIST, ROOTS_LIST_CHANGED, RPC_DISCOVER,
-    SAMPLING_CREATE_MESSAGE, TOOLS_CALL, TOOLS_LIST, TOOLS_LIST_CHANGED,
+    CANCELLED, COMPLETION_COMPLETE, ELICITATION_COMPLETE, INITIALIZE, INITIALIZED, LOGGING_MESSAGE,
+    LOGGING_SET_LEVEL, PING, PROGRESS, PROMPTS_GET, PROMPTS_LIST, PROMPTS_LIST_CHANGED,
+    RESOURCES_LIST, RESOURCES_LIST_CHANGED, RESOURCES_READ, RESOURCES_SUBSCRIBE,
+    RESOURCES_TEMPLATES_LIST, RESOURCES_UNSUBSCRIBE, RESOURCES_UPDATED, ROOTS_LIST,
+    ROOTS_LIST_CHANGED, RPC_DISCOVER, SAMPLING_CREATE_MESSAGE, TASKS_CANCEL, TASKS_SEND,
+    TASKS_STATUS_UPDATE, TOOLS_CALL, TOOLS_LIST, TOOLS_LIST_CHANGED,
 };
 
 // Legacy constant for compatibility

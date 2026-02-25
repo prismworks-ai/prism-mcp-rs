@@ -1,7 +1,7 @@
 // Copyright (c) 2025 MCP Rust Contributors
 // SPDX-License-Identifier: MIT
 
-// ! Edge cases and negative testing for 100% MCP 2025-06-18 schema coverage
+// ! Edge cases and negative testing for 100% MCP 2025-11-25 schema coverage
 // !
 // ! This test suite focuses on:
 // ! - Boundary value testing

@@ -198,6 +198,7 @@ async fn main() -> McpResult<()> {
             ClientInfo {
                 name: "test-client".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Client".to_string()),
             },
         )),

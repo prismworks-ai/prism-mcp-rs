@@ -61,18 +61,27 @@ impl AuthorizationClient {
         }
     }
 
-    /// Handle 401 Unauthorized response and initiate authorization
+    /// Handle authorization challenge response and initiate authorization.
+    ///
+    /// Works for both 401 and 403 challenge responses as long as a
+    /// `WWW-Authenticate` header is present.
     pub async fn handle_unauthorized(&self, www_authenticate: &str) -> McpResult<String> {
         // Parse WWW-Authenticate header
         let metadata_url = self
             .discovery_client
             .parse_www_authenticate(www_authenticate)?;
 
+        let resource_url = self.token_manager.get_context().await.resource;
+
         // Discover resource metadata
-        let resource_metadata = self
-            .discovery_client
-            .discover_from_resource(&metadata_url)
-            .await?;
+        let resource_metadata = match metadata_url {
+            Some(url) => self.discovery_client.discover_from_resource(&url).await?,
+            None => {
+                self.discovery_client
+                    .discover_from_resource(&resource_url)
+                    .await?
+            }
+        };
 
         // Select authorization server (use first for now)
         let auth_server_url = resource_metadata

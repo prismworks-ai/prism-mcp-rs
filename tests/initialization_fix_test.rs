@@ -30,6 +30,7 @@ async fn test_initialization_fix() {
         client_info: Implementation {
             name: "test-client".to_string(),
             version: "1.0.0".to_string(),
+            description: None,
             title: Some("Test Client".to_string()),
         },
         meta: None,

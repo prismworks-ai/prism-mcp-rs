@@ -181,6 +181,7 @@ impl Resource {
             mime_type: template.mime_type.clone(),
             annotations: None,
             size: None,
+            icons: None,
             title: None,
             meta: None,
         };
@@ -447,6 +448,7 @@ impl ResourceHandler for FileSystemResource {
                         mime_type: Some(self.get_mime_type(&path)),
                         annotations: None,
                         size: None,
+                        icons: None,
                         title: None,
                         meta: None,
                     });
@@ -501,6 +503,7 @@ impl ResourceBuilder {
             mime_type: self.mime_type,
             annotations: None,
             size: None,
+            icons: None,
             title: None,
             meta: None,
         };
@@ -541,6 +544,7 @@ mod tests {
             mime_type: Some("text/plain".to_string()),
             annotations: None,
             size: None,
+            icons: None,
             title: None,
             meta: None,
         };

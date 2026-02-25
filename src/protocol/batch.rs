@@ -1,4 +1,4 @@
-//! JSON-RPC Batch Request/Response Support (2025-06-18)
+//! JSON-RPC Batch Request/Response Support (2025-11-25)
 //!
 //! Module provides support for JSON-RPC batch operations as defined in the
 //! JSON-RPC 2.0 specification, even though the MCP spec notes "simplified JSON-RPC

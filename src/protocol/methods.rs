@@ -15,7 +15,7 @@ pub const TOOLS_LIST_CHANGED: &str = "notifications/tools/list_changed";
 
 // Resource-related methods
 pub const RESOURCES_LIST: &str = "resources/list";
-pub const RESOURCES_TEMPLATES_LIST: &str = "resources/templates/list"; // New in 2025-06-18
+pub const RESOURCES_TEMPLATES_LIST: &str = "resources/templates/list"; // New in 2025-11-25
 pub const RESOURCES_READ: &str = "resources/read";
 pub const RESOURCES_SUBSCRIBE: &str = "resources/subscribe";
 pub const RESOURCES_UNSUBSCRIBE: &str = "resources/unsubscribe";
@@ -30,15 +30,21 @@ pub const PROMPTS_LIST_CHANGED: &str = "notifications/prompts/list_changed";
 // Sampling methods
 pub const SAMPLING_CREATE_MESSAGE: &str = "sampling/createMessage";
 
-// Root-related methods (New in 2025-06-18)
+// Root-related methods (New in 2025-11-25)
 pub const ROOTS_LIST: &str = "roots/list";
 pub const ROOTS_LIST_CHANGED: &str = "notifications/roots/list_changed";
 
-// Completion methods (New in 2025-06-18)
+// Completion methods (New in 2025-11-25)
 pub const COMPLETION_COMPLETE: &str = "completion/complete";
 
-// Elicitation methods (New in 2025-06-18)
+// Elicitation methods (New in 2025-11-25)
 pub const ELICITATION_CREATE: &str = "elicitation/create";
+pub const ELICITATION_COMPLETE: &str = "notifications/elicitation/complete";
+
+// Task utility methods (New in 2025-11-25)
+pub const TASKS_SEND: &str = "tasks/send";
+pub const TASKS_CANCEL: &str = "tasks/cancel";
+pub const TASKS_STATUS_UPDATE: &str = "notifications/tasks/status/update";
 
 // Logging methods
 pub const LOGGING_SET_LEVEL: &str = "logging/setLevel";
@@ -46,7 +52,7 @@ pub const LOGGING_MESSAGE: &str = "notifications/message";
 
 // Progress and notification methods
 pub const PROGRESS: &str = "notifications/progress";
-pub const CANCELLED: &str = "notifications/cancelled"; // New in 2025-06-18
+pub const CANCELLED: &str = "notifications/cancelled"; // New in 2025-11-25
 
 // Discovery methods (Optional RPC discovery mechanism)
 pub const RPC_DISCOVER: &str = "rpc.discover";
@@ -80,6 +86,10 @@ mod tests {
             ROOTS_LIST_CHANGED,
             COMPLETION_COMPLETE,
             ELICITATION_CREATE,
+            ELICITATION_COMPLETE,
+            TASKS_SEND,
+            TASKS_CANCEL,
+            TASKS_STATUS_UPDATE,
             LOGGING_SET_LEVEL,
             LOGGING_MESSAGE,
             PROGRESS,
@@ -130,11 +140,15 @@ mod tests {
         // Test sampling methods
         assert_eq!(SAMPLING_CREATE_MESSAGE, "sampling/createMessage");
 
-        // Test 2025-06-18 new methods
+        // Test 2025-11-25 new methods
         assert_eq!(ROOTS_LIST, "roots/list");
         assert_eq!(ROOTS_LIST_CHANGED, "notifications/roots/list_changed");
         assert_eq!(COMPLETION_COMPLETE, "completion/complete");
         assert_eq!(ELICITATION_CREATE, "elicitation/create");
+        assert_eq!(ELICITATION_COMPLETE, "notifications/elicitation/complete");
+        assert_eq!(TASKS_SEND, "tasks/send");
+        assert_eq!(TASKS_CANCEL, "tasks/cancel");
+        assert_eq!(TASKS_STATUS_UPDATE, "notifications/tasks/status/update");
         assert_eq!(CANCELLED, "notifications/cancelled");
 
         // Test logging methods
@@ -153,6 +167,8 @@ mod tests {
             RESOURCES_LIST_CHANGED,
             PROMPTS_LIST_CHANGED,
             ROOTS_LIST_CHANGED,
+            ELICITATION_COMPLETE,
+            TASKS_STATUS_UPDATE,
             LOGGING_MESSAGE,
             PROGRESS,
             CANCELLED,
@@ -185,6 +201,8 @@ mod tests {
             ROOTS_LIST,
             COMPLETION_COMPLETE,
             ELICITATION_CREATE,
+            TASKS_SEND,
+            TASKS_CANCEL,
             LOGGING_SET_LEVEL,
         ];
 
@@ -234,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_2025_06_18_new_methods() {
-        // Test that new methods introduced in 2025-06-18 are present
+        // Test that new methods introduced in 2025-11-25 are present
         let new_methods = vec![
             RESOURCES_TEMPLATES_LIST,
             ROOTS_LIST,
@@ -248,7 +266,7 @@ mod tests {
         for method in new_methods {
             assert!(
                 !method.is_empty(),
-                "New 2025-06-18 method should not be empty: {method}"
+                "New 2025-11-25 method should not be empty: {method}"
             );
         }
     }

@@ -33,7 +33,7 @@ pub trait Transport: Send + Sync {
 
 ### 2. Protocol Engine
 
-The protocol engine implements MCP specification 2025-06-18 with full JSON-RPC 2.0 compliance.
+The protocol engine implements MCP specification 2025-11-25 with full JSON-RPC 2.0 compliance.
 
 #### Message Processing Pipeline
 

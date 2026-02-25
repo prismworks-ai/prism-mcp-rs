@@ -70,14 +70,14 @@ impl DiscoveryClient {
         Ok(metadata)
     }
 
-    /// Parse WWW-Authenticate header and extract resource metadata URL
-    pub fn parse_www_authenticate(&self, header_value: &str) -> McpResult<String> {
+    /// Parse WWW-Authenticate header and extract optional resource metadata URL.
+    ///
+    /// `resource_metadata` is optional in newer MCP auth guidance; callers should
+    /// fall back to protected-resource discovery from the MCP resource URL when absent.
+    pub fn parse_www_authenticate(&self, header_value: &str) -> McpResult<Option<String>> {
         let challenge = AuthChallenge::parse(header_value)
             .ok_or_else(|| McpError::Auth("Invalid WWW-Authenticate header".to_string()))?;
-
-        challenge.resource_metadata.ok_or_else(|| {
-            McpError::Auth("WWW-Authenticate header does not contain resource_metadata".to_string())
-        })
+        Ok(challenge.resource_metadata)
     }
 
     /// Discover authorization server metadata
@@ -252,19 +252,23 @@ impl Default for DiscoveryClient {
     }
 }
 
-/// Perform full discovery flow from 401 response
-pub async fn discover_from_401(
+/// Perform full discovery flow from an authorization challenge response.
+pub async fn discover_from_auth_challenge(
     client: &Client,
     www_authenticate: &str,
-    _resource_url: &str,
+    resource_url: &str,
 ) -> McpResult<(ProtectedResourceMetadata, AuthorizationServerMetadata)> {
     let discovery = DiscoveryClient::with_client(client.clone());
 
     // Parse WWW-Authenticate header
     let metadata_url = discovery.parse_www_authenticate(www_authenticate)?;
 
-    // Fetch resource metadata
-    let resource_metadata = discovery.discover_from_resource(&metadata_url).await?;
+    // Fetch resource metadata (fallback to RFC 9728 well-known discovery when
+    // resource_metadata is not present in challenge parameters).
+    let resource_metadata = match metadata_url {
+        Some(url) => discovery.discover_from_resource(&url).await?,
+        None => discovery.discover_from_resource(resource_url).await?,
+    };
 
     // Select first authorization server (client should implement selection logic)
     let auth_server_url = resource_metadata
@@ -279,6 +283,15 @@ pub async fn discover_from_401(
     let auth_metadata = discovery.discover_auth_server(&auth_server_url).await?;
 
     Ok((resource_metadata, auth_metadata))
+}
+
+/// Backward-compatible alias for callers that still model this as a 401-only flow.
+pub async fn discover_from_401(
+    client: &Client,
+    www_authenticate: &str,
+    resource_url: &str,
+) -> McpResult<(ProtectedResourceMetadata, AuthorizationServerMetadata)> {
+    discover_from_auth_challenge(client, www_authenticate, resource_url).await
 }
 
 /// Check if an authorization server supports required MCP features
@@ -320,14 +333,20 @@ mod tests {
     fn test_parse_www_authenticate() {
         let header = r#"Bearer realm="example", resource_metadata="https://example.com/.well-known/oauth-protected-resource", error="invalid_token""#;
 
-        let challenge = AuthChallenge::parse(header).unwrap();
-        assert_eq!(challenge.scheme, "Bearer");
-        assert_eq!(challenge.realm, Some("example".to_string()));
+        let discovery = DiscoveryClient::new();
+        let parsed = discovery.parse_www_authenticate(header).unwrap();
         assert_eq!(
-            challenge.resource_metadata,
+            parsed,
             Some("https://example.com/.well-known/oauth-protected-resource".to_string())
         );
-        assert_eq!(challenge.error, Some("invalid_token".to_string()));
+    }
+
+    #[test]
+    fn test_parse_www_authenticate_without_resource_metadata() {
+        let header = r#"Bearer realm="example", error="insufficient_scope""#;
+        let discovery = DiscoveryClient::new();
+        let parsed = discovery.parse_www_authenticate(header).unwrap();
+        assert_eq!(parsed, None);
     }
 
     #[test]

@@ -19,7 +19,7 @@ mod complete_schema_validation {
     /// Validates the protocol version constant
     #[test]
     fn test_protocol_version_compliance() {
-        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-06-18");
+        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-11-25");
         assert_eq!(JSONRPC_VERSION, "2.0");
         assert_eq!(PROTOCOL_VERSION, LATEST_PROTOCOL_VERSION); // Legacy compatibility
     }
@@ -30,6 +30,7 @@ mod complete_schema_validation {
         let impl_info = Implementation {
             name: "test-implementation".to_string(),
             version: "1.0.0".to_string(),
+            description: None,
             title: None,
         };
 
@@ -121,14 +122,14 @@ mod complete_schema_validation {
         assert_eq!(json_val["data"], "audiodata");
         assert_eq!(json_val["mimeType"], "audio/wav");
 
-        // Test resource_link content (2025-06-18 NEW)
+        // Test resource_link content (2025-11-25 NEW)
         let resource_link_content = Content::resource_link("file:///test.txt", "test file");
         let json_val = serde_json::to_value(&resource_link_content).unwrap();
         assert_eq!(json_val["type"], "resource_link");
         assert_eq!(json_val["uri"], "file:///test.txt");
         assert_eq!(json_val["name"], "test file");
 
-        // Test embedded resource content (2025-06-18)
+        // Test embedded resource content (2025-11-25)
         let embedded_resource = Content::embedded_resource(ResourceContents::Text {
             uri: "file:///test.txt".to_string(),
             mime_type: Some("text/plain".to_string()),
@@ -165,6 +166,7 @@ mod complete_schema_validation {
                 idempotent_hint: None,
                 open_world_hint: None,
             }),
+            icons: None,
             title: Some("Test Tool".to_string()),
             meta: None,
         };
@@ -178,7 +180,7 @@ mod complete_schema_validation {
         assert!(json_val["inputSchema"]["properties"].is_object());
         assert!(json_val["inputSchema"]["required"].is_array());
 
-        // Validate annotations (2025-06-18)
+        // Validate annotations (2025-11-25)
         assert!(json_val["annotations"].is_object());
         assert_eq!(json_val["annotations"]["destructiveHint"], false);
         assert_eq!(json_val["annotations"]["readOnlyHint"], true);
@@ -201,6 +203,7 @@ mod complete_schema_validation {
                 read_only: Some(true),
             }),
             size: Some(1024),
+            icons: None,
             title: Some("Test File".to_string()),
             meta: None,
         };
@@ -227,6 +230,7 @@ mod complete_schema_validation {
                 required: Some(true),
                 title: Some("Input".to_string()),
             }]),
+            icons: None,
             title: Some("Test Prompt".to_string()),
             meta: None,
         };
@@ -296,11 +300,12 @@ mod complete_schema_validation {
     #[test]
     fn test_initialize_params_schema_compliance() {
         let params = InitializeParams {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: Implementation {
                 name: "test-client".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Client".to_string()),
             },
             meta: None,
@@ -308,7 +313,7 @@ mod complete_schema_validation {
 
         let json_val = serde_json::to_value(&params).unwrap();
 
-        assert_eq!(json_val["protocolVersion"], "2025-06-18");
+        assert_eq!(json_val["protocolVersion"], "2025-11-25");
         assert!(json_val["capabilities"].is_object());
         assert!(json_val["clientInfo"].is_object());
         assert_eq!(json_val["clientInfo"]["name"], "test-client");
@@ -319,11 +324,12 @@ mod complete_schema_validation {
     #[test]
     fn test_initialize_result_schema_compliance() {
         let result = InitializeResult {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ServerCapabilities::default(),
             server_info: Implementation {
                 name: "test-server".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Server".to_string()),
             },
             instructions: Some("Test instructions".to_string()),
@@ -332,7 +338,7 @@ mod complete_schema_validation {
 
         let json_val = serde_json::to_value(&result).unwrap();
 
-        assert_eq!(json_val["protocolVersion"], "2025-06-18");
+        assert_eq!(json_val["protocolVersion"], "2025-11-25");
         assert!(json_val["capabilities"].is_object());
         assert!(json_val["serverInfo"].is_object());
         assert_eq!(json_val["serverInfo"]["name"], "test-server");
@@ -372,7 +378,7 @@ mod complete_schema_validation {
         assert_eq!(json_val["isError"], false);
     }
 
-    /// Validates Tool with outputSchema against schema (2025-06-18)
+    /// Validates Tool with outputSchema against schema (2025-11-25)
     #[test]
     fn test_tool_with_output_schema_compliance() {
         use serde_json::json;
@@ -422,6 +428,7 @@ mod complete_schema_validation {
                 idempotent_hint: Some(true),
                 open_world_hint: Some(false),
             }),
+            icons: None,
             title: Some("complete Data Processor".to_string()),
             meta: None,
         };
@@ -440,7 +447,7 @@ mod complete_schema_validation {
         assert!(json_val["inputSchema"]["properties"].is_object());
         assert!(json_val["inputSchema"]["required"].is_array());
 
-        // Validate output schema (NEW in 2025-06-18)
+        // Validate output schema (NEW in 2025-11-25)
         assert!(json_val["outputSchema"].is_object());
         assert_eq!(json_val["outputSchema"]["type"], "object");
         assert!(json_val["outputSchema"]["properties"].is_object());
@@ -508,6 +515,8 @@ mod complete_schema_validation {
                 intelligence_priority: None,
                 hints: None,
             }),
+            tools: None,
+            tool_choice: None,
             metadata: None,
             meta: None,
         };
@@ -752,6 +761,7 @@ mod complete_schema_validation {
                 client_info: Implementation {
                     name: "test-client".to_string(),
                     version: "1.0.0".to_string(),
+                    description: None,
                     title: Some("Test Client".to_string()),
                 },
                 meta: None,
@@ -761,7 +771,7 @@ mod complete_schema_validation {
 
         let json_val = serde_json::to_value(&init_request).unwrap();
         assert_eq!(json_val["method"], "initialize");
-        assert_eq!(json_val["params"]["protocolVersion"], "2025-06-18");
+        assert_eq!(json_val["params"]["protocolVersion"], "2025-11-25");
 
         // Initialize response
         let init_response = JsonRpcResponse::success(
@@ -772,6 +782,7 @@ mod complete_schema_validation {
                 server_info: Implementation {
                     name: "test-server".to_string(),
                     version: "1.0.0".to_string(),
+                    description: None,
                     title: Some("Test Server".to_string()),
                 },
                 instructions: None,
@@ -781,7 +792,7 @@ mod complete_schema_validation {
         .unwrap();
 
         let json_val = serde_json::to_value(&init_response).unwrap();
-        assert_eq!(json_val["result"]["protocolVersion"], "2025-06-18");
+        assert_eq!(json_val["result"]["protocolVersion"], "2025-11-25");
 
         // Initialized notification
         let initialized_notif = JsonRpcNotification::new::<InitializedParams>(
@@ -846,12 +857,12 @@ mod complete_schema_validation {
         assert!(progress.message.is_some());
         println!("✓ improved progress notifications");
 
-        // Resource links (2025-06-18 NEW)
+        // Resource links (2025-11-25 NEW)
         let resource_link = Content::resource_link("file://test.txt", "test file");
         assert!(matches!(resource_link, Content::ResourceLink { .. }));
         println!("✓ Resource links support");
 
-        // Embedded resources (2025-06-18)
+        // Embedded resources (2025-11-25)
         let embedded_resource = Content::embedded_resource(ResourceContents::Text {
             uri: "file://test.txt".to_string(),
             mime_type: Some("text/plain".to_string()),
@@ -868,6 +879,7 @@ mod complete_schema_validation {
             client_info: Implementation {
                 name: "test".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test".to_string()),
             },
             meta: Some({
@@ -879,7 +891,7 @@ mod complete_schema_validation {
         assert!(init_params.meta.is_some());
         println!("✓ Metadata support in requests");
 
-        println!("\n All 2025-03-26 features are properly implemented and schema-compliant!");
+        println!("\n All 2025-11-25 features are properly implemented and schema-compliant!");
     }
 
     /// Final complete validation test
@@ -896,6 +908,7 @@ mod complete_schema_validation {
         let _impl = Implementation {
             name: "test".to_string(),
             version: "1.0.0".to_string(),
+            description: None,
             title: Some("Test Implementation".to_string()),
         };
         checks_passed += 1;
@@ -924,6 +937,7 @@ mod complete_schema_validation {
             mime_type: None,
             annotations: None,
             size: None,
+            icons: None,
             title: Some("Test Resource".to_string()),
             meta: None,
         };
@@ -935,6 +949,7 @@ mod complete_schema_validation {
             name: "test".to_string(),
             description: None,
             arguments: None,
+            icons: None,
             title: Some("Test Prompt".to_string()),
             meta: None,
         };
@@ -954,6 +969,7 @@ mod complete_schema_validation {
             client_info: Implementation {
                 name: "test".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test".to_string()),
             },
             meta: None,

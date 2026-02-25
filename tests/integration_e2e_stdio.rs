@@ -112,6 +112,7 @@ mod e2e_stdio_tests {
                     mime_type: Some("text/plain".to_string()),
                     annotations: None,
                     size: None,
+                    icons: None,
                     title: None,
                     meta: None,
                 })

@@ -740,6 +740,7 @@ mod tests {
                 ServerInfo {
                     name: "test-server".to_string(),
                     version: "1.0.0".to_string(),
+                    description: None,
                     title: Some("Test Server".to_string()),
                 },
             );

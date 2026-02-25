@@ -86,6 +86,7 @@ impl ToolHandler {
                     input_schema: tool.info.input_schema.clone(),
                     output_schema: tool.info.output_schema.clone(),
                     annotations: None,
+                    icons: None,
                     title: None,
                     meta: None,
                 }
@@ -168,6 +169,7 @@ impl ResourceHandler {
                     mime_type: resource.info.mime_type.clone(),
                     annotations: None,
                     size: None,
+                    icons: None,
                     title: None,
                     meta: None,
                 }
@@ -312,6 +314,7 @@ impl PromptHandler {
                             })
                             .collect()
                     }),
+                    icons: None,
                     title: None,
                     meta: None,
                 }
@@ -563,6 +566,7 @@ mod tests {
         let server_info = ServerInfo {
             name: "test-server".to_string(),
             version: "1.0.0".to_string(),
+            description: None,
             title: Some("Test Server".to_string()),
         };
         let capabilities = ServerCapabilities::default();

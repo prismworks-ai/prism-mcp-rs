@@ -497,7 +497,7 @@ mod tests {
         let _server_info = ServerInfo {
             name: "test-server".to_string(),
             version: "1.0.0".to_string(),
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: HashMap::new(),
             metadata: HashMap::new(),
         };

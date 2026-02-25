@@ -1,7 +1,7 @@
 //! HTTP Transport with OAuth 2.1 Authorization Support
 //!
 //! Module extends the HTTP transport with automatic authorization
-//! handling, including token refresh and 401 response handling.
+//! handling, including token refresh and 401/403 challenge handling.
 
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -55,7 +55,7 @@ impl AuthorizedHttpTransport {
         // Try sending the request
         match self.inner.send_request(request.clone()).await {
             Ok(response) => Ok(response),
-            Err(McpError::Http(msg)) if msg.contains("401") => {
+            Err(McpError::Http(msg)) if msg.contains("401") || msg.contains("403") => {
                 // Token might be expired, try refreshing
                 let fresh_token = self.auth_client.token_manager().refresh_token().await?;
 
@@ -69,7 +69,7 @@ impl AuthorizedHttpTransport {
         }
     }
 
-    /// Handle initial 401 response (no token yet)
+    /// Handle initial auth challenge response (typically 401 or 403).
     pub async fn handle_unauthorized(&self, www_authenticate: &str) -> McpResult<String> {
         self.auth_client.handle_unauthorized(www_authenticate).await
     }

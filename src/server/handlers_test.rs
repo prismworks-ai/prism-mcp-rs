@@ -101,7 +101,7 @@ mod tests {
     async fn test_initialize_handler_success() {
         let handler = InitializeHandler::new();
         let params = InitializeParams {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: Some(ClientInfo {
                 name: "test-client".to_string(),
@@ -114,7 +114,7 @@ mod tests {
         assert!(result.is_ok());
         
         let response = result.unwrap();
-        assert_eq!(response.protocol_version, "2025-06-18");
+        assert_eq!(response.protocol_version, "2025-11-25");
         assert!(response.capabilities.tools.is_some());
         assert!(response.capabilities.resources.is_some());
         assert!(response.capabilities.prompts.is_some());
@@ -128,7 +128,7 @@ mod tests {
         );
         
         let params = InitializeParams {
-            protocol_version: "2025-06-18".to_string(),
+            protocol_version: "2025-11-25".to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: None,
             meta: None,
@@ -536,8 +536,10 @@ mod tests {
             system_prompt: None,
             include_context: None,
             temperature: None,
-            max_tokens: Some(100),
+            max_tokens: 100,
             stop_sequences: None,
+            tools: None,
+            tool_choice: None,
             metadata: None,
             meta: None,
         };
@@ -553,7 +555,7 @@ mod tests {
     // Test validation helpers
     #[test]
     fn test_validate_protocol_version() {
-        assert!(validate_protocol_version("2025-06-18"));
+        assert!(validate_protocol_version("2025-11-25"));
         assert!(validate_protocol_version("2025-03-26"));
         assert!(!validate_protocol_version("invalid"));
         assert!(!validate_protocol_version("2024-01-01"));

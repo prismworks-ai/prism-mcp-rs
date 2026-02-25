@@ -1091,7 +1091,7 @@ impl McpClient {
         self.handle_response(response)
     }
 
-    /// List resource templates from the server (New in 2025-06-18)
+    /// List resource templates from the server (New in 2025-11-25)
     pub async fn list_resource_templates(
         &self,
         cursor: Option<String>,
@@ -1110,7 +1110,7 @@ impl McpClient {
     }
 
     // ========================================================================
-    // Completion Operations (New in 2025-06-18)
+    // Completion Operations (New in 2025-11-25)
     // ========================================================================
 
     /// Request completion suggestions for an argument
@@ -1619,6 +1619,7 @@ mod tests {
             ServerInfo {
                 name: "test-server".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Server".to_string()),
             },
         );
@@ -1642,6 +1643,7 @@ mod tests {
             ServerInfo {
                 name: "test-server".to_string(),
                 version: "1.0.0".to_string(),
+                description: None,
                 title: Some("Test Server".to_string()),
             },
         );

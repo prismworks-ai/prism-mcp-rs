@@ -46,6 +46,40 @@ use crate::protocol::types::{
     error_codes, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
 };
 use crate::transport::traits::{ConnectionState, ServerTransport, Transport, TransportConfig};
+use serde::Deserialize;
+
+// ============================================================================
+// Intermediate Types for HTTP Transport
+// ============================================================================
+
+/// Intermediate struct for parsing incoming JSON-RPC messages
+///
+/// This allows handling both requests (with `id`) and notifications (without `id`)
+/// in a single deserialization step, avoiding errors when notifications arrive
+/// on the main MCP endpoint.
+#[derive(Debug, Deserialize)]
+struct JsonRpcIncoming {
+    jsonrpc: String,
+    method: String,
+    id: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    params: Option<serde_json::Value>,
+}
+
+/// Known notification methods that are valid without an `id` field
+fn is_known_notification_method(method: &str) -> bool {
+    matches!(
+        method,
+        "notifications/initialized"
+            | "notifications/cancelled"
+            | "notifications/progress"
+            | "notifications/logging/message"
+            | "notifications/resources/updated"
+            | "notifications/resources/list_changed"
+            | "notifications/tools/list_changed"
+            | "notifications/prompts/list_changed"
+    )
+}
 
 // ============================================================================
 // HTTP Client Transport
@@ -639,33 +673,69 @@ impl ServerTransport for HttpServerTransport {
 // HTTP Route Handlers
 // ============================================================================
 
-/// Handle MCP JSON-RPC requests
+/// Handle MCP JSON-RPC requests and notifications
+///
+/// This handler accepts both:
+/// - **Requests** (with `id`): Forwarded to the request handler, returns a response
+/// - **Notifications** (without `id`): Processed asynchronously, returns 200 OK with no body
+///
+/// If a message without `id` has an unknown method, returns 400 Bad Request.
 async fn handle_mcp_request(
     State(state): State<Arc<RwLock<HttpServerState>>>,
-    Json(request): Json<JsonRpcRequest>,
+    Json(incoming): Json<JsonRpcIncoming>,
 ) -> Result<Json<JsonRpcMessage>, StatusCode> {
     let state_guard = state.read().await;
 
-    if let Some(ref handler) = state_guard.request_handler {
-        let response_rx = handler(request);
-        drop(state_guard); // Release the lock
+    match incoming.id {
+        Some(id) => {
+            // Request with ID - forward to handler
+            let request = JsonRpcRequest {
+                jsonrpc: incoming.jsonrpc,
+                id,
+                method: incoming.method,
+                params: incoming.params,
+            };
 
-        match response_rx.await {
-            Ok(response) => Ok(Json(JsonRpcMessage::Response(response))),
-            Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+            if let Some(ref handler) = state_guard.request_handler {
+                let response_rx = handler(request);
+                drop(state_guard); // Release the lock
+
+                match response_rx.await {
+                    Ok(response) => Ok(Json(JsonRpcMessage::Response(response))),
+                    Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+                }
+            } else {
+                let error_response = JsonRpcError::error(
+                    request.id,
+                    error_codes::METHOD_NOT_FOUND,
+                    "No request handler configured".to_string(),
+                    None,
+                );
+                Ok(Json(JsonRpcMessage::Error(error_response)))
+            }
         }
-    } else {
-        let error_response = JsonRpcError::error(
-            request.id,
-            error_codes::METHOD_NOT_FOUND,
-            "No request handler configured".to_string(),
-            None,
-        );
-        Ok(Json(JsonRpcMessage::Error(error_response)))
+        None => {
+            // Notification without ID - validate and process asynchronously
+            if !is_known_notification_method(&incoming.method) {
+                return Err(StatusCode::BAD_REQUEST);
+            }
+
+            let notification = JsonRpcNotification {
+                jsonrpc: incoming.jsonrpc,
+                method: incoming.method,
+                params: incoming.params,
+            };
+
+            // Send notification to state (if there's a receiver)
+            let _ = state_guard.notification_sender.send(notification);
+
+            // Notifications return 200 OK with no body
+            Err(StatusCode::OK)
+        }
     }
 }
 
-/// Handle MCP notification requests
+/// Handle MCP notification requests (dedicated endpoint)
 async fn handle_mcp_notification(Json(_notification): Json<JsonRpcNotification>) -> StatusCode {
     // Notifications don't require a response
     StatusCode::OK

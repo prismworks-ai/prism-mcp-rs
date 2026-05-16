@@ -37,7 +37,7 @@ mod http_sse_streaming_tests {
             // Valid data lines
             "data: {\"jsonrpc\": \"2.0\", \"method\": \"test\", \"params\": {}}",
             "data: {\"jsonrpc\": \"2.0\", \"method\": \"notification\", \"params\": {\"key\": \"value\"}}",
-            "data: {\"jsonrpc\": \"2.0\", \"method\": \"unicode_test\", \"params\": {\"emoji\": \"#🌍\"}}",
+            "data: {\"jsonrpc\": \"2.0\", \"method\": \"unicode_test\", \"params\": {\"emoji\": \"🌍\"}}",
             // Invalid JSON in data lines
             "data: {incomplete json",
             "data: not_json_at_all",
@@ -409,7 +409,7 @@ mod http_sse_streaming_tests {
                 "User-Agent".to_string(),
                 "MCP-SDK/1.0 (Rust; Test)".to_string(),
             ),
-            ("#-Unicode".to_string(), "🌍-Value".to_string()), // Unicode headers
+            ("X-Unicode".to_string(), "🌍-Value".to_string()), // Unicode header value
         ]);
 
         let config = TransportConfig {

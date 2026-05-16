@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - N/A
 
+## [2.0.1] - 2026-05-16
+
+### Fixed
+- Accept JSON-RPC notifications without an `id` on the HTTP `/mcp` endpoint, including `notifications/initialized`.
+- Reject unknown HTTP JSON-RPC notifications with a clear `400 Bad Request` response.
+- Clean up HTTP SSE test warnings so `cargo clippy --features http --lib --tests -- -D warnings` passes.
+
 ## [1.1.2] - 2025-12-27
 
 ### Maintenance & Quality
@@ -276,7 +283,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Contributors
 - Prismworks AI Team
 
-[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.2...v2.0.0
 [1.1.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.0...v1.1.1

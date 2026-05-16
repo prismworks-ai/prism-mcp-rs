@@ -7,8 +7,8 @@ Check documentation quality and identify issues:
 - API documentation that should be auto-generated
 """
 
-import os
 import re
+import sys
 from pathlib import Path
 from collections import defaultdict
 
@@ -148,4 +148,4 @@ def main():
         return 0
 
 if __name__ == '__main__':
-    exit(main())
+    sys.exit(main())

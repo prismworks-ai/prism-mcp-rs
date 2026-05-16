@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Fix all examples to match the actual library API"""
 
-import os
 import re
 import glob
 

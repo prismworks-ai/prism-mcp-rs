@@ -17,6 +17,7 @@ use async_trait::async_trait;
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
+    response::{IntoResponse, Response},
     routing::{get, post},
     Json, Router,
 };
@@ -42,8 +43,12 @@ use tower_http::cors::{Any, CorsLayer};
 
 use crate::core::error::{McpError, McpResult};
 use crate::core::logging::ErrorContext;
-use crate::protocol::types::{
-    error_codes, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
+use crate::protocol::{
+    methods,
+    types::{
+        error_codes, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest,
+        JsonRpcResponse,
+    },
 };
 use crate::transport::traits::{ConnectionState, ServerTransport, Transport, TransportConfig};
 
@@ -642,8 +647,24 @@ impl ServerTransport for HttpServerTransport {
 /// Handle MCP JSON-RPC requests
 async fn handle_mcp_request(
     State(state): State<Arc<RwLock<HttpServerState>>>,
-    Json(request): Json<JsonRpcRequest>,
-) -> Result<Json<JsonRpcMessage>, StatusCode> {
+    Json(message): Json<JsonRpcMessage>,
+) -> Result<Response, StatusCode> {
+    match message {
+        JsonRpcMessage::Request(request) => handle_mcp_jsonrpc_request(state, request)
+            .await
+            .map(|message| Json(message).into_response()),
+        JsonRpcMessage::Notification(notification) => {
+            handle_mcp_jsonrpc_notification(state, notification).await?;
+            Ok(StatusCode::ACCEPTED.into_response())
+        }
+        JsonRpcMessage::Response(_) | JsonRpcMessage::Error(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+async fn handle_mcp_jsonrpc_request(
+    state: Arc<RwLock<HttpServerState>>,
+    request: JsonRpcRequest,
+) -> Result<JsonRpcMessage, StatusCode> {
     let state_guard = state.read().await;
 
     if let Some(ref handler) = state_guard.request_handler {
@@ -651,7 +672,7 @@ async fn handle_mcp_request(
         drop(state_guard); // Release the lock
 
         match response_rx.await {
-            Ok(response) => Ok(Json(JsonRpcMessage::Response(response))),
+            Ok(response) => Ok(JsonRpcMessage::Response(response)),
             Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
         }
     } else {
@@ -661,8 +682,45 @@ async fn handle_mcp_request(
             "No request handler configured".to_string(),
             None,
         );
-        Ok(Json(JsonRpcMessage::Error(error_response)))
+        Ok(JsonRpcMessage::Error(error_response))
     }
+}
+
+async fn handle_mcp_jsonrpc_notification(
+    state: Arc<RwLock<HttpServerState>>,
+    notification: JsonRpcNotification,
+) -> Result<(), StatusCode> {
+    if !is_supported_http_notification(&notification) {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    let state_guard = state.read().await;
+    if state_guard.notification_sender.send(notification).is_err() {
+        tracing::debug!("No SSE clients connected to receive notification");
+    }
+
+    Ok(())
+}
+
+fn is_supported_http_notification(notification: &JsonRpcNotification) -> bool {
+    if notification.jsonrpc != "2.0" {
+        return false;
+    }
+
+    matches!(
+        notification.method.as_str(),
+        methods::INITIALIZED
+            | methods::TOOLS_LIST_CHANGED
+            | methods::RESOURCES_UPDATED
+            | methods::RESOURCES_LIST_CHANGED
+            | methods::PROMPTS_LIST_CHANGED
+            | methods::ROOTS_LIST_CHANGED
+            | methods::ELICITATION_COMPLETE
+            | methods::TASKS_STATUS_UPDATE
+            | methods::LOGGING_MESSAGE
+            | methods::PROGRESS
+            | methods::CANCELLED
+    )
 }
 
 /// Handle MCP notification requests
@@ -720,6 +778,7 @@ async fn handle_health_check() -> Json<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::protocol::methods;
     use wiremock::matchers::{header, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -996,6 +1055,48 @@ mod tests {
 
         // Notifications should always return OK
         assert_eq!(result, StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn test_handle_mcp_request_accepts_initialized_notification() {
+        let (notification_sender, mut notification_receiver) = broadcast::channel(100);
+        let state = Arc::new(RwLock::new(HttpServerState {
+            notification_sender,
+            request_handler: None,
+        }));
+        let message = serde_json::from_value::<JsonRpcMessage>(serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": methods::INITIALIZED,
+            "params": {}
+        }))
+        .unwrap();
+
+        let response = handle_mcp_request(State(state), Json(message))
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::ACCEPTED);
+        let received = notification_receiver.recv().await.unwrap();
+        assert_eq!(received.method, methods::INITIALIZED);
+    }
+
+    #[tokio::test]
+    async fn test_handle_mcp_request_rejects_unknown_notification() {
+        let (notification_sender, _) = broadcast::channel(100);
+        let state = Arc::new(RwLock::new(HttpServerState {
+            notification_sender,
+            request_handler: None,
+        }));
+        let message = serde_json::from_value::<JsonRpcMessage>(serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": "notifications/unknown",
+            "params": {}
+        }))
+        .unwrap();
+
+        let result = handle_mcp_request(State(state), Json(message)).await;
+
+        assert!(matches!(result, Err(StatusCode::BAD_REQUEST)));
     }
 
     #[cfg(not(feature = "sse"))]

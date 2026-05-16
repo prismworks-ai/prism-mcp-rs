@@ -20,10 +20,7 @@ use prism_mcp_rs::{
 use reqwest::Client;
 use serde_json::json;
 use std::{collections::HashMap, time::Duration};
-use tokio::{
-    sync::{broadcast, mpsc},
-    time::timeout,
-};
+use tokio::{sync::mpsc, time::timeout};
 
 #[cfg(feature = "http")]
 mod http_sse_streaming_tests {
@@ -541,7 +538,7 @@ mod http_sse_streaming_tests {
             // When sse is available, SSE should work
             use tokio_stream::StreamExt;
 
-            let (tx, rx) = broadcast::channel(10);
+            let (tx, rx) = tokio::sync::broadcast::channel(10);
             let mut stream = tokio_stream::wrappers::BroadcastStream::new(rx);
 
             // Send a test message
@@ -553,12 +550,7 @@ mod http_sse_streaming_tests {
             }
         }
 
-        #[cfg(not(feature = "sse"))]
-        {
-            // Without sse, would log warning
-            // This test just ensures the conditional compilation works
-            assert!(true, "sse feature not enabled");
-        }
+        // Without sse, compiling this test is enough to verify conditional handling.
     }
 
     // ========================================================================

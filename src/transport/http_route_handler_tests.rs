@@ -51,13 +51,10 @@ mod route_handler_tests {
         }));
         
         let request = create_test_request(Value::from(123), "test_method");
-        let state_extract = State(state);
-        let json_request = Json(request.clone());
-        
-        let result = handle_mcp_request(state_extract, json_request).await;
+        let result = handle_mcp_jsonrpc_request(state, request.clone()).await;
         
         assert!(result.is_ok());
-        if let Ok(Json(JsonRpcMessage::Response(response))) = result {
+        if let Ok(JsonRpcMessage::Response(response)) = result {
             assert_eq!(response.id, Value::from(123));
             assert!(response.result.is_some());
             if let Some(result_value) = response.result {
@@ -79,13 +76,10 @@ mod route_handler_tests {
         }));
         
         let request = create_test_request(Value::from(456), "test_method");
-        let state_extract = State(state);
-        let json_request = Json(request.clone());
-        
-        let result = handle_mcp_request(state_extract, json_request).await;
+        let result = handle_mcp_jsonrpc_request(state, request.clone()).await;
         
         assert!(result.is_ok());
-        if let Ok(Json(JsonRpcMessage::Error(error))) = result {
+        if let Ok(JsonRpcMessage::Error(error)) = result {
             assert_eq!(error.id, Value::from(456));
             assert_eq!(error.error.code, error_codes::METHOD_NOT_FOUND);
             assert!(error.error.message.contains("No request handler configured"));
@@ -111,10 +105,7 @@ mod route_handler_tests {
         }));
         
         let request = create_test_request(Value::from(789), "failing_method");
-        let state_extract = State(state);
-        let json_request = Json(request.clone());
-        
-        let result = handle_mcp_request(state_extract, json_request).await;
+        let result = handle_mcp_jsonrpc_request(state, request.clone()).await;
         
         // Should return internal server error when handler fails
         assert!(result.is_err());
@@ -280,13 +271,10 @@ mod route_handler_tests {
         
         for test_id in test_cases {
             let request = create_test_request(test_id.clone(), "id_test");
-            let state_extract = State(state.clone());
-            let json_request = Json(request);
-            
-            let result = handle_mcp_request(state_extract, json_request).await;
+            let result = handle_mcp_jsonrpc_request(state.clone(), request).await;
             
             assert!(result.is_ok());
-            if let Ok(Json(JsonRpcMessage::Response(response))) = result {
+            if let Ok(JsonRpcMessage::Response(response)) = result {
                 assert_eq!(response.id, test_id);
             } else {
                 panic!("Expected successful response for ID type: {:?}", test_id);

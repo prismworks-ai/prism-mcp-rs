@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778902354342,
+  "lastUpdate": 1778902770765,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3884,6 +3884,55 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 168.92,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@users.noreply.github.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "cf1e204f61ad126eaaf589461193012b817d4d3e",
+          "message": "test: clean up http sse fixtures",
+          "timestamp": "2026-05-15T23:36:11-04:00",
+          "tree_id": "31c370eb77f83a21204539f573ce4f9a81debeec",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/cf1e204f61ad126eaaf589461193012b817d4d3e"
+        },
+        "date": 1778902769795,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 14.027,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 368.95,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.585,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.958,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.66,
             "unit": "ns"
           }
         ]

@@ -395,7 +395,7 @@ mod http_sse_streaming_tests {
             ),
             (
                 "Authorization".to_string(),
-                "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9".to_string(),
+                "Bearer test-token-placeholder".to_string(),
             ),
             (
                 "X-Custom-Header".to_string(),

@@ -99,7 +99,7 @@ def check_cross_references():
     return issues
 
 def main():
-    print("\nSearch: Documentation Quality Check\n")
+    print("\nDocumentation Quality Check\n")
     print("=" * 40)
     
     all_issues = []
@@ -130,7 +130,7 @@ def main():
     print("\nChecking cross-references...")
     refs = check_cross_references()
     if refs:
-        print(f"Warning:  Found {len(refs)} cross-reference improvements:")
+        print(f"Warning: Found {len(refs)} cross-reference improvements:")
         for issue in refs:
             print(f"  - {issue}")
         all_issues.extend(refs)
@@ -140,7 +140,7 @@ def main():
     # Summary
     print("\n" + "=" * 40)
     if all_issues:
-        print(f"\nWarning:  Total issues found: {len(all_issues)}")
+        print(f"\nWarning: Total issues found: {len(all_issues)}")
         print("Please review and fix the issues above.")
         return 1
     else:

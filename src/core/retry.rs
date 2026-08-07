@@ -1,10 +1,10 @@
-//! smart retry logic for MCP operations
+//! Retry and circuit-breaker primitives for MCP operations.
 //!
-//! Module provides production-ready retry capabilities with:
+//! The module provides:
 //! - Smart retry decisions based on error recoverability
 //! - Exponential backoff with jitter
 //! - Circuit breaker pattern for cascading failure protection
-//! - complete logging and metrics integration
+//! - structured logging and in-process metrics hooks
 
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;

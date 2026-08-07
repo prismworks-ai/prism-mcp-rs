@@ -1,315 +1,83 @@
-# Migration Guide
+# Migrating to 2.x
 
-This guide helps developers migrate from other MCP implementations or understand the differences between prism-mcp-rs and the MCP specification.
+Version 2.x targets MCP 2025-11-25 and requires Rust 1.85 or newer. Treat a migration as an API, wire-protocol, feature, and deployment review rather than only changing the dependency number.
 
-## Table of Contents
-
-- [Naming Differences](#naming-differences)
-- [Type Separation](#type-separation)
-- [API Improvements](#api-improvements)
-- [Feature Flags](#feature-flags)
-- [Common Migration Patterns](#common-migration-patterns)
-
-## Naming Differences
-
-prism-mcp-rs uses prefixed naming for clarity and to avoid namespace collisions:
-
-| MCP Specification | prism-mcp-rs | Notes |
-|------------------|--------------|-------|
-| `Server` | `McpServer` | Prefixed to avoid confusion with generic server types |
-| `Client` | `McpClient` | Prefixed for consistency |
-| `Builder` | `ServerBuilder` / `McpClientBuilder` | Descriptive names for builders |
-| `Handler` | `ToolHandler`, `ResourceHandler`, `PromptHandler` | Specific handler types |
-
-### Type Aliases for Compatibility
-
-For easier migration, you can use type aliases:
-
-```rust
-use prism_mcp_rs::server::McpServer as Server;
-use prism_mcp_rs::client::McpClient as Client;
-```
-
-## Type Separation
-
-prism-mcp-rs separates certain types for better type safety and error handling:
-
-### JSON-RPC Messages
-
-The library separates `JsonRpcResponse` and `JsonRpcError` as distinct types rather than using a single enum:
-
-```rust
-// prism-mcp-rs approach (type-safe)
-use prism_mcp_rs::protocol::{JsonRpcResponse, JsonRpcError, JsonRpcMessage};
-
-// Creating responses
-let success = JsonRpcResponse::success_unchecked(id, result);
-let error = JsonRpcError::method_not_found(id);
-
-// Converting to JsonRpcMessage when needed
-let msg_success: JsonRpcMessage = success.into();
-let msg_error: JsonRpcMessage = error.into();
-```
-
-### Benefits of Type Separation
-
-1. **Compile-time guarantees**: Can't accidentally treat an error as a success
-2. **Clearer APIs**: Methods explicitly return success or error types
-3. **Better IDE support**: Auto-completion shows relevant methods only
-4. **Easier testing**: Can assert on specific types
-
-## API Improvements
-
-### 1. Builder Pattern
-
-prism-mcp-rs provides fluent builders for complex types:
-
-```rust
-use prism_mcp_rs::server::ServerBuilder;
-use prism_mcp_rs::client::McpClientBuilder;
-
-// Server with builder
-let server = ServerBuilder::new()
-    .name("my-server")
-    .version("1.0.0")
-    .with_tools()
-    .with_resources()
-    .build();
-
-// Client with builder
-let client = McpClientBuilder::new()
-    .name("my-client")
-    .version("1.0.0")
-    .with_retry()
-    .build();
-```
-
-### 2. Error Convenience Methods
-
-Quick error creation with built-in helpers:
-
-```rust
-use prism_mcp_rs::protocol::JsonRpcError;
-
-// Standard JSON-RPC errors
-let err1 = JsonRpcError::parse_error();
-let err2 = JsonRpcError::method_not_found(request_id);
-let err3 = JsonRpcError::invalid_params(request_id);
-
-// MCP-specific errors
-let err4 = JsonRpcError::tool_not_found(request_id, "unknown-tool");
-let err5 = JsonRpcError::resource_not_found(request_id, "missing.txt");
-```
-
-### 3. Success Response Helpers
-
-Two ways to create success responses:
-
-```rust
-use prism_mcp_rs::protocol::JsonRpcResponse;
-use serde_json::json;
-
-// Fallible (for serializable types)
-let response1 = JsonRpcResponse::success(id, &my_struct)?;
-
-// Infallible (for pre-serialized values)
-let response2 = JsonRpcResponse::success_unchecked(id, json!({"key": "value"}));
-```
-
-### 4. Type Conversions
-
-Seamless conversions between types:
-
-```rust
-use prism_mcp_rs::protocol::*;
-
-// Into JsonRpcMessage
-let msg1: JsonRpcMessage = request.into();
-let msg2: JsonRpcMessage = response.into();
-let msg3: JsonRpcMessage = error.into();
-let msg4: JsonRpcMessage = notification.into();
-
-// TryFrom JsonRpcMessage
-let request: JsonRpcRequest = msg.try_into()?;
-let response: JsonRpcResponse = msg.try_into()?;
-let error: JsonRpcError = msg.try_into()?;
-let notification: JsonRpcNotification = msg.try_into()?;
-```
-
-## Feature Flags
-
-prism-mcp-rs uses feature flags for optional functionality:
+## Dependency
 
 ```toml
 [dependencies]
-prism-mcp-rs = {
-    version = "1",
-    features = [
-        "stdio",      # STDIO transport (default)
-        "http",       # HTTP/SSE transport
-        "websocket",  # WebSocket transport
-        "full",       # All features
-    ]
-}
+prism-mcp-rs = "2"
 ```
 
-## Common Migration Patterns
+The default feature remains `stdio`. Optional transports and production integrations must be selected explicitly. `full` is convenient for CI but may add unnecessary dependencies to an application.
 
-### From TypeScript/JavaScript MCP
+## Server pattern
 
-If migrating from the TypeScript MCP SDK:
+Register handlers asynchronously and start the server with a concrete server transport:
 
-#### Handler Pattern
+```rust,no_run
+use prism_mcp_rs::prelude::*;
 
-```typescript
-// TypeScript
-server.setRequestHandler('tools/call', async (request) => {
-    return { content: [{ type: 'text', text: 'Result' }] };
-});
+# async fn run() -> McpResult<()> {
+let server = McpServer::create("example", "2.0.0");
+// server.add_tool(...).await?;
+server
+    .run_with_transport(StdioServerTransport::new())
+    .await?;
+# Ok(())
+# }
 ```
 
-```rust
-// Rust equivalent
-use async_trait::async_trait;
+Do not copy examples using the wrong transport `start` method, synchronous registration, the old generic `StdioTransport` name, or `Tool::new` argument lists from a different tool type.
 
-struct MyToolHandler;
+## Type and error changes
 
-#[async_trait]
-impl ToolHandler for MyToolHandler {
-    async fn handle(&self, params: Option<Value>) 
-        -> Result<Value, Box<dyn std::error::Error + Send + Sync>> 
-    {
-        Ok(json!({
-            "content": [{"type": "text", "text": "Result"}]
-        }))
-    }
-}
+- Tool handlers implement `call(&self, HashMap<String, Value>) -> McpResult<ToolResult>`.
+- `ToolResult`/`CallToolResult` contains `content`, `is_error`, `structured_content`, and `meta`.
+- `McpError` variants are tuple variants except structured variants such as `RateLimited { retry_after_ms }`.
+- New production-policy errors include `Forbidden` and `RateLimited`.
+
+Let the compiler guide call-site changes and avoid string-matching error display text.
+
+## Production policy
+
+2.x adds shared `RequestContext`, RBAC, and rate limiting. The default remains allow-all for compatibility. Network applications should:
+
+1. authenticate at the transport/gateway boundary;
+2. map verified identity to `Principal`;
+3. install `RequestPolicy` on the server; and
+4. route authenticated calls through `handle_request_with_context`.
+
+A deny-by-default RBAC policy will reject the anonymous compatibility path unless explicitly allowed.
+
+## Transport security and telemetry
+
+- HTTP TLS/mTLS requires `http,tls`; it is not enabled by default.
+- OTLP tracing requires `otel` and either the provided initializer or a host-owned tracing subscriber.
+- Endpoint balancing/failover is reactive and process-local. It does not add discovery or active health checks.
+
+Review [Production Controls](../PRODUCTION_CONTROLS.md) before enabling these features.
+
+## Plugin migration
+
+Native plugins remain optional and trusted. They are not ABI-stable across arbitrary compiler/crate changes and are not sandboxed. Rebuild and test every plugin against the exact SDK/toolchain used by the host. If the old deployment assumed resource isolation, move the extension to a separate process/container.
+
+## Recommended migration sequence
+
+1. Pin 2.x in a branch and run `cargo check --all-features`.
+2. Update handler signatures and transport startup.
+3. Rebuild all examples and plugins.
+4. Test initialize/capability negotiation against each supported client.
+5. Add explicit authentication, policy, limits, and TLS for network deployments.
+6. Run the complete verification suite and representative load tests.
+7. Roll out with a reversible canary and retain the previous artifact/configuration.
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --all-features --all-targets -- -D warnings
+cargo test --all-features
+cargo test --doc --all-features
+cargo build --examples --all-features
 ```
 
-#### Async/Await
-
-Both TypeScript and Rust use async/await, but Rust requires the `async_trait` macro:
-
-```rust
-use async_trait::async_trait;
-
-#[async_trait]
-impl YourTrait for YourStruct {
-    async fn your_method(&self) -> Result<T, E> {
-        // async code here
-    }
-}
-```
-
-### From Python MCP
-
-If migrating from a Python MCP implementation:
-
-#### Type Hints to Rust Types
-
-```python
-# Python
-def handle_tool(params: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-    return {"result": "value"}
-```
-
-```rust
-// Rust
-fn handle_tool(params: Option<HashMap<String, Value>>) -> Result<Value, Box<dyn Error>> {
-    Ok(json!({"result": "value"}))
-}
-```
-
-#### Error Handling
-
-```python
-# Python
-try:
-    result = process_data()
-except ValueError as e:
-    raise McpError(f"Invalid value: {e}")
-```
-
-```rust
-// Rust
-let result = process_data()
-    .map_err(|e| McpError::Protocol(format!("Invalid value: {}", e)))?;
-```
-
-### From Go MCP
-
-If migrating from a Go MCP implementation:
-
-#### Error Handling
-
-```go
-// Go
-result, err := processData()
-if err != nil {
-    return nil, fmt.Errorf("processing failed: %w", err)
-}
-```
-
-```rust
-// Rust
-let result = process_data()
-    .map_err(|e| McpError::Protocol(format!("processing failed: {}", e)))?;
-```
-
-#### Interfaces to Traits
-
-```go
-// Go interface
-type ToolHandler interface {
-    Handle(params map[string]interface{}) (map[string]interface{}, error)
-}
-```
-
-```rust
-// Rust trait
-#[async_trait]
-pub trait ToolHandler: Send + Sync {
-    async fn handle(&self, params: Option<Value>) 
-        -> Result<Value, Box<dyn std::error::Error + Send + Sync>>;
-}
-```
-
-## Testing
-
-prism-mcp-rs provides testing utilities:
-
-```rust
-#[cfg(test)]
-mod tests {
-    // Test utilities are now in a separate crate
-    // Add to your Cargo.toml:
-    // [dev-dependencies]
-    // prism-test-utils = { git = "https://github.com/prismworks-ai/prism-mcp-tools" }
-    use prism_test_utils::*;
-    
-    #[test]
-    fn test_my_handler() {
-        let request = mock_tool_call("my-tool", json!({"arg": "value"}));
-        // Test your handler
-        
-        let response = mock_success(json!({"result": "ok"}));
-        assert_response_contains(&response, &["result"]);
-    }
-}
-```
-
-## Getting Help
-
-- **Documentation**: [docs.rs/prism-mcp-rs](https://docs.rs/prism-mcp-rs)
-- **Examples**: See the `examples/` directory
-- **Issues**: [GitHub Issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
-- **Discord**: [Join our Discord](https://discord.gg/prismworks)
-
-## Compatibility Notes
-
-- prism-mcp-rs implements MCP protocol version 2025-11-25
-- All core MCP features are supported
-- Metadata and UI fields (`title`, `icons`, `_meta`) are supported across core types
-- Sampling, elicitation, and task-status/cancellation flows are included in the typed API
-- Additional convenience methods don't break protocol compatibility
-- The SDK is wire-compatible with other MCP implementations
+For a migration from another language SDK, map its request handlers to Rust `ToolHandler`, `ResourceHandler`, and `PromptHandler` traits, then test wire behavior rather than assuming type names or convenience APIs are identical.

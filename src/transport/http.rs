@@ -11,7 +11,7 @@
 //! ```toml
 //! # Cargo.toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["http", "sse"] }
+//! prism-mcp-rs = { version = "2", features = ["http", "sse"] }
 
 use async_trait::async_trait;
 use axum::{
@@ -40,6 +40,14 @@ use tokio_stream::wrappers::BroadcastStream;
 
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
+use tracing::Instrument;
+
+#[cfg(feature = "tls")]
+use hyper_util::{
+    rt::{TokioExecutor, TokioIo},
+    server::conn::auto::Builder as HyperServerBuilder,
+    service::TowerToHyperService,
+};
 
 use crate::core::error::{McpError, McpResult};
 use crate::core::logging::ErrorContext;
@@ -51,6 +59,133 @@ use crate::protocol::{
     },
 };
 use crate::transport::traits::{ConnectionState, ServerTransport, Transport, TransportConfig};
+
+const FORBIDDEN_ERROR: i32 = -32010;
+const RATE_LIMITED_ERROR: i32 = -32011;
+
+#[cfg(feature = "otel")]
+struct HeaderExtractor<'a>(&'a HeaderMap);
+
+#[cfg(feature = "otel")]
+impl opentelemetry::propagation::Extractor for HeaderExtractor<'_> {
+    fn get(&self, key: &str) -> Option<&str> {
+        self.0.get(key).and_then(|value| value.to_str().ok())
+    }
+
+    fn keys(&self) -> Vec<&str> {
+        self.0.keys().map(axum::http::HeaderName::as_str).collect()
+    }
+}
+
+#[cfg(feature = "otel")]
+struct MapInjector<'a>(&'a mut HashMap<String, String>);
+
+#[cfg(feature = "otel")]
+impl opentelemetry::propagation::Injector for MapInjector<'_> {
+    fn set(&mut self, key: &str, value: String) {
+        self.0.insert(key.to_string(), value);
+    }
+}
+
+#[cfg(feature = "otel")]
+fn inject_trace_context(mut request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+    use tracing_opentelemetry::OpenTelemetrySpanExt;
+
+    let context = tracing::Span::current().context();
+    let mut headers = HashMap::new();
+    opentelemetry::global::get_text_map_propagator(|propagator| {
+        propagator.inject_context(&context, &mut MapInjector(&mut headers));
+    });
+    for (key, value) in headers {
+        request = request.header(key, value);
+    }
+    request
+}
+
+/// PEM-encoded client identity and trust root for mutual TLS.
+#[cfg(feature = "tls")]
+#[derive(Debug, Clone)]
+pub struct MtlsClientConfig {
+    pub identity_pem: Vec<u8>,
+    pub ca_certificate_pem: Vec<u8>,
+}
+
+#[cfg(feature = "tls")]
+impl MtlsClientConfig {
+    pub fn new(identity_pem: impl Into<Vec<u8>>, ca_certificate_pem: impl Into<Vec<u8>>) -> Self {
+        Self {
+            identity_pem: identity_pem.into(),
+            ca_certificate_pem: ca_certificate_pem.into(),
+        }
+    }
+}
+
+/// PEM-encoded server identity and client CA used to require client certificates.
+#[cfg(feature = "tls")]
+#[derive(Debug, Clone)]
+pub struct MtlsServerConfig {
+    pub certificate_chain_pem: Vec<u8>,
+    pub private_key_pem: Vec<u8>,
+    pub client_ca_pem: Vec<u8>,
+}
+
+#[cfg(feature = "tls")]
+impl MtlsServerConfig {
+    pub fn new(
+        certificate_chain_pem: impl Into<Vec<u8>>,
+        private_key_pem: impl Into<Vec<u8>>,
+        client_ca_pem: impl Into<Vec<u8>>,
+    ) -> Self {
+        Self {
+            certificate_chain_pem: certificate_chain_pem.into(),
+            private_key_pem: private_key_pem.into(),
+            client_ca_pem: client_ca_pem.into(),
+        }
+    }
+
+    fn build_rustls(&self) -> McpResult<rustls::ServerConfig> {
+        use rustls::pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer};
+        use rustls::server::WebPkiClientVerifier;
+        use rustls::RootCertStore;
+
+        let certificates = CertificateDer::pem_slice_iter(&self.certificate_chain_pem)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| {
+                McpError::Authentication(format!("invalid server certificate: {error}"))
+            })?;
+        if certificates.is_empty() {
+            return Err(McpError::Authentication(
+                "mTLS server certificate chain is empty".to_string(),
+            ));
+        }
+
+        let private_key =
+            PrivateKeyDer::from_pem_slice(&self.private_key_pem).map_err(|error| {
+                McpError::Authentication(format!("invalid server private key: {error}"))
+            })?;
+
+        let client_ca = CertificateDer::pem_slice_iter(&self.client_ca_pem)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| McpError::Authentication(format!("invalid client CA: {error}")))?;
+        let mut roots = RootCertStore::empty();
+        let (accepted, rejected) = roots.add_parsable_certificates(client_ca);
+        if accepted == 0 || rejected > 0 {
+            return Err(McpError::Authentication(format!(
+                "client CA contained {accepted} accepted and {rejected} rejected certificates"
+            )));
+        }
+
+        let verifier = WebPkiClientVerifier::builder(Arc::new(roots))
+            .build()
+            .map_err(|error| {
+                McpError::Authentication(format!("invalid client verifier: {error}"))
+            })?;
+        rustls::ServerConfig::builder_with_protocol_versions(&[&rustls::version::TLS13])
+            .with_client_cert_verifier(verifier)
+            .with_single_cert(certificates, private_key)
+            .map_err(|error| McpError::Authentication(format!("invalid server identity: {error}")))
+    }
+}
 
 // ============================================================================
 // HTTP Client Transport
@@ -164,6 +299,55 @@ impl HttpClientTransport {
         })
     }
 
+    /// Create an HTTP client that presents a certificate and validates the
+    /// server against the supplied private CA.
+    #[cfg(feature = "tls")]
+    pub async fn with_mtls<S: AsRef<str>>(
+        base_url: S,
+        sse_url: Option<S>,
+        config: TransportConfig,
+        mtls: MtlsClientConfig,
+    ) -> McpResult<Self> {
+        let identity = reqwest::Identity::from_pem(&mtls.identity_pem).map_err(|error| {
+            McpError::Authentication(format!("invalid client identity: {error}"))
+        })?;
+        let root = reqwest::Certificate::from_pem(&mtls.ca_certificate_pem)
+            .map_err(|error| McpError::Authentication(format!("invalid server CA: {error}")))?;
+        let client = Client::builder()
+            .timeout(Duration::from_millis(
+                config.read_timeout_ms.unwrap_or(60_000),
+            ))
+            .connect_timeout(Duration::from_millis(
+                config.connect_timeout_ms.unwrap_or(30_000),
+            ))
+            .identity(identity)
+            .tls_certs_only([root])
+            .min_tls_version(reqwest::tls::Version::TLS_1_3)
+            .build()
+            .map_err(|error| McpError::Http(format!("failed to create mTLS client: {error}")))?;
+
+        let base = base_url.as_ref().to_string();
+        let sse = sse_url.as_ref().map(|url| url.as_ref().to_string());
+        let mut transport = Self::with_config(base.as_str(), None::<&str>, config).await?;
+        transport.client = client.clone();
+        transport.sse_url = sse.clone();
+
+        if let Some(url) = sse {
+            let headers = transport.headers.clone();
+            let sender = {
+                let (sender, receiver) = mpsc::unbounded_channel();
+                transport.notification_receiver = Some(receiver);
+                sender
+            };
+            tokio::spawn(async move {
+                if let Err(error) = Self::handle_sse_stream(client, url, headers, sender).await {
+                    tracing::error!(%error, "mTLS SSE stream failed");
+                }
+            });
+        }
+        Ok(transport)
+    }
+
     async fn handle_sse_stream(
         client: Client,
         sse_url: String,
@@ -171,6 +355,10 @@ impl HttpClientTransport {
         notification_sender: mpsc::UnboundedSender<JsonRpcNotification>,
     ) -> McpResult<()> {
         let mut request = client.get(&sse_url);
+        #[cfg(feature = "otel")]
+        {
+            request = inject_trace_context(request);
+        }
         for (name, value) in headers.iter() {
             // Convert axum headers to reqwest headers
             let name_str = name.as_str();
@@ -283,6 +471,11 @@ impl Transport for HttpClientTransport {
 
         let mut http_request = self.client.post(&url);
 
+        #[cfg(feature = "otel")]
+        {
+            http_request = inject_trace_context(http_request);
+        }
+
         // Apply headers from config and defaults
         for (name, value) in self.headers.iter() {
             let name_str = name.as_str();
@@ -342,7 +535,7 @@ impl Transport for HttpClientTransport {
             return Err(error);
         }
 
-        let json_response: JsonRpcResponse = response.json().await.map_err(|e| {
+        let json_value: Value = response.json().await.map_err(|e| {
             // Untrack request on parse error
             let request_id = request_with_id.id.clone();
             let pending_requests = self.pending_requests.clone();
@@ -363,25 +556,61 @@ impl Transport for HttpClientTransport {
             error
         })?;
 
-        // Validate response ID matches request ID
-        if json_response.id != request_with_id.id {
-            self.untrack_request(&request_with_id.id).await;
-            return Err(McpError::Http(format!(
-                "Response ID {:?} does not match request ID {:?}",
-                json_response.id, request_with_id.id
-            )));
-        }
+        let result = if json_value.get("error").is_some() {
+            serde_json::from_value::<JsonRpcError>(json_value)
+                .map_err(|error| McpError::Serialization(error.to_string()))
+                .and_then(|json_error| {
+                    if json_error.id != request_with_id.id {
+                        Err(McpError::Http(format!(
+                            "Error response ID {:?} does not match request ID {:?}",
+                            json_error.id, request_with_id.id
+                        )))
+                    } else {
+                        Err(match json_error.error.code {
+                            FORBIDDEN_ERROR => McpError::Forbidden(json_error.error.message),
+                            RATE_LIMITED_ERROR => McpError::RateLimited {
+                                retry_after_ms: json_error
+                                    .error
+                                    .data
+                                    .and_then(|data| data.get("retryAfterMs").cloned())
+                                    .and_then(|value| value.as_u64())
+                                    .unwrap_or_default(),
+                            },
+                            code => McpError::Protocol(format!(
+                                "JSON-RPC error {code}: {}",
+                                json_error.error.message
+                            )),
+                        })
+                    }
+                })
+        } else {
+            serde_json::from_value::<JsonRpcResponse>(json_value)
+                .map_err(|error| McpError::Serialization(error.to_string()))
+                .and_then(|json_response| {
+                    if json_response.id != request_with_id.id {
+                        Err(McpError::Http(format!(
+                            "Response ID {:?} does not match request ID {:?}",
+                            json_response.id, request_with_id.id
+                        )))
+                    } else {
+                        Ok(json_response)
+                    }
+                })
+        };
 
-        // Untrack successful request
         self.untrack_request(&request_with_id.id).await;
-
-        Ok(json_response)
+        result
     }
 
     async fn send_notification(&mut self, notification: JsonRpcNotification) -> McpResult<()> {
         let url = format!("{}/mcp/notify", self.base_url);
 
         let mut http_request = self.client.post(&url);
+
+        #[cfg(feature = "otel")]
+        {
+            http_request = inject_trace_context(http_request);
+        }
 
         // Apply headers from config and defaults
         for (name, value) in self.headers.iter() {
@@ -448,15 +677,17 @@ impl Transport for HttpClientTransport {
 // HTTP Server Transport
 // ============================================================================
 
+type HttpRequestHandler = Arc<
+    dyn Fn(JsonRpcRequest) -> tokio::sync::oneshot::Receiver<McpResult<JsonRpcResponse>>
+        + Send
+        + Sync,
+>;
+
 /// Shared state for HTTP server transport
 #[derive(Clone)]
 struct HttpServerState {
     notification_sender: broadcast::Sender<JsonRpcNotification>,
-    request_handler: Option<
-        Arc<
-            dyn Fn(JsonRpcRequest) -> tokio::sync::oneshot::Receiver<JsonRpcResponse> + Send + Sync,
-        >,
-    >,
+    request_handler: Option<HttpRequestHandler>,
 }
 
 /// HTTP transport for MCP servers
@@ -469,6 +700,9 @@ pub struct HttpServerTransport {
     state: Arc<RwLock<HttpServerState>>,
     server_handle: Option<tokio::task::JoinHandle<()>>,
     running: Arc<RwLock<bool>>,
+    pending_request_handler: Option<crate::transport::traits::ServerRequestHandler>,
+    #[cfg(feature = "tls")]
+    mtls_config: Option<MtlsServerConfig>,
 }
 
 impl HttpServerTransport {
@@ -503,6 +737,9 @@ impl HttpServerTransport {
             })),
             server_handle: None,
             running: Arc::new(RwLock::new(false)),
+            pending_request_handler: None,
+            #[cfg(feature = "tls")]
+            mtls_config: None,
         }
     }
 
@@ -518,7 +755,24 @@ impl HttpServerTransport {
             + 'static,
     {
         let mut state = self.state.write().await;
-        state.request_handler = Some(Arc::new(handler));
+        state.request_handler = Some(Arc::new(move |request| {
+            let response = handler(request);
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            tokio::spawn(async move {
+                let result = response.await.map_err(|error| {
+                    McpError::Internal(format!("HTTP request handler channel closed: {error}"))
+                });
+                let _ = tx.send(result);
+            });
+            rx
+        }));
+    }
+
+    /// Require TLS 1.3 client certificates signed by the configured client CA.
+    #[cfg(feature = "tls")]
+    pub fn with_mtls(mut self, config: MtlsServerConfig) -> Self {
+        self.mtls_config = Some(config);
+        self
     }
 
     #[cfg(test)]
@@ -536,6 +790,22 @@ impl HttpServerTransport {
 impl ServerTransport for HttpServerTransport {
     async fn start(&mut self) -> McpResult<()> {
         tracing::info!("Starting HTTP server on {}", self.bind_addr);
+
+        if let Some(handler) = self.pending_request_handler.take() {
+            let http_handler = Arc::new(move |request: JsonRpcRequest| {
+                let (tx, rx) = tokio::sync::oneshot::channel();
+                let handler_future = handler(request);
+                let parent_span = tracing::Span::current();
+                tokio::spawn(
+                    async move {
+                        let _ = tx.send(handler_future.await);
+                    }
+                    .instrument(parent_span),
+                );
+                rx
+            });
+            self.state.write().await.request_handler = Some(http_handler);
+        }
 
         let state = self.state.clone();
         let bind_addr = self.bind_addr.clone();
@@ -561,7 +831,15 @@ impl ServerTransport for HttpServerTransport {
         // Note: Timeout configuration is handled at the HTTP client level
         // Server-side timeouts are managed by the underlying Axum/Hyper stack
 
-        // Start the server
+        #[cfg(feature = "tls")]
+        let server_tls_config = self
+            .mtls_config
+            .as_ref()
+            .map(MtlsServerConfig::build_rustls)
+            .transpose()?
+            .map(Arc::new);
+
+        // Start the server after all fallible configuration has been validated.
         let listener = tokio::net::TcpListener::bind(&bind_addr)
             .await
             .map_err(|e| McpError::Http(format!("Failed to bind to {bind_addr}: {e}")))?;
@@ -569,6 +847,39 @@ impl ServerTransport for HttpServerTransport {
         *running.write().await = true;
 
         let server_handle = tokio::spawn(async move {
+            #[cfg(feature = "tls")]
+            if let Some(server_tls_config) = server_tls_config {
+                let acceptor = tokio_rustls::TlsAcceptor::from(server_tls_config);
+                loop {
+                    let (tcp_stream, peer) = match listener.accept().await {
+                        Ok(connection) => connection,
+                        Err(error) => {
+                            tracing::error!(%error, "mTLS TCP accept failed");
+                            break;
+                        }
+                    };
+                    let acceptor = acceptor.clone();
+                    let service = app.clone();
+                    tokio::spawn(async move {
+                        let tls_stream = match acceptor.accept(tcp_stream).await {
+                            Ok(stream) => stream,
+                            Err(error) => {
+                                tracing::warn!(%peer, %error, "mTLS handshake rejected");
+                                return;
+                            }
+                        };
+                        let service = TowerToHyperService::new(service);
+                        if let Err(error) = HyperServerBuilder::new(TokioExecutor::new())
+                            .serve_connection_with_upgrades(TokioIo::new(tls_stream), service)
+                            .await
+                        {
+                            tracing::debug!(%peer, %error, "mTLS HTTP connection ended");
+                        }
+                    });
+                }
+                return;
+            }
+
             if let Err(e) = axum::serve(listener, app).await {
                 tracing::error!("HTTP server error: {}", e);
             }
@@ -581,31 +892,7 @@ impl ServerTransport for HttpServerTransport {
     }
 
     fn set_request_handler(&mut self, handler: crate::transport::traits::ServerRequestHandler) {
-        // Convert the ServerRequestHandler to the HTTP transport's expected format
-        let _http_handler = Arc::new(move |request: JsonRpcRequest| {
-            let (tx, rx) = tokio::sync::oneshot::channel();
-            let handler_future = handler(request);
-            tokio::spawn(async move {
-                let result = handler_future.await;
-                let _ = tx.send(result.unwrap_or_else(|e| JsonRpcResponse {
-                    jsonrpc: "2.0".to_string(),
-                    id: serde_json::Value::Null,
-                    result: Some(serde_json::json!({
-                        "error": {
-                            "code": -32603,
-                            "message": e.to_string()
-                        }
-                    })),
-                }));
-            });
-            rx
-        });
-
-        // Set the handler using the existing async method
-        tokio::spawn(async move {
-            // Note: This is a limitation - we can't call async methods from a sync trait method
-            // The HTTP transport should be updated in the future to support the new trait design
-        });
+        self.pending_request_handler = Some(handler);
     }
 
     async fn send_notification(&mut self, notification: JsonRpcNotification) -> McpResult<()> {
@@ -647,17 +934,38 @@ impl ServerTransport for HttpServerTransport {
 /// Handle MCP JSON-RPC requests
 async fn handle_mcp_request(
     State(state): State<Arc<RwLock<HttpServerState>>>,
+    headers: HeaderMap,
     Json(message): Json<JsonRpcMessage>,
 ) -> Result<Response, StatusCode> {
-    match message {
-        JsonRpcMessage::Request(request) => handle_mcp_jsonrpc_request(state, request)
-            .await
-            .map(|message| Json(message).into_response()),
-        JsonRpcMessage::Notification(notification) => {
-            handle_mcp_jsonrpc_notification(state, notification).await?;
-            Ok(StatusCode::ACCEPTED.into_response())
+    let dispatch = async move {
+        match message {
+            JsonRpcMessage::Request(request) => handle_mcp_jsonrpc_request(state, request)
+                .await
+                .map(|message| Json(message).into_response()),
+            JsonRpcMessage::Notification(notification) => {
+                handle_mcp_jsonrpc_notification(state, notification).await?;
+                Ok(StatusCode::ACCEPTED.into_response())
+            }
+            JsonRpcMessage::Response(_) | JsonRpcMessage::Error(_) => Err(StatusCode::BAD_REQUEST),
         }
-        JsonRpcMessage::Response(_) | JsonRpcMessage::Error(_) => Err(StatusCode::BAD_REQUEST),
+    };
+
+    #[cfg(feature = "otel")]
+    {
+        use tracing_opentelemetry::OpenTelemetrySpanExt;
+
+        let parent = opentelemetry::global::get_text_map_propagator(|propagator| {
+            propagator.extract(&HeaderExtractor(&headers))
+        });
+        let span = tracing::info_span!("mcp.http", otel.kind = "server");
+        let _ = span.set_parent(parent);
+        dispatch.instrument(span).await
+    }
+
+    #[cfg(not(feature = "otel"))]
+    {
+        let _ = headers;
+        dispatch.await
     }
 }
 
@@ -668,11 +976,28 @@ async fn handle_mcp_jsonrpc_request(
     let state_guard = state.read().await;
 
     if let Some(ref handler) = state_guard.request_handler {
+        let request_id = request.id.clone();
         let response_rx = handler(request);
         drop(state_guard); // Release the lock
 
         match response_rx.await {
-            Ok(response) => Ok(JsonRpcMessage::Response(response)),
+            Ok(Ok(response)) => Ok(JsonRpcMessage::Response(response)),
+            Ok(Err(error)) => {
+                let (code, data) = match &error {
+                    McpError::Forbidden(_) => (FORBIDDEN_ERROR, None),
+                    McpError::RateLimited { retry_after_ms } => (
+                        RATE_LIMITED_ERROR,
+                        Some(serde_json::json!({"retryAfterMs": retry_after_ms})),
+                    ),
+                    _ => (error_codes::INTERNAL_ERROR, None),
+                };
+                Ok(JsonRpcMessage::Error(JsonRpcError::error(
+                    request_id,
+                    code,
+                    error.to_string(),
+                    data,
+                )))
+            }
             Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
         }
     } else {
@@ -1071,7 +1396,7 @@ mod tests {
         }))
         .unwrap();
 
-        let response = handle_mcp_request(State(state), Json(message))
+        let response = handle_mcp_request(State(state), HeaderMap::new(), Json(message))
             .await
             .unwrap();
 
@@ -1094,7 +1419,7 @@ mod tests {
         }))
         .unwrap();
 
-        let result = handle_mcp_request(State(state), Json(message)).await;
+        let result = handle_mcp_request(State(state), HeaderMap::new(), Json(message)).await;
 
         assert!(matches!(result, Err(StatusCode::BAD_REQUEST)));
     }
@@ -1492,5 +1817,76 @@ mod tests {
         } else {
             panic!("Expected HTTP error for ID mismatch");
         }
+    }
+
+    #[tokio::test]
+    async fn http_server_installs_and_runs_the_mcp_request_handler() {
+        use crate::server::McpServer;
+
+        let reserved = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = reserved.local_addr().unwrap();
+        drop(reserved);
+
+        let mut server = McpServer::create("http-e2e", "1.0.0");
+        server
+            .start(HttpServerTransport::new(address.to_string()))
+            .await
+            .unwrap();
+
+        let mut client = HttpClientTransport::new(format!("http://{address}"), None)
+            .await
+            .unwrap();
+        let response = client
+            .send_request(
+                JsonRpcRequest::new(Value::from(42), methods::PING.to_string(), None::<Value>)
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.id, Value::from(42));
+        assert!(response.result.is_some());
+        server.stop().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn http_preserves_policy_errors_and_request_ids() {
+        use crate::security::{Permission, RbacAuthorizer, RequestPolicy};
+        use crate::server::McpServer;
+
+        let reserved = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = reserved.local_addr().unwrap();
+        drop(reserved);
+
+        let policy = RequestPolicy::new(RbacAuthorizer::new([Permission::new(
+            "operator",
+            methods::PING,
+        )]));
+        let mut server = McpServer::create("http-policy", "1.0.0").with_request_policy(policy);
+        server
+            .start(HttpServerTransport::new(address.to_string()))
+            .await
+            .unwrap();
+
+        let mut client = HttpClientTransport::new(format!("http://{address}"), None)
+            .await
+            .unwrap();
+        let error = client
+            .send_request(
+                JsonRpcRequest::new(Value::from(43), methods::PING.to_string(), None::<Value>)
+                    .unwrap(),
+            )
+            .await
+            .unwrap_err();
+        assert!(matches!(error, McpError::Forbidden(_)));
+        server.stop().await.unwrap();
+    }
+
+    #[cfg(feature = "tls")]
+    #[tokio::test]
+    async fn mtls_server_rejects_empty_identity_before_starting() {
+        let mut transport = HttpServerTransport::new("127.0.0.1:0")
+            .with_mtls(MtlsServerConfig::new(Vec::new(), Vec::new(), Vec::new()));
+        assert!(transport.start().await.is_err());
+        assert!(!transport.is_running());
     }
 }

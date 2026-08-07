@@ -20,7 +20,8 @@
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! let server = McpServer::new("server".to_string(), "1.0.0".to_string());
-//! // Use: server.start(transport).await?; then handle lifecycle manually
+//! // Register handlers, then call:
+//! // server.run_with_transport(StdioServerTransport::new()).await?;
 //! # Ok(())
 //! # }
 //! ```
@@ -69,7 +70,7 @@
 //!
 //! # Features
 //!
-//! - **Protocol Compliance**: Full MCP 2025-11-25 specification support
+//! - **Protocol Types**: MCP 2025-11-25 messages and capabilities
 //! - **Capability Management**: Dynamic capability negotiation
 //! - **Lifecycle Handling**: Proper initialization and shutdown
 //! - **Error Handling**: Comprehensive error responses

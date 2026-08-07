@@ -37,6 +37,19 @@ mod tests {
         .expect("Failed to create test transport with SSE")
     }
 
+    fn unused_local_url() -> String {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        drop(listener);
+        format!("http://{address}")
+    }
+
+    async fn create_unreachable_transport() -> HttpClientTransport {
+        HttpClientTransport::new(unused_local_url(), None)
+            .await
+            .expect("failed to create unreachable test transport")
+    }
+
     // ============================================================================
     // Builder Pattern Tests
     // ============================================================================
@@ -238,7 +251,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_call_method_simple_structure() {
-        let mut transport = create_test_transport().await;
+        let mut transport = create_unreachable_transport().await;
 
         // This will fail because there's no server, but we can test the structure
         let result = transport.call_method_simple("test_method").await;
@@ -255,7 +268,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_call_method_with_params_structure() {
-        let mut transport = create_test_transport().await;
+        let mut transport = create_unreachable_transport().await;
 
         #[derive(serde::Serialize)]
         struct TestParams {
@@ -289,7 +302,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_batch_requests_structure() {
-        let mut transport = create_test_transport().await;
+        let mut transport = create_unreachable_transport().await;
 
         let requests = vec![
             JsonRpcRequest {
@@ -368,7 +381,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_test_connection_no_server() {
-        let transport = create_test_transport().await;
+        let transport = HttpClientTransport::new(unused_local_url(), None)
+            .await
+            .unwrap();
 
         // Should return false since there's no server running
         let is_connected = transport
@@ -443,7 +458,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_call_with_retry_no_server() {
-        let mut transport = create_test_transport().await;
+        let mut transport = create_unreachable_transport().await;
 
         #[derive(serde::Serialize, Clone)]
         struct TestParams {
@@ -537,9 +552,9 @@ mod tests {
     #[tokio::test]
     async fn test_full_workflow_without_server() {
         // Test a complete workflow using convenience methods
+        let base_url = unused_local_url();
         let mut transport = HttpClientTransport::builder()
-            .base_url("http://localhost:3000")
-            .sse_url("http://localhost:3000/events")
+            .base_url(&base_url)
             .timeout(5_000)
             .header("Authorization", "Bearer test-token")
             .build()
@@ -562,7 +577,7 @@ mod tests {
 
         // Get endpoints
         let endpoints = transport.get_endpoints();
-        assert_eq!(endpoints.mcp, "http://localhost:3000/mcp");
+        assert_eq!(endpoints.mcp, format!("{base_url}/mcp"));
 
         // Update configuration
         transport.set_timeout(10_000);

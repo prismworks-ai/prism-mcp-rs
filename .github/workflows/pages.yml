@@ -27,14 +27,25 @@ jobs:
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         
       - name: Build documentation site
         run: |
-          # Create build directory
+          cargo doc --all-features --no-deps
           mkdir -p _site
-          
-          # Copy main documentation
-          cp -r docs/* _site/
+          cp -r target/doc/* _site/
+          echo '<meta http-equiv="refresh" content="0; url=prism_mcp_rs/">' > _site/index.html
+
+          # Preserve project guides as source documents without creating a
+          # second hand-maintained HTML landing page.
+          mkdir -p _site/project-guides
+          cp -r docs/*.md docs/guides _site/project-guides/
+
+          if [ -d docs/benchmarks ]; then
+            cp -r docs/benchmarks _site/benchmarks
+          fi
           
           # Create benchmarks directory if it doesn't exist
           mkdir -p _site/benchmarks
@@ -57,7 +68,7 @@ jobs:
               <div class="placeholder">
                   <h2>📊 Benchmarks Coming Soon</h2>
                   <p>Performance benchmarks will be automatically generated and published here when the next CI run completes.</p>
-                  <p><a href="../">← Back to Documentation</a></p>
+                  <p><a href="../prism_mcp_rs/">← Back to API documentation</a></p>
               </div>
           </body>
           </html>

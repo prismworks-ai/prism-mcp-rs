@@ -26,6 +26,13 @@ use tokio::{sync::mpsc, time::timeout};
 mod http_sse_streaming_tests {
     use super::*;
 
+    fn unused_local_url() -> String {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        drop(listener);
+        format!("http://{address}")
+    }
+
     // ========================================================================
     // SSE Data Parsing and Processing Tests
     // ========================================================================
@@ -227,7 +234,7 @@ mod http_sse_streaming_tests {
     #[tokio::test]
     async fn test_http_client_notification_without_sse() {
         // Test notification handling when no SSE is configured
-        let mut transport = HttpClientTransport::new("http://localhost:3000", None)
+        let mut transport = HttpClientTransport::new(unused_local_url(), None)
             .await
             .unwrap();
 

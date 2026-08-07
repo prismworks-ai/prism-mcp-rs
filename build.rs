@@ -9,7 +9,7 @@
 //!
 //! For development workflows and build commands, see:
 //! - Makefile: Primary developer interface with convenient targets
-//! - DEVELOPMENT.md: Complete development guide and workflow documentation
+//! - CONTRIBUTING.md: Development workflow and contribution requirements
 //! - scripts/ci/: CI simulation scripts that mirror GitHub Actions
 
 fn main() {

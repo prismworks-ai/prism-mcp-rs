@@ -1,61 +1,50 @@
-# Scripts Directory
+# Repository Scripts
 
-Organized automation and utility scripts for the prism-mcp-rs project.
+Run scripts from the repository root. Read the script header before use; several utilities change GitHub metadata or delete generated files and are not part of routine development.
 
-## Directory Structure
+## Maintained entry points
 
-```
-scripts/
-├── ci/                 # CI/CD related scripts
-│   └── pre-push                  # Git hook for pre-push validation
-└── README.md          # This file
-```
+| Path | Purpose |
+|------|---------|
+| `ci/run_ci_local.sh` | Run CI through Act when available, otherwise run native checks |
+| `ci/generate-coverage-report.sh` | Generate LCOV and a Markdown coverage report |
+| `ci/simple-coverage.sh` | Produce the fallback coverage summary used by CI |
+| `ci/run-benchmarks.sh` | Run the maintained Criterion suite and write a benchmark snapshot |
+| `ci/pre-push` | Optional Git pre-push hook |
+| `dev/setup-dev.sh` | Install/configure development prerequisites |
+| `dev/verify-environment.sh` | Check the local development environment |
+| `docs/check-docs-quality.py` | Check maintained Markdown for duplicate content and broken local links |
+| `install-pre-commit.sh` | Install repository Git hooks |
+| `security-audit.sh` | Run dependency/supply-chain audit helpers |
+| `update-dependencies.sh` | Update Rust dependencies with repository checks |
+| `act-clean.sh` | Clean Act containers/resources |
 
-## Usage
+The scripts under `test/` exercise the large examples collection. The scripts under `utils/` are repository-maintenance helpers for badges, labels, publication, and cleanup; inspect their arguments and targets before running them.
 
-All CI scripts can be accessed through the main `./ci` command in the project root:
-
-```bash
-# From project root
-./ci run        # Start CI
-./ci logs       # View logs
-./ci monitor    # Monitor containers
-./ci stop       # Clean up
-./ci help       # Show all commands
-```
-
-Or run scripts directly:
+## Common commands
 
 ```bash
-# From project root
-./scripts/ci/run-ci-with-network.sh
-./scripts/ci/view-ci-logs.sh -f  # Follow logs
+./scripts/dev/verify-environment.sh
+./scripts/ci/run_ci_local.sh
+python3 scripts/docs/check-docs-quality.py
+./scripts/ci/run-benchmarks.sh
 ```
 
-## Adding New Scripts
+Install the optional pre-push hook:
 
-When adding new scripts:
+```bash
+cp scripts/ci/pre-push .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+```
 
-1. Place them in the appropriate subdirectory
-2. Make them executable: `chmod +x script-name.sh`
-3. Add documentation in the script header
-4. Update this README
-5. Consider adding to the main `./ci` command if CI-related
+Contributor requirements and direct Cargo commands are canonical in [CONTRIBUTING.md](../CONTRIBUTING.md). CI-specific inputs and outputs are documented in [ci/README.md](ci/README.md).
 
-## Script Categories
+## Adding or changing a script
 
-### CI Scripts (`ci/`)
-
-Container and CI pipeline management:
-- **pre-push**: Git hook that validates code before pushing
-
-**Note:** Most CI scripts have been removed in favor of using Act to run GitHub Actions locally.
-See docs/DEVELOPMENT.md for instructions on setting up and using Act.
-
-### Future Categories
-
-Planned script categories:
-- `build/` - Build and compilation scripts
-- `test/` - Testing utilities
-- `release/` - Release automation
-- `dev/` - Development helpers
+- use strict error handling and quote paths/variables;
+- work from the repository root or resolve it safely;
+- avoid hidden network or destructive behavior;
+- make destructive targets explicit and recoverable where possible;
+- keep generated output deterministic or clearly timestamped;
+- update this index and the relevant workflow; and
+- test locally on the supported shell/platforms.

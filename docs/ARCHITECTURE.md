@@ -1,299 +1,77 @@
 # Architecture
 
-## System Overview
+`prism-mcp-rs` is a Tokio-based library organized around protocol types, registries and handlers, a common server dispatch path, clients, and replaceable transports.
 
-The Prism MCP SDK implements a layered architecture with clear separation of concerns, enabling modularity, extensibility, and performance optimization. The system follows Domain-Driven Design principles with distinct boundaries between protocol handling, transport mechanisms, and application logic.
+## Module map
 
-## Architectural Layers
+| Module | Responsibility |
+|--------|----------------|
+| `protocol` | JSON-RPC/MCP methods, messages, capabilities, and wire types |
+| `core` | Tools, resources, prompts, completion, errors, resilience, and logging primitives |
+| `server` | Registration, validation, policy enforcement, routing, and lifecycle |
+| `client` | MCP client operations, sessions, and request handling |
+| `transport` | STDIO, HTTP, WebSocket, SSE, custom transport traits, and endpoint pools |
+| `security` | Principal/context types, authorization, and in-process rate limiting |
+| `auth` | OAuth-oriented client primitives; available with HTTP support |
+| `telemetry` | Optional OTLP exporter setup and tracing integration |
+| `plugin` | Optional trusted native dynamic-plugin loading and tool registration |
 
-### 1. Transport Layer
+## Request path
 
-The transport layer provides protocol-agnostic communication channels with pluggable implementations.
+1. A `ServerTransport` receives and decodes a JSON-RPC request.
+2. The transport handler invokes the shared `McpServer` dispatch path.
+3. An authentication adapter may call `handle_request_with_context`; the compatibility path uses an anonymous context.
+4. `RequestPolicy` authorizes the normalized method/resource target and applies the rate limiter.
+5. Request and MCP parameters are validated when validation is enabled.
+6. Dispatch routes to a built-in operation or registered tool/resource/prompt handler.
+7. The response is serialized by the transport.
 
-#### Core Transports
+All built-in transports install the same server handler. Custom authenticated transports should construct `RequestContext` only after validating credentials; caller-provided identity data is not trustworthy by itself.
 
-| Transport | Protocol | Use Case | Characteristics |
-|-----------|----------|----------|----------------|
-| **STDIO** | Standard I/O | CLI tools, local IPC | Synchronous, zero network overhead |
-| **HTTP/1.1** | REST/JSON-RPC | Web services, APIs | Request-response, stateless |
-| **HTTP/2** | Multiplexed streams | High-throughput services | Binary framing, server push |
-| **WebSocket** | RFC 6455 | Real-time bidirectional | Full-duplex, persistent connection |
+## Concurrency and ownership
 
-#### Transport Abstraction
+Registries are shared through `Arc` plus asynchronous or concurrent maps. Handlers must be `Send + Sync`, should avoid blocking the Tokio runtime, and should enforce their own downstream timeouts. CPU-heavy work belongs in `spawn_blocking` or a dedicated worker pool.
 
-```rust
-#[async_trait]
-pub trait Transport: Send + Sync {
-    async fn send_request(&mut self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse>;
-    async fn send_notification(&mut self, notification: JsonRpcNotification) -> McpResult<()>;
-    async fn receive_notification(&mut self) -> McpResult<Option<JsonRpcNotification>>;
-    async fn close(&mut self) -> McpResult<()>;
-}
-```
+The in-process rate limiter stores independent token buckets keyed by principal and method. `prune_idle` is explicit so request processing never performs a full-map scan. It is not a distributed quota.
 
-### 2. Protocol Engine
+## Transport model
 
-The protocol engine implements MCP specification 2025-11-25 with full JSON-RPC 2.0 compliance.
+- `Transport` models client-side request/notification exchange.
+- `ServerTransport` accepts a request-handler callback and owns server lifecycle.
+- STDIO is the default and reserves stdout for frames.
+- HTTP exposes MCP, notification, SSE, and health routes; TLS is opt-in.
+- WebSocket provides bidirectional transport when enabled.
+- `EndpointPoolTransport` selects healthy endpoints round-robin and keeps reactive circuit state.
 
-#### Message Processing Pipeline
+Failover is intentionally conservative: naturally read-only MCP methods can be retried at another endpoint; mutations are attempted once unless an application-controlled idempotency key is present. The SDK does not provide backend deduplication, service discovery, active probes, or exactly-once execution.
 
-1. **Deserialization** - JSON to strongly-typed structures
-2. **Validation** - Schema validation and constraint checking
-3. **Routing** - Method dispatch to appropriate handlers
-4. **Execution** - Handler invocation with context
-5. **Serialization** - Response formatting and encoding
+## Security boundaries
 
-#### Protocol Extensions
+| Boundary | SDK behavior | Host responsibility |
+|----------|--------------|---------------------|
+| Identity | Carries a `Principal` in `RequestContext` | Verify credentials and create the context |
+| Authorization | Optional deny-by-default RBAC | Define and test least-privilege policy |
+| Rate limiting | Optional process-local token bucket | Add global/edge limits and concurrency bounds |
+| Network | Optional TLS 1.3 mTLS for HTTP | Issue/rotate/revoke certificates and protect keys |
+| Observability | Structured tracing and optional OTLP | Operate collector, sampling, retention, and redaction |
+| Plugins | Loads trusted native libraries in process | Verify provenance or isolate in a separate process |
 
-- **Batch Operations** - Atomic execution of multiple requests
-- **Schema Introspection** - Runtime capability discovery
-- **Progressive Delivery** - Streaming for large payloads
-- **Content Negotiation** - Multiple serialization formats
-
-### 3. Handler Architecture
-
-Handlers implement business logic with type-safe interfaces.
-
-```rust
-#[async_trait]
-pub trait ToolHandler: Send + Sync {
-    async fn call(
-        &self,
-        arguments: HashMap<String, Value>
-    ) -> McpResult<ToolResult>;
-    
-    fn metadata(&self) -> ToolMetadata {
-        ToolMetadata::default()
-    }
-}
-```
-
-#### Handler Categories
-
-- **Tool Handlers** - Executable functions with parameters
-- **Resource Handlers** - Data providers with URI addressing
-- **Prompt Handlers** - Template processors for message generation
-- **Completion Handlers** - Context-aware autocomplete providers
+The default policy remains allow-all for compatibility. Installing `RbacAuthorizer` changes authorization to deny by default.
 
-### 4. Plugin Runtime
+## Extensibility
 
-The plugin system enables runtime extensibility through dynamic library loading.
+Prefer normal Rust handlers for application code. Use custom transports when a platform has its own framing or identity boundary. Use native plugins only when hot-loaded, trusted code is a requirement; they share the process address space and have no resource sandbox.
 
-#### Plugin Lifecycle
+## Performance model
 
-```
-Discovery → Loading → Initialization → Registration → Execution → Hot Reload → Unloading
-```
+The maintained Criterion suite measures selected registry operations, common server dispatch, and recoverable endpoint failover. It does not establish production throughput or tail latency. Network topology, handler work, payloads, enabled features, logging, and allocator behavior dominate real deployments. See [Performance](guides/performance.md).
 
-#### ABI Stability
-
-Plugins maintain binary compatibility through:
+## Planned, not implemented
 
-- **Stable ABI** - C-compatible function signatures
-- **Version Negotiation** - Runtime compatibility checking
-- **Interface Contracts** - Immutable trait definitions
+- sandboxed WebAssembly plugins with enforceable CPU/memory limits;
+- active endpoint health checks and service-discovery adapters;
+- cluster-wide policy or rate-limit state;
+- SDK-managed CPU affinity;
+- exactly-once mutation semantics.
 
-### 5. Resilience Layer
-
-Production-grade fault tolerance mechanisms ensure system reliability.
-
-#### Circuit Breaker Implementation
-
-```rust
-pub struct CircuitBreaker {
-    state: Arc<RwLock<CircuitState>>,
-    failure_threshold: u32,
-    recovery_timeout: Duration,
-    half_open_max_requests: u32,
-}
-```
-
-**State Transitions:**
-
-```
-Closed → [failures > threshold] → Open
-Open → [timeout elapsed] → Half-Open
-Half-Open → [success] → Closed
-Half-Open → [failure] → Open
-```
-
-#### Retry Strategies
-
-- **Exponential Backoff** - Delay = base^attempt + jitter
-- **Adaptive Retry** - Error-based retry decisions
-- **Bulkhead Isolation** - Resource pool separation
-
-## Data Flow Architecture
-
-### Request Processing Flow
-
-```
-Client Request
-    ↓
-[Transport Layer]
-    ↓
-[Protocol Deserializer]
-    ↓
-[Validation Engine]
-    ↓
-[Authentication/Authorization]
-    ↓
-[Rate Limiter]
-    ↓
-[Handler Router]
-    ↓
-[Business Logic Execution]
-    ↓
-[Response Formatter]
-    ↓
-[Protocol Serializer]
-    ↓
-[Transport Layer]
-    ↓
-Client Response
-```
-
-### Asynchronous Processing Model
-
-```rust
-pub struct AsyncExecutor {
-    runtime: Arc<Runtime>,
-    task_queue: Arc<Mutex<VecDeque<Task>>>,
-    worker_pool: Vec<JoinHandle<()>>,
-    metrics: Arc<Metrics>,
-}
-```
-
-## Performance Architecture
-
-### Memory Management
-
-- **Zero-Copy Operations** - Direct buffer manipulation
-- **Arena Allocation** - Batch memory allocation
-- **Object Pooling** - Reusable resource pools
-
-### Concurrency Model
-
-- **Work Stealing** - Task redistribution across threads
-- **Lock-Free Structures** - Atomic operations for hot paths
-- **Async I/O** - Non-blocking network operations
-
-### Optimization Strategies
-
-| Strategy | Implementation | Impact |
-|----------|---------------|--------|
-| Connection Pooling | Reusable TCP connections | -70% connection overhead |
-| Request Batching | Aggregate multiple requests | +300% throughput |
-| Compression | Adaptive Gzip/Brotli/Zstd | -60% bandwidth usage |
-| Caching | LRU with TTL | -90% redundant computation |
-
-## Security Architecture
-
-### Authentication Pipeline
-
-1. **Transport Security** - TLS 1.3 with mTLS support
-2. **Token Validation** - JWT/OAuth2 verification
-3. **Session Management** - Secure session tokens
-4. **Rate Limiting** - Per-client request throttling
-
-### Authorization Model
-
-```rust
-pub struct AuthorizationContext {
-    principal: Principal,
-    permissions: HashSet<Permission>,
-    resource_filters: Vec<ResourceFilter>,
-    rate_limits: RateLimitConfig,
-}
-```
-
-## Observability Architecture
-
-### Telemetry Pipeline
-
-```
-Application Events
-    ↓
-[Instrumentation Layer]
-    ↓
-[Telemetry Processor]
-    ↓
-[Export Pipeline]
-    ├── Logs → Structured Logging
-    ├── Metrics → Time-series Database
-    └── Traces → Distributed Tracing
-```
-
-### Metrics Collection
-
-- **Counters** - Request counts, error rates
-- **Gauges** - Active connections, memory usage
-- **Histograms** - Latency distribution
-- **Summaries** - Percentile calculations
-
-## Deployment Architecture
-
-### Container Strategy
-
-```dockerfile
-# Multi-stage build for minimal image size
-FROM rust:1.85 AS builder
-WORKDIR /app
-COPY . .
-RUN cargo build --release --features production
-
-FROM debian:bookworm-slim
-COPY --from=builder /app/target/release/mcp-server /usr/local/bin/
-EXPOSE 8080
-CMD ["mcp-server"]
-```
-
-### Scaling Patterns
-
-- **Horizontal Scaling** - Stateless server replication
-- **Load Balancing** - Round-robin/least-connections
-- **Service Mesh** - Istio/Linkerd integration
-- **Auto-scaling** - Metrics-based scaling policies
-
-## Configuration Management
-
-### Hierarchical Configuration
-
-```yaml
-# config.yaml
-server:
-  transport:
-    type: http2
-    port: 8080
-    tls:
-      enabled: true
-      cert: /etc/certs/server.crt
-      key: /etc/certs/server.key
-  
-  resilience:
-    circuit_breaker:
-      failure_threshold: 5
-      recovery_timeout: 30s
-    
-    retry:
-      max_attempts: 3
-      initial_delay: 100ms
-      max_delay: 5s
-```
-
-## Future Architecture Considerations
-
-### Planned Enhancements
-
-1. **QUIC Transport** - UDP-based multiplexing
-2. **WebAssembly Plugins** - Sandboxed execution
-3. **Distributed Tracing** - OpenTelemetry native
-4. **Service Discovery** - Consul/etcd integration
-5. **Event Sourcing** - CQRS pattern support
-
-### Scalability Roadmap
-
-- **Phase 1** - Single server optimization (current)
-- **Phase 2** - Cluster coordination
-- **Phase 3** - Global distribution
-- **Phase 4** - Edge computing support
+Keeping these items explicit prevents deployment architecture from depending on roadmap claims.

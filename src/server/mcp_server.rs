@@ -9,7 +9,7 @@
 //! To use the plugin system, enable the plugin feature in `Cargo.toml`:
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["plugin"] }
+//! prism-mcp-rs = { version = "2", features = ["plugin"] }
 //! ```
 //!
 //! This enables dynamic tool loading and plugin management capabilities.
@@ -18,6 +18,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
+use tracing::Instrument;
 
 use crate::core::{
     completion::{CompletionContext, CompletionHandler},
@@ -28,6 +29,7 @@ use crate::core::{
     PromptInfo, ResourceInfo, ToolInfo,
 };
 use crate::protocol::{error_codes::*, messages::*, methods, types::*, validation::*};
+use crate::security::{RequestContext, RequestPolicy, RequestTarget};
 use crate::transport::traits::ServerTransport;
 
 #[cfg(feature = "plugin")]
@@ -180,6 +182,8 @@ pub struct McpServer {
     /// Request ID counter
     #[allow(dead_code)]
     request_counter: Arc<Mutex<u64>>,
+    /// Authorization and rate-limiting policy shared by all transports.
+    request_policy: RequestPolicy,
     /// Plugin manager for dynamic tool loading
     #[cfg(feature = "plugin")]
     plugin_manager: Option<Arc<RwLock<PluginManager>>>,
@@ -198,6 +202,17 @@ pub enum ServerState {
     Stopping,
     /// Server has stopped
     Stopped,
+}
+
+fn request_target(request: &JsonRpcRequest) -> RequestTarget {
+    let resource = request.params.as_ref().and_then(|params| {
+        params
+            .get("name")
+            .or_else(|| params.get("uri"))
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+    });
+    RequestTarget::new(request.method.clone(), resource)
 }
 
 impl McpServer {
@@ -230,6 +245,7 @@ impl McpServer {
             transport: Arc::new(Mutex::new(None)),
             state: Arc::new(RwLock::new(ServerState::Uninitialized)),
             request_counter: Arc::new(Mutex::new(0)),
+            request_policy: RequestPolicy::default(),
             #[cfg(feature = "plugin")]
             plugin_manager: None,
         }
@@ -287,6 +303,17 @@ impl McpServer {
     /// Set server configuration
     pub fn set_config(&mut self, config: ServerConfig) {
         self.config = config;
+    }
+
+    /// Install authorization and rate-limiting controls for all requests.
+    pub fn set_request_policy(&mut self, policy: RequestPolicy) {
+        self.request_policy = policy;
+    }
+
+    /// Install authorization and rate-limiting controls using a builder style.
+    pub fn with_request_policy(mut self, policy: RequestPolicy) -> Self {
+        self.request_policy = policy;
+        self
     }
 
     /// Set initial resources (used by ServerBuilder)
@@ -892,6 +919,7 @@ impl McpServer {
         let info = self.info.clone();
         let capabilities = self.capabilities.clone();
         let config = self.config.clone();
+        let request_policy = self.request_policy.clone();
 
         let request_handler: crate::transport::traits::ServerRequestHandler =
             Arc::new(move |request| {
@@ -903,6 +931,7 @@ impl McpServer {
                 let info = info.clone();
                 let capabilities = capabilities.clone();
                 let config = config.clone();
+                let request_policy = request_policy.clone();
 
                 Box::pin(async move {
                     // Create a temporary server instance to handle the request
@@ -918,6 +947,7 @@ impl McpServer {
                         transport: Arc::new(Mutex::new(None)),
                         state: Arc::new(RwLock::new(ServerState::Running)),
                         request_counter: Arc::new(Mutex::new(0)),
+                        request_policy,
                         #[cfg(feature = "plugin")]
                         plugin_manager: None,
                     };
@@ -1047,55 +1077,111 @@ impl McpServer {
     // ========================================================================
     /// Handle an incoming JSON-RPC request
     pub async fn handle_request(&self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
-        // Validate the request if configured to do so
-        if self.config.validate_requests {
-            validate_jsonrpc_request(&request)?;
-            validate_mcp_request(&request.method, request.params.as_ref())?;
-        }
+        self.handle_request_with_context(request, RequestContext::anonymous())
+            .await
+    }
 
-        // Route the request to the appropriate handler
-        let result = match request.method.as_str() {
-            methods::INITIALIZE => self.handle_initialize(request.params).await,
-            methods::PING => self.handle_ping().await,
-            methods::TOOLS_LIST => self.handle_tools_list(request.params).await,
-            methods::TOOLS_CALL => self.handle_tools_call(request.params).await,
-            methods::RESOURCES_LIST => self.handle_resources_list(request.params).await,
-            methods::RESOURCES_READ => self.handle_resources_read(request.params).await,
-            methods::RESOURCES_SUBSCRIBE => self.handle_resources_subscribe(request.params).await,
-            methods::RESOURCES_UNSUBSCRIBE => {
-                self.handle_resources_unsubscribe(request.params).await
-            }
-            methods::PROMPTS_LIST => self.handle_prompts_list(request.params).await,
-            methods::PROMPTS_GET => self.handle_prompts_get(request.params).await,
-            methods::RESOURCES_TEMPLATES_LIST => {
-                self.handle_resource_templates_list(request.params).await
-            }
-            methods::COMPLETION_COMPLETE => self.handle_completion_complete(request.params).await,
-            methods::LOGGING_SET_LEVEL => self.handle_logging_set_level(request.params).await,
-            methods::RPC_DISCOVER => self.handle_rpc_discover(request.params).await,
-            _ => {
-                let method = &request.method;
-                Err(McpError::Protocol(format!("Unknown method: {method}")))
-            }
-        };
+    /// Handle a request with transport-supplied identity and correlation data.
+    ///
+    /// Custom transports and authentication middleware should call this method
+    /// after validating credentials and constructing a [`RequestContext`].
+    pub async fn handle_request_with_context(
+        &self,
+        request: JsonRpcRequest,
+        context: RequestContext,
+    ) -> McpResult<JsonRpcResponse> {
+        let target = request_target(&request);
+        let method = request.method.clone();
+        let principal = context.principal.id.clone();
+        let request_id = context.request_id.clone();
+        let transport = context.transport.clone();
+        let span = tracing::info_span!(
+            "mcp.request",
+            request.id = %request_id,
+            rpc.method = %method,
+            principal.id = %principal,
+            transport = %transport,
+            otel.kind = "server"
+        );
 
-        // Convert the result to a JSON-RPC response
-        match result {
-            Ok(result_value) => Ok(JsonRpcResponse::success(request.id, result_value)?),
-            Err(error) => {
-                let (code, message) = match error {
-                    McpError::ToolNotFound(_) => (TOOL_NOT_FOUND, error.to_string()),
-                    McpError::ResourceNotFound(_) => (RESOURCE_NOT_FOUND, error.to_string()),
-                    McpError::PromptNotFound(_) => (PROMPT_NOT_FOUND, error.to_string()),
-                    McpError::Validation(_) => (INVALID_PARAMS, error.to_string()),
-                    _ => (INTERNAL_ERROR, error.to_string()),
-                };
-                // Return proper JSON-RPC error response
-                Err(McpError::Protocol(format!(
-                    "JSON-RPC error {code}: {message}"
-                )))
+        async move {
+            let started_at = std::time::Instant::now();
+            if let Err(error) = self.request_policy.enforce(&context, &target).await {
+                tracing::warn!(
+                    event = "security.policy_denied",
+                    error.category = error.category(),
+                    error = %error,
+                    "request rejected by production policy"
+                );
+                return Err(error);
             }
+
+            // Validate the request if configured to do so
+            if self.config.validate_requests {
+                validate_jsonrpc_request(&request)?;
+                validate_mcp_request(&request.method, request.params.as_ref())?;
+            }
+
+            // Route the request to the appropriate handler
+            let result = match request.method.as_str() {
+                methods::INITIALIZE => self.handle_initialize(request.params).await,
+                methods::PING => self.handle_ping().await,
+                methods::TOOLS_LIST => self.handle_tools_list(request.params).await,
+                methods::TOOLS_CALL => self.handle_tools_call(request.params).await,
+                methods::RESOURCES_LIST => self.handle_resources_list(request.params).await,
+                methods::RESOURCES_READ => self.handle_resources_read(request.params).await,
+                methods::RESOURCES_SUBSCRIBE => {
+                    self.handle_resources_subscribe(request.params).await
+                }
+                methods::RESOURCES_UNSUBSCRIBE => {
+                    self.handle_resources_unsubscribe(request.params).await
+                }
+                methods::PROMPTS_LIST => self.handle_prompts_list(request.params).await,
+                methods::PROMPTS_GET => self.handle_prompts_get(request.params).await,
+                methods::RESOURCES_TEMPLATES_LIST => {
+                    self.handle_resource_templates_list(request.params).await
+                }
+                methods::COMPLETION_COMPLETE => {
+                    self.handle_completion_complete(request.params).await
+                }
+                methods::LOGGING_SET_LEVEL => self.handle_logging_set_level(request.params).await,
+                methods::RPC_DISCOVER => self.handle_rpc_discover(request.params).await,
+                _ => {
+                    let method = &request.method;
+                    Err(McpError::Protocol(format!("Unknown method: {method}")))
+                }
+            };
+
+            // Convert the result to a JSON-RPC response
+            let response = match result {
+                Ok(result_value) => Ok(JsonRpcResponse::success(request.id, result_value)?),
+                Err(error @ McpError::Forbidden(_)) => Err(error),
+                Err(error @ McpError::RateLimited { .. }) => Err(error),
+                Err(error) => {
+                    let (code, message) = match error {
+                        McpError::ToolNotFound(_) => (TOOL_NOT_FOUND, error.to_string()),
+                        McpError::ResourceNotFound(_) => (RESOURCE_NOT_FOUND, error.to_string()),
+                        McpError::PromptNotFound(_) => (PROMPT_NOT_FOUND, error.to_string()),
+                        McpError::Validation(_) => (INVALID_PARAMS, error.to_string()),
+                        _ => (INTERNAL_ERROR, error.to_string()),
+                    };
+                    // Return proper JSON-RPC error response
+                    Err(McpError::Protocol(format!(
+                        "JSON-RPC error {code}: {message}"
+                    )))
+                }
+            };
+
+            tracing::info!(
+                event = "security.request_audit",
+                outcome = if response.is_ok() { "allowed" } else { "error" },
+                duration_ms = started_at.elapsed().as_millis() as u64,
+                "request completed"
+            );
+            response
         }
+        .instrument(span)
+        .await
     }
 
     // ========================================================================

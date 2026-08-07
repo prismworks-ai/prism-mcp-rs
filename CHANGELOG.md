@@ -5,16 +5,32 @@ All notable changes to the Prism MCP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Historical entries describe what was announced at release time. They are not a
+current capability or security contract. In particular, earlier references to
+plugin sandboxing/ABI stability, DDoS protection, and a no-unsafe-code boundary
+were inaccurate; current behavior and trust boundaries are documented in
+[README.md](README.md) and [SECURITY.md](SECURITY.md).
+
 ## [Unreleased]
 
 ### Added
-- N/A
+- Shared `RequestContext` and principal model for transport-independent policy enforcement.
+- Deny-by-default fine-grained RBAC with method and resource patterns.
+- Enforced per-principal/per-method token-bucket rate limiting.
+- Optional OTLP/OpenTelemetry tracing with W3C HTTP trace propagation.
+- TLS 1.3 mutual-authentication configuration for HTTP clients and servers.
+- Round-robin endpoint pooling with circuit state and idempotency-aware failover.
+- Criterion benchmarks for common server dispatch and recoverable endpoint failover.
 
 ### Changed
-- N/A
+- Production documentation now distinguishes implemented controls from planned sandboxing and optional host-level CPU affinity.
+- Consolidated project documentation around one maintained index; merged and removed redundant development, plugin, AI-configuration, CI-logging, HTML landing-page, and badge-status documents.
+- Documentation validation now detects exact duplicate Markdown files, broken local links, and references to removed documents.
+- Benchmark CI fails when Criterion output cannot be parsed instead of publishing fabricated fallback data.
 
 ### Fixed
-- N/A
+- HTTP server transports now retain and install the `McpServer` request handler before accepting traffic.
+- Network-negative tests no longer assume that `localhost:3000` is unused.
 
 ## [2.0.1] - 2026-05-16
 
@@ -42,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed resource handling and prompts API examples
   - Updated integration tests and working examples
 - **📖 Documentation Updates**: Improved plugin guides and error handling documentation
-  - Enhanced plugin-types.md with clearer examples
+  - Enhanced the former standalone plugin component reference with clearer examples
   - Updated plugins.md with latest API patterns
   - Better error handling documentation
 
@@ -75,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Compilation checks with `cargo check`
   - File cleanup (trailing whitespace, line endings)
   - Configuration validation (YAML/TOML)
-- **📚 Enhanced Documentation**: Updated `docs/DEVELOPMENT.md` with:
+- **📚 Enhanced Documentation**: Updated the former standalone development guide with:
   - Code quality workflow section
   - Pre-commit hook setup instructions
   - CI failure prevention guide
@@ -212,7 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adaptive compression (Gzip, Brotli, Zstd) based on content analysis
 - Schema introspection for runtime capability discovery
 - Batch operations support for bulk request processing
-- Hot-reloadable plugin system with ABI stability
+- Hot-reloadable native plugin system (without a stable cross-toolchain ABI)
 - Production observability with structured logging and metrics
 - Convenience methods for `ContentBlock::text()`, `ContentBlock::image()`, `ContentBlock::audio()`, `ContentBlock::resource_link()`
 - Convenience methods for `ToolResult::text()`, `ToolResult::error()`, `ToolResult::with_content()`, `ToolResult::with_structured()`
@@ -254,12 +270,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolved all clippy warnings and formatting issues
 
 ### Security
-- Implemented secure plugin loading mechanisms
+- Added native plugin loading for trusted in-process extensions
 - Added input validation for all protocol messages
-- Enforced memory safety with no unsafe code
+- Kept core request paths in safe Rust; native plugin FFI uses unsafe code
 - TLS 1.3 support with mTLS capabilities
 - JWT/OAuth2 authentication support
-- Rate limiting and DDoS protection
+- Added authentication and transport-security primitives; application-level protection remained required
 
 ## [0.1.0] - 2025-01-14 (Pending Release)
 

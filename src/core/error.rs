@@ -56,6 +56,14 @@ pub enum McpError {
     #[error("Authorization error: {0}")]
     Auth(String),
 
+    /// The authenticated principal is not allowed to perform the operation.
+    #[error("Forbidden: {0}")]
+    Forbidden(String),
+
+    /// The caller exceeded an enforced request rate.
+    #[error("Rate limit exceeded; retry after {retry_after_ms}ms")]
+    RateLimited { retry_after_ms: u64 },
+
     /// Input validation errors
     #[error("Validation error: {0}")]
     Validation(String),
@@ -202,6 +210,8 @@ impl McpError {
             McpError::SchemaValidation(_) => false,
             McpError::Cancelled(_) => false,
             McpError::Auth(_) => false,
+            McpError::Forbidden(_) => false,
+            McpError::RateLimited { .. } => true,
             McpError::Internal(_) => false,
         }
     }
@@ -231,6 +241,8 @@ impl McpError {
             McpError::SchemaValidation(_) => "validation",
             McpError::Cancelled(_) => "cancelled",
             McpError::Auth(_) => "auth",
+            McpError::Forbidden(_) => "authorization",
+            McpError::RateLimited { .. } => "rate_limit",
             McpError::Internal(_) => "internal",
         }
     }

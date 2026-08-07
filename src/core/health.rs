@@ -1,6 +1,6 @@
-//! complete health check system for MCP SDK
+//! Health-check primitives for MCP SDK applications.
 //!
-//! Module provides production-ready health checking capabilities with:
+//! The module provides:
 //! - Transport-specific health checks
 //! - Protocol-level health validation
 //! - Resource availability monitoring

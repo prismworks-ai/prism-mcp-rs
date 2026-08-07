@@ -9,7 +9,7 @@
 //! For streaming and large payload support, enable the chunked-encoding feature:
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["chunked-encoding"] }
+//! prism-mcp-rs = { version = "2", features = ["chunked-encoding"] }
 //! ```
 //!
 //! This enables the streaming HTTP client transport for large payloads.

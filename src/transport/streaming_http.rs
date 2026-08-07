@@ -5,9 +5,9 @@
 //! ## Feature Requirements
 //!
 //! ```toml
-//! # Cargo.toml - Streaming HTTP with all advanced features
+//! # Cargo.toml - HTTP enhancements
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["http", "streaming-http", "chunked-encoding", "compression", "http2"] }
+//! prism-mcp-rs = { version = "2", features = ["http", "chunked-encoding", "compression", "http2"] }
 //! ```
 //!
 //! Individual features:
@@ -15,35 +15,35 @@
 //! ### Chunked Encoding Feature
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["chunked-encoding"] }
+//! prism-mcp-rs = { version = "2", features = ["chunked-encoding"] }
 //! ```
 //! Enables chunked transfer encoding for large payloads and streaming data.
 //!
 //! ### Compression Feature  
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["compression"] }
+//! prism-mcp-rs = { version = "2", features = ["compression"] }
 //! ```
 //! Enables response compression with Gzip, Brotli, and Zstd algorithms.
 //!
 //! ### HTTP/2 Feature
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "*", features = ["http2"] }
+//! prism-mcp-rs = { version = "2", features = ["http2"] }
 //! ```
 //! Enables HTTP/2 protocol support with multiplexing and server push.
 //!
 //! ## Capabilities
 //! - Chunked transfer encoding for large payloads
 //! - Response compression: Gzip, Brotli, Zstd
-//! - HTTP/2 protocol support with multiplexing
-//! - Intelligent content analysis and adaptive strategies
+//! - HTTP/2 protocol primitives
+//! - Configurable compression strategies
 //! - Backpressure and flow control
 //!
 //! Ideal for:
 //! - Large data processing (>100KB payloads)
 //! - Memory-constrained environments
-//! - High-performance applications
+//! - Applications that have measured a benefit from these features
 //! - Applications with mixed payload sizes
 
 use async_trait::async_trait;

@@ -44,11 +44,11 @@ cargo run --example <example_name> --features "feature1 feature2"
 
 ### server::mcp_server
 
-- **server_mcp_server_example_1** - Line 98
+- **server_mcp_server_example_1** - Line 100
   ///
 /// ## Basic Server Creation
-- **server_mcp_server_basic_server_creation** - Line 100
-- **server_mcp_server_using_serverbuilder** - Line 107
+- **server_mcp_server_basic_server_creation** - Line 102
+- **server_mcp_server_using_serverbuilder** - Line 109
 
 ### test_utils::mod
 

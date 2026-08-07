@@ -1,4 +1,7 @@
-//! Example: Plugin System
+//! Example: application-owned in-process extension registry.
+//!
+//! This does not demonstrate the SDK's optional native dynamic-plugin loader.
+//! See `docs/guides/plugins.md` for that loader and its trust boundary.
 
 use prism_mcp_rs::prelude::*;
 use std::collections::HashMap;

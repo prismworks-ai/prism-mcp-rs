@@ -6,12 +6,46 @@
 
 #![cfg(feature = "bench")]
 
+use async_trait::async_trait;
 use criterion::{criterion_group, criterion_main, Criterion};
+use prism_mcp_rs::core::{McpError, McpResult};
 use prism_mcp_rs::plugin::{PluginCapabilities, PluginConfig, PluginMetadata};
-use prism_mcp_rs::protocol::{ContentBlock, Tool, ToolInputSchema};
+use prism_mcp_rs::protocol::{
+    methods, ContentBlock, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse, Tool,
+    ToolInputSchema,
+};
+use prism_mcp_rs::server::McpServer;
+use prism_mcp_rs::transport::{EndpointPoolConfig, EndpointPoolTransport, Transport};
 use serde_json::json;
 use std::collections::HashMap;
 use std::hint::black_box;
+
+struct BenchmarkTransport {
+    fail: bool,
+}
+
+#[async_trait]
+impl Transport for BenchmarkTransport {
+    async fn send_request(&mut self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
+        if self.fail {
+            Err(McpError::connection("benchmark failure"))
+        } else {
+            JsonRpcResponse::success(request.id, json!({})).map_err(Into::into)
+        }
+    }
+
+    async fn send_notification(&mut self, _notification: JsonRpcNotification) -> McpResult<()> {
+        Ok(())
+    }
+
+    async fn receive_notification(&mut self) -> McpResult<Option<JsonRpcNotification>> {
+        Ok(None)
+    }
+
+    async fn close(&mut self) -> McpResult<()> {
+        Ok(())
+    }
+}
 
 // Core plugin benchmarks (simplified versions of our utility benchmarks)
 fn benchmark_plugin_creation(c: &mut Criterion) {
@@ -132,12 +166,47 @@ fn benchmark_plugin_lifecycle(c: &mut Criterion) {
     });
 }
 
+fn benchmark_request_paths(c: &mut Criterion) {
+    let runtime = tokio::runtime::Runtime::new().expect("benchmark runtime");
+    let server = McpServer::new("benchmark-server".to_string(), "1.0.0".to_string());
+    let ping = JsonRpcRequest::new(
+        json!(1),
+        methods::PING.to_string(),
+        None::<serde_json::Value>,
+    )
+    .expect("valid ping request");
+
+    c.bench_function("server_request_dispatch_ping", |b| {
+        b.to_async(&runtime)
+            .iter(|| async { black_box(server.handle_request(ping.clone()).await.unwrap()) });
+    });
+
+    let list_tools = JsonRpcRequest::new(
+        json!(1),
+        methods::TOOLS_LIST.to_string(),
+        None::<serde_json::Value>,
+    )
+    .expect("valid list request");
+    c.bench_function("endpoint_failover_read", |b| {
+        b.to_async(&runtime).iter(|| {
+            let request = list_tools.clone();
+            async move {
+                let mut pool = EndpointPoolTransport::new(EndpointPoolConfig::default())
+                    .add_endpoint("unavailable", BenchmarkTransport { fail: true })
+                    .add_endpoint("healthy", BenchmarkTransport { fail: false });
+                black_box(pool.send_request(request).await.unwrap())
+            }
+        });
+    });
+}
+
 criterion_group!(
     benches,
     benchmark_plugin_creation,
     benchmark_tool_registration,
     benchmark_tool_lookup,
-    benchmark_plugin_lifecycle
+    benchmark_plugin_lifecycle,
+    benchmark_request_paths
 );
 
 criterion_main!(benches);

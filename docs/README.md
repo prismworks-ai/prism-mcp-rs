@@ -1,203 +1,56 @@
-# Documentation
+# Prism MCP SDK Documentation
 
-## Overview
+This is the canonical index for maintained project documentation. Public Rust APIs are documented on [docs.rs](https://docs.rs/prism-mcp-rs); examples that compile with the repository are indexed in [examples](../examples/README.md).
 
-This directory contains comprehensive technical documentation for the Prism MCP SDK. The documentation is organized hierarchically to facilitate both learning and reference.
+## Start here
 
-## Documentation Structure
+| Document | Purpose |
+|----------|---------|
+| [Getting Started](GETTING_STARTED.md) | Install the crate and run a STDIO server |
+| [AI Tool Integration](AI_TOOL_INTEGRATION.md) | Configure Claude, Cursor, VS Code, and Windsurf |
+| [Architecture](ARCHITECTURE.md) | Understand modules, dispatch, and trust boundaries |
+| [Deployment Guide](DEPLOYMENT_GUIDE.md) | Package and operate an SDK-based service |
+| [Production Controls](PRODUCTION_CONTROLS.md) | Configure RBAC, rate limits, mTLS, tracing, and failover |
+| [Troubleshooting](TROUBLESHOOTING.md) | Diagnose build, transport, policy, and plugin failures |
 
-### Core Documentation
+## Focused guides
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| [Getting Started](GETTING_STARTED.md) | Initial setup and basic usage | New users |
-| [AI Tool Integration](AI_TOOL_INTEGRATION.md) | Connect servers to Claude, Cursor, VS Code, etc. | End users, developers |
-| [Deployment Guide](DEPLOYMENT_GUIDE.md) | Production deployment strategies | DevOps, developers |
-| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and solutions | All users |
-| [Architecture](ARCHITECTURE.md) | System design and components | Architects, senior developers |
-| [Development](DEVELOPMENT.md) | Development environment and workflows | Contributors |
+| Guide | Purpose |
+|-------|---------|
+| [Authentication](guides/authentication.md) | OAuth client primitives and application responsibilities |
+| [Error Handling](guides/error-handling.md) | Error categories and handler behavior |
+| [Migration](guides/migration.md) | Move to the 2.x API and feature model |
+| [Performance](guides/performance.md) | Benchmark and tune without unsupported guarantees |
+| [Plugins](guides/plugins.md) | Load trusted native plugins and understand the security boundary |
 
-### Technical Guides
+Contributor setup and release workflow are maintained in the root [Contributing Guide](../CONTRIBUTING.md). Script-specific instructions live in [scripts/README.md](../scripts/README.md), and report provenance lives in [reports/README.md](../reports/README.md).
 
-| Guide | Focus Area | Use Case |
-|-------|------------|----------|
-| [Authentication](guides/authentication.md) | Security implementation | Secure deployments |
-| [Performance](guides/performance.md) | Optimization techniques | High-throughput systems |
-| [Plugins](guides/plugins.md) | Extension development | Custom functionality |
-| [Plugin Types](guides/plugin-types.md) | Component specifications | Plugin architecture |
-| [Error Handling](guides/error-handling.md) | Fault tolerance | Production systems |
-| [Migration](guides/migration.md) | Version upgrades | System maintenance |
+## Feature flags
 
-### Configuration Examples
+| Feature | Enables | Notes |
+|---------|---------|-------|
+| `stdio` | STDIO transports | Default |
+| `http` | HTTP client/server | Required by `auth`, `sse`, and HTTP enhancements |
+| `websocket` | WebSocket transport | Optional |
+| `sse` | Server-Sent Events | Implies `http` |
+| `http2` | HTTP/2 support | Implies `http` |
+| `chunked-encoding` | Chunked HTTP support | Implies `http` |
+| `compression` | Brotli, gzip, and zstd support | Implies `http` |
+| `plugin` | Trusted native plugin loading | Not sandboxed |
+| `auth` | OAuth/JWT/Argon2 primitives | Implies `http` through current module wiring |
+| `tls` | TLS 1.3 mTLS types | Use with `http` |
+| `otel` | OTLP/OpenTelemetry tracing | Installs or integrates with a tracing subscriber |
+| `full` | All optional features | Useful for CI, not automatically best for production |
+| `bench` | Criterion benchmark dependency | Development only |
 
-| Resource | Focus Area | Use Case |
-|----------|------------|----------|
-| [AI Tool Configs](examples/ai-tool-configs/README.md) | Claude, Cursor, VS Code, Windsurf setup | Integration with AI tools |
+The crate does not define application environment variables. Configuration names, defaults, secret sources, and precedence belong to the binary that embeds the SDK.
 
-### API Documentation
-
-#### Generating Local Documentation
-
-```bash
-# Generate and open API documentation
-cargo doc --no-deps --open
-
-# Generate with private items
-cargo doc --no-deps --document-private-items --open
-
-# Generate for specific features
-cargo doc --no-deps --features "http2 compression plugin" --open
-```
-
-#### Online Documentation
-
-- [Published API Docs](https://docs.rs/prism-mcp-rs) - Available after crates.io publication
-- [GitHub Repository](https://github.com/prismworks-ai/prism-mcp-rs) - Source code and examples
-
-## Quick Reference
-
-### Feature Flags
-
-| Feature | Description | Dependencies |
-|---------|-------------|-------------|
-| `stdio` | Standard I/O transport | None (default) |
-| `http` | HTTP/1.1 transport | reqwest, hyper, axum |
-| `websocket` | WebSocket transport | tokio-tungstenite |
-| `http2` | HTTP/2 support | h2 |
-| `sse` | Server-Sent Events | tokio-stream |
-| `compression` | Response compression | brotli, gzip, zstd |
-| `plugin` | Plugin system | libloading, abi_stable |
-| `auth` | Authentication | jsonwebtoken, argon2 |
-| `tls` | TLS support | rustls, tokio-rustls |
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|------|
-| `RUST_LOG` | Logging level | `info` |
-| `MCP_SERVER_PORT` | Server port | `8080` |
-| `MCP_SERVER_HOST` | Server host | `127.0.0.1` |
-| `MCP_MAX_CONNECTIONS` | Connection limit | `1000` |
-| `MCP_REQUEST_TIMEOUT` | Request timeout (seconds) | `30` |
-| `MCP_PLUGIN_DIR` | Plugin directory | `./plugins` |
-
-### Performance Benchmarks
-
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| Latency (p99) | <10ms | 2-5ms |
-| Throughput (HTTP/2) | >50K req/s | 100K req/s |
-| Memory per connection | <1MB | 0.5MB |
-| Startup time | <1s | 0.3s |
-| Plugin hot reload | <500ms | 100ms |
-
-## Learning Path
-
-### Beginner
-
-1. Read [Getting Started](GETTING_STARTED.md)
-2. Build simple echo server
-3. Connect to AI tool using [AI Tool Integration](AI_TOOL_INTEGRATION.md)
-4. Test server functionality
-
-### Intermediate
-
-1. Study [Architecture](ARCHITECTURE.md)
-2. Implement custom handlers
-3. Add authentication
-4. Configure transports
-
-### Advanced
-
-1. Review [Performance Guide](guides/performance.md)
-2. Develop plugins
-3. Implement custom transports
-4. Deploy at scale
-
-### Expert
-
-1. Contribute to core SDK
-2. Design distributed systems
-3. Optimize for specific workloads
-4. Security hardening
-
-## Common Patterns
-
-### Server Initialization
-
-```rust
-use prism_mcp_rs::server::McpServer;
-
-let server = McpServer::builder()
-    .name("production-server")
-    .version("2.0.0")
-    .with_auth(auth_config)
-    .with_rate_limiting(rate_limit_config)
-    .with_health_check(health_config)
-    .build()?;
-```
-
-### Client with Resilience
-
-```rust
-use prism_mcp_rs::client::{ClientSession, SessionConfig};
-
-let config = SessionConfig::production()
-    .with_retry_policy(RetryConfig::exponential())
-    .with_circuit_breaker(CircuitBreakerConfig::default())
-    .with_timeout(Duration::from_secs(30));
-
-let session = ClientSession::new_with_config(transport, config);
-```
-
-### Plugin Registration
-
-```rust
-use prism_mcp_rs::plugin::PluginManager;
-
-let mut plugin_manager = PluginManager::new();
-plugin_manager.load_plugin("./plugins/analytics.so").await?;
-plugin_manager.register_all(&mut server).await?;
-```
-
-## Troubleshooting
-
-### Common Issues
-
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Connection refused | Server not running | Check server logs and port binding |
-| Authentication failed | Invalid token | Verify token format and expiration |
-| High latency | Network congestion | Enable compression, use HTTP/2 |
-| Memory leak | Unclosed connections | Implement proper cleanup |
-| Plugin load failure | ABI mismatch | Rebuild with same Rust version |
-
-### Debug Commands
+## Documentation verification
 
 ```bash
-# Enable verbose logging
-RUST_LOG=debug cargo run
-
-# Profile memory usage
-valgrind --leak-check=full ./target/release/mcp-server
-
-# Trace system calls
-strace -f ./target/release/mcp-server
-
-# Monitor network traffic
-tcpdump -i any -w mcp.pcap port 8080
+cargo test --doc --all-features
+cargo doc --no-deps --all-features
+python3 scripts/docs/check-docs-quality.py
 ```
 
-## Contributing
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for development guidelines.
-
-## Support
-
-- **GitHub Issues**: [Bug Reports](https://github.com/prismworks-ai/prism-mcp-rs/issues)
-- **Discord**: [Community Chat](https://discord.gg/prismworks)
-- **Email**: developers@prismworks.ai
-
-## License
-
-MIT License - see [LICENSE](../LICENSE) for details.
+When behavior and prose disagree, tested public APIs and source code are authoritative. Please open an issue or correction rather than copying stale examples.

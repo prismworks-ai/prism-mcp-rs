@@ -1,419 +1,130 @@
-# Troubleshooting Guide
+# Troubleshooting
 
-## Overview
+Start with the smallest command that reproduces the failure and record the crate version, Rust version, enabled features, transport, OS, and complete error chain.
 
-This guide helps diagnose and resolve common issues when deploying and using MCP servers built with prism-mcp-rs. Issues are organized by category with step-by-step debugging instructions.
+## Build failures
 
-## Table of Contents
+### Unsupported compiler
 
-- [Server Not Appearing in AI Tool](#server-not-appearing-in-ai-tool)
-- [Connection Issues](#connection-issues)
-- [Configuration Problems](#configuration-problems)
-- [Performance Issues](#performance-issues)
-- [Security and Permissions](#security-and-permissions)
-- [Transport-Specific Issues](#transport-specific-issues)
-- [Platform-Specific Issues](#platform-specific-issues)
-- [Development vs Production Issues](#development-vs-production-issues)
-
-## Server Not Appearing in AI Tool
-
-### Symptoms
-- MCP server doesn't show up in available tools
-- No hammer (🔨) icon in AI tool interface
-- Server status shows as "inactive" or "disconnected"
-
-### Diagnostic Steps
-
-#### 1. Verify Configuration File Location
-
-**Claude Desktop:**
-```bash
-# macOS
-ls -la ~/Library/Application\ Support/Claude/claude_desktop_config.json
-
-# Windows (PowerShell)
-ls $env:APPDATA\Claude\claude_desktop_config.json
-```
-
-**Cursor:**
-```bash
-# Global config
-ls -la ~/.cursor/mcp.json
-
-# Project config  
-ls -la .cursor/mcp.json
-```
-
-**VS Code:**
-```bash
-# Workspace config
-ls -la .vscode/mcp.json
-
-# Check settings.json for MCP configuration
-code ~/.vscode/settings.json
-```
-
-#### 2. Validate JSON Syntax
+The minimum supported Rust version is 1.85.
 
 ```bash
-# Test JSON validity
-python -m json.tool ~/.cursor/mcp.json
-
-# Or use jq
-jq . ~/.cursor/mcp.json
-
-# Or use online validator
-cat ~/.cursor/mcp.json | curl -X POST -H "Content-Type: application/json" -d @- https://jsonlint.com/api/validate
+rustc --version
+rustup update stable
 ```
 
-#### 3. Check Binary Path and Permissions
+### Missing type or module
+
+Most transports and integrations are feature-gated. Inspect the feature table in [the documentation index](README.md), then enable the required feature explicitly. `auth` is currently exposed with HTTP support, while mTLS requires both `http` and `tls` in practical use.
 
 ```bash
-# Verify binary exists and is executable
-ls -la /path/to/your/server
-file /path/to/your/server
-
-# Test execution
-/path/to/your/server --help
-
-# Check permissions
-stat /path/to/your/server
+cargo tree -e features -p prism-mcp-rs
+cargo check --all-features
 ```
 
-#### 4. Test Manual Server Startup
+### Duplicate or ambiguous imports
+
+The prelude is convenient for applications, but broad globs can collide with application or plugin types. Replace a glob with explicit imports around the ambiguous name.
+
+## STDIO problems
+
+### Client starts the process and immediately disconnects
+
+- Run the exact configured absolute command in a terminal.
+- Check execute permissions and host architecture.
+- Replace relative paths in arguments and environment-derived paths.
+- Ensure the client is launching the release binary you just built.
+- Inspect stderr; never add diagnostic `println!` calls.
+
+### Invalid JSON or framing errors
+
+STDOUT must contain only newline-delimited MCP/JSON-RPC messages. Move banners, debugging, and panic diagnostics to stderr or `tracing`. Confirm the process does not emit a UTF-8 BOM or shell wrapper output.
+
+## HTTP problems
+
+### Connection refused
+
+Confirm the bind address is reachable from the caller and that the server remains alive. Container `127.0.0.1` refers to that container, not the host. Check port mappings and firewalls.
 
 ```bash
-# Run server directly to check for errors
-/path/to/your/server --stdio
-
-# With debug logging
-RUST_LOG=debug /path/to/your/server --stdio
-
-# Test with MCP client simulation
-echo '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test", "version": "1.0.0"}}}' | /path/to/your/server --stdio
+curl -v http://127.0.0.1:8080/health
 ```
 
-### Common Solutions
+### HTTP 404
 
-#### Fix 1: Correct Configuration Format
+The MCP request endpoint is `/mcp`; health is `/health`, notifications are `/mcp/notify`, and SSE events are `/mcp/events`.
 
-**Correct format for Claude Desktop:**
-```json
-{
-  "mcpServers": {
-    "server-name": {
-      "command": "/absolute/path/to/binary",
-      "args": [],
-      "env": {}
-    }
-  }
-}
-```
+### TLS or mTLS handshake failure
 
-**Common mistakes:**
-```json
-// ❌ Wrong - missing mcpServers wrapper
-{
-  "server-name": {
-    "command": "/path/to/binary"
-  }
-}
+- Verify the server chain and private key form one identity.
+- Verify the client identity PEM contains the client certificate chain and private key.
+- Verify each side trusts the intended CA, not merely a leaf certificate.
+- Check DNS names/SANs and certificate validity dates.
+- Confirm both ends support TLS 1.3.
 
-// ❌ Wrong - incorrect field names
-{
-  "mcpServers": {
-    "server-name": {
-      "executable": "/path/to/binary",  // Should be "command"
-      "arguments": []                   // Should be "args"
-    }
-  }
-}
-```
+Use `openssl s_client` or the platform's TLS diagnostics without exposing private keys in logs.
 
-#### Fix 2: Use Absolute Paths
+## Authorization and throttling
 
-```json
-{
-  "mcpServers": {
-    "my-server": {
-      "command": "/Users/username/projects/my-server/target/release/my-server",
-      "args": [],
-      "env": {}
-    }
-  }
-}
-```
+### Every request is forbidden
 
-#### Fix 3: Restart AI Tool
+`RbacAuthorizer` denies by default. Check that:
 
-After configuration changes:
-1. Save configuration file
-2. Completely quit AI tool (not just close window)
-3. Restart AI tool
-4. Check for server in interface
+- authentication created the expected principal and role set;
+- the transport calls `handle_request_with_context` rather than the anonymous compatibility path;
+- the method pattern matches the normalized MCP method; and
+- resource/tool patterns match the target extracted from request parameters.
 
-## Connection Issues
+Pattern matching supports exact values or a final `*`; it is not a general regular expression.
 
-### Symptoms
-- Server appears but tools don't work
-- "Connection refused" or "Connection timeout" errors
-- Intermittent connectivity
+### Requests are unexpectedly allowed
 
-### Diagnostic Steps
+The default `RequestPolicy` is allow-all. Verify that the configured server instance received `with_request_policy` or `set_request_policy` before starting its transport.
 
-#### 1. Check Server Logs
+### Rate limited too early
 
-Enable debug logging:
-```bash
-# Set environment variable
-export RUST_LOG=debug
+Buckets are keyed by principal ID and method. Shared or anonymous principal IDs intentionally share a bucket. Validate `burst` and `requests_per_second`, and call `prune_idle` from a maintenance loop if high-cardinality identities churn. For multi-instance quotas, inspect the edge/distributed limiter as well.
 
-# Or in configuration
-{
-  "env": {
-    "RUST_LOG": "debug"
-  }
-}
-```
+## OpenTelemetry
 
-View logs:
-```bash
-# System logs (Linux)
-journalctl -u your-server-name -f
+### Subscriber initialization fails
 
-# AI tool logs
-# Claude Desktop: Help > Show Logs
-# Cursor: Help > Toggle Developer Tools > Console
-# VS Code: Output panel > MCP
-```
+Only one global tracing subscriber can be installed. If the application or framework already owns it, do not call `init_otlp_tracing`; compose a `tracing-opentelemetry` layer in the host subscriber instead.
 
-#### 2. Network Connectivity
+### Traces do not connect across HTTP
 
-For HTTP transport:
-```bash
-# Test port accessibility
-telnet localhost 8080
+Enable `otel` on both participating builds, initialize the W3C propagator before requests, and verify that proxies preserve `traceparent`/`tracestate`. Check collector endpoint, protocol, sampling, and export errors.
 
-# Check if port is in use
-netstat -an | grep :8080
-lsof -i :8080
+## Endpoint pool
 
-# Test HTTP endpoint
-curl http://localhost:8080/health
-```
+### Mutating request does not fail over
 
-#### 3. Process Status
+This is the safe default. Potentially mutating methods are attempted once. Supply `params._meta.idempotencyKey` only when the backend deduplicates that key correctly.
+
+### All endpoints unavailable
+
+The pool's circuits open after consecutive recoverable errors and reset after cooldown. It has no active health probe. Check endpoint membership, cooldown, and the underlying transport errors; recreate/update the pool when discovery membership changes.
+
+## Plugins
+
+### Library cannot be loaded
+
+Confirm the native library path, platform extension, architecture, exported symbols, and compatible plugin contract. Loader failures can also come from missing transitive native libraries.
+
+### Plugin crashes or consumes excessive resources
+
+Native plugins share the process and are not sandboxed. Disable the plugin and recover the service. Run untrusted or failure-prone extensions in a separate OS process/container with explicit resource limits.
+
+## Collecting useful diagnostics
 
 ```bash
-# Check if server process is running
-ps aux | grep your-server
-
-# Monitor resource usage
-top -p $(pgrep your-server)
-
-# Check file descriptors
-lsof -p $(pgrep your-server)
+RUST_BACKTRACE=1 RUST_LOG=prism_mcp_rs=debug cargo test --all-features -- --nocapture
+cargo metadata --format-version 1
+cargo tree -e features
 ```
 
-### Common Solutions
+Redact tokens, authorization headers, private keys, personal data, and sensitive tool arguments before sharing logs.
 
-#### Fix 1: Transport Configuration
+## Before filing an issue
 
-**STDIO Transport (recommended for local servers):**
-```json
-{
-  "mcpServers": {
-    "local-server": {
-      "command": "/path/to/server",
-      "args": ["--transport", "stdio"],
-      "env": {}
-    }
-  }
-}
-```
-
-**HTTP Transport:**
-```json
-{
-  "mcpServers": {
-    "http-server": {
-      "command": "/path/to/server",
-      "args": ["--transport", "http", "--port", "8080"],
-      "env": {}
-    }
-  }
-}
-```
-
-#### Fix 2: Firewall and Security
-
-```bash
-# Linux - check firewall
-sudo ufw status
-sudo iptables -L
-
-# macOS - check firewall
-sudo /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
-
-# Windows - check firewall (PowerShell as Admin)
-Get-NetFirewallProfile
-```
-
-#### Fix 3: Resource Limits
-
-Increase limits if needed:
-```bash
-# Check current limits
-ulimit -a
-
-# Increase file descriptor limit
-ulimit -n 4096
-
-# For systemd services
-[Service]
-LimitNOFILE=4096
-```
-
-## Configuration Problems
-
-### Symptoms
-- Server starts but behaves unexpectedly
-- Missing environment variables
-- Wrong working directory
-
-### Diagnostic Steps
-
-#### 1. Validate Environment Variables
-
-```bash
-# Check if variables are set
-printenv | grep MCP
-env | grep API_KEY
-
-# Test variable expansion
-echo $DATABASE_URL
-```
-
-#### 2. Check Working Directory
-
-Add debug logging to your server:
-```rust
-use tracing::info;
-
-fn main() {
-    info!("Starting server in directory: {:?}", std::env::current_dir());
-    info!("Environment variables: {:?}", std::env::vars().collect::<Vec<_>>());
-}
-```
-
-#### 3. Configuration Validation
-
-Add configuration validation to your server:
-```rust
-use serde::Deserialize;
-
-#[derive(Deserialize, Debug)]
-struct Config {
-    database_url: String,
-    api_key: String,
-}
-
-fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
-    let config = Config {
-        database_url: std::env::var("DATABASE_URL")?,
-        api_key: std::env::var("API_KEY")?,
-    };
-    
-    tracing::info!("Loaded config: {:?}", config);
-    Ok(config)
-}
-```
-
-### Common Solutions
-
-#### Fix 1: Environment Variable Configuration
-
-```json
-{
-  "mcpServers": {
-    "configured-server": {
-      "command": "/path/to/server",
-      "args": ["--config", "/path/to/config.json"],
-      "env": {
-        "DATABASE_URL": "postgresql://localhost/mydb",
-        "API_KEY": "your-secret-key",
-        "RUST_LOG": "info",
-        "MCP_SERVER_PORT": "8080"
-      }
-    }
-  }
-}
-```
-
-## Quick Reference
-
-### Essential Commands
-
-```bash
-# Configuration validation
-python -m json.tool ~/.cursor/mcp.json
-
-# Server testing
-/path/to/server --help
-/path/to/server --version
-
-# Process monitoring
-ps aux | grep server
-top -p $(pgrep server)
-
-# Network testing
-telnet localhost 8080
-curl http://localhost:8080/health
-
-# Log monitoring
-tail -f /var/log/server.log
-journalctl -u server -f
-```
-
-### Configuration Templates
-
-**Minimal working configuration:**
-```json
-{
-  "mcpServers": {
-    "test": {
-      "command": "/bin/echo",
-      "args": ["test"],
-      "env": {}
-    }
-  }
-}
-```
-
-**Production configuration:**
-```json
-{
-  "mcpServers": {
-    "production-server": {
-      "command": "/usr/local/bin/server",
-      "args": ["--config", "/etc/server/prod.json"],
-      "env": {
-        "RUST_LOG": "warn",
-        "DATABASE_URL": "${DATABASE_URL}"
-      }
-    }
-  }
-}
-```
-
-### Common Error Messages
-
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `command not found` | Binary path incorrect | Use absolute path |
-| `permission denied` | File not executable | `chmod +x` |
-| `connection refused` | Server not running | Check process status |
-| `invalid JSON` | Syntax error | Validate JSON |
-| `port in use` | Port conflict | Use different port |
-
-For more detailed troubleshooting, see the full sections above or refer to the [AI Tool Integration Guide](./AI_TOOL_INTEGRATION.md) for setup-specific issues.
+Provide a minimal reproduction, expected and actual behavior, exact commands, complete error output, version/feature information, and whether the issue reproduces on the current 2.x release. Use the private process in [SECURITY.md](../SECURITY.md) for suspected vulnerabilities.

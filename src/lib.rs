@@ -1,23 +1,17 @@
 // Copyright (c) 2025 Prismworks AI Inc.
 // SPDX-License-Identifier: MIT
 
-//! # MCP Rust SDK (2025-11-25)
+//! # Prism MCP Rust SDK
 //!
-//! A comprehensive Rust SDK for the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-//! version 2025-11-25, providing both server and client implementations with MCP specification
-//! compliance including audio content, annotations, and improved capabilities.
+//! Async client and server primitives for the
+//! [Model Context Protocol](https://modelcontextprotocol.io/) 2025-11-25.
+//! The crate includes protocol types, tools, resources, prompts, sampling,
+//! completion, roots, replaceable transports, and opt-in production controls.
 //!
-//! ## Features
-//!
-//! - ⚡ **High Performance**: Built with Rust's zero-cost abstractions and async/await
-//! - 🛡️ **Type Safety**: Leverages Rust's type system to prevent runtime errors
-//! - 🔌 **Multiple Transports**: Support for STDIO, HTTP/SSE, and WebSocket transports
-//! - ✅ **MCP 2025-11-25 Compliance**: Comprehensive implementation of the latest MCP specification
-//! - 🚀 **Rich Ecosystem**: Tools, resources, prompts, and sampling support
-//! - 🎵 **Audio Support**: NEW in 2025-11-25 - Audio content support for multimodal interactions
-//! - 🏷️ **Annotations**: NEW in 2025-11-25 - Tool and content annotations for improved metadata
-//! - 💡 **Autocompletion**: NEW in 2025-11-25 - Argument autocompletion capabilities
-//! - 📁 **Roots Support**: NEW in 2025-11-25 - File system roots for improved resource access
+//! STDIO is enabled by default. HTTP, WebSocket, SSE, authentication helpers,
+//! TLS/mTLS, OpenTelemetry, compression, and trusted native plugins are
+//! feature-gated. Security controls are not enabled automatically: a host must
+//! authenticate callers and install its request policy.
 //!
 //! ## Quick Start
 //!
@@ -31,22 +25,20 @@
 //!
 //! ### Server Example
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use prism_mcp_rs::prelude::*;
 //! use std::collections::HashMap;
-//! use serde_json::{json, Value};
-//! use async_trait::async_trait;
 //!
 //! struct EchoHandler;
 //!
 //! #[async_trait]
 //! impl ToolHandler for EchoHandler {
-//!     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<CallToolResult> {
+//!     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
 //!         let message = arguments.get("message")
 //!             .and_then(|v| v.as_str())
-//!             .unwrap_or("Hello, World!");
+//!             .unwrap_or_default();
 //!
-//!         Ok(CallToolResult {
+//!         Ok(ToolResult {
 //!             content: vec![ContentBlock::text(message)],
 //!             is_error: Some(false),
 //!             structured_content: None,
@@ -57,11 +49,11 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> McpResult<()> {
-//!     let mut server = McpServer::new("echo-server".to_string(), "1.0.0".to_string());
+//!     let server = McpServer::create("echo-server", "1.0.0");
 //!
 //!     server.add_tool(
-//!         "echo".to_string(),
-//!         Some("Echo a message".to_string()),
+//!         "echo",
+//!         Some("Echo a message"),
 //!         json!({
 //!             "type": "object",
 //!             "properties": {
@@ -71,62 +63,20 @@
 //!         EchoHandler,
 //!     ).await?;
 //!
-//!     // Start server with stdio transport
-//!     #[cfg(feature = "stdio")]
-//!     server.start(StdioTransport::new()).await?;
-//!     
-//!     Ok(())
-//! }
-//! ```
-//!
-//! ### Client Example
-//!
-//! ```rust,ignore
-//! use prism_mcp_rs::prelude::*;
-//! use std::collections::HashMap;
-//! use serde_json::{json, Value};
-//!
-//! #[tokio::main]
-//! async fn main() -> McpResult<()> {
-//!     // Create a client
-//!     let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
-//!     
-//!     // Set up transport - requires "stdio" feature in Cargo.toml:
-//!     // prism-mcp-rs = { version = "*", features = ["stdio"] }
-//!     #[cfg(feature = "stdio")]
-//!     {
-//!         use prism_mcp_rs::transport::StdioClientTransport;
-//!         let transport = StdioClientTransport::new("server-command", vec!["arg1"]).await?;
-//!         client.connect(transport).await?;
-//!     }
-//!     
-//!     // List available tools  
-//!     let tools = client.list_tools(None).await?;
-//!     println!("Available tools: {:?}", tools);
-//!     
-//!     // Call a tool
-//!     let mut args = HashMap::new();
-//!     args.insert("message".to_string(), json!("Hello from client!"));
-//!     
-//!     let result = client.call_tool(
-//!         "echo".to_string(),
-//!         Some(args)
-//!     ).await?;
-//!     
-//!     println!("Tool result: {:?}", result);
-//!     Ok(())
+//!     server.run_with_transport(StdioServerTransport::new()).await
 //! }
 //! ```
 //!
 //! ## Module Organization
 //!
 //! - [`core`]: Core abstractions for resources, tools, prompts, and errors
-//! - plugin: Plugin system for dynamic tool loading
+//! - `plugin`: trusted native dynamic tool loading (feature-gated)
 //! - [`protocol`]: MCP protocol types and message definitions (2025-11-25)
 //! - [`transport`]: Transport layer implementations (STDIO, HTTP, WebSocket)
 //! - [`server`]: MCP server implementation and lifecycle management
 //! - [`client`]: MCP client implementation and session management
-//! - [`utils`]: Utility functions and helpers
+//! - [`security`]: request identity, authorization, and rate limiting
+//! - [`utils`]: utility functions and helpers
 
 #[cfg(feature = "http")]
 pub mod auth;
@@ -135,7 +85,10 @@ pub mod core;
 #[cfg(feature = "plugin")]
 pub mod plugin;
 pub mod protocol;
+pub mod security;
 pub mod server;
+#[cfg(feature = "otel")]
+pub mod telemetry;
 pub mod transport;
 pub mod utils;
 
@@ -157,6 +110,10 @@ pub mod prelude {
         prompt::{Prompt, PromptHandler},
         resource::{Resource, ResourceHandler},
         tool::{Tool, ToolHandler},
+    };
+    pub use crate::security::{
+        Permission, Principal, RateLimitConfig, RateLimiter, RbacAuthorizer, RequestContext,
+        RequestPolicy, RequestTarget,
     };
 
     // Protocol types and messages
@@ -191,6 +148,8 @@ pub mod prelude {
 
     #[cfg(feature = "websocket")]
     pub use crate::transport::{WebSocketClientTransport, WebSocketServerTransport};
+
+    pub use crate::transport::{EndpointPoolConfig, EndpointPoolTransport};
 
     // Plugin system
     #[cfg(feature = "plugin")]

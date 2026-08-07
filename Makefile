@@ -4,8 +4,7 @@
 # targets for common development tasks. It wraps complex commands in simple,
 # memorable targets.
 #
-# For detailed documentation about the build system and development workflow,
-# see DEVELOPMENT.md in the project root.
+# For the development workflow, see CONTRIBUTING.md and scripts/README.md.
 #
 # CI COMMANDS:
 #   Run GitHub Actions locally without pushing:
@@ -70,7 +69,7 @@ fmt-fix: ## Fix code formatting
 # Linting
 clippy: ## Run Clippy linter
 	@echo "📎 Running Clippy linter..."
-	@cargo clippy --all-features -- -W clippy::all -A unused_imports -A unused_variables -A dead_code -A unused_mut -A private_interfaces -A clippy::redundant_closure -A clippy::redundant_pattern_matching -A clippy::should_implement_trait -A clippy::manual_strip -A clippy::type_complexity
+	@cargo clippy --all-features --all-targets -- -D warnings
 
 clippy-fix: ## Fix Clippy suggestions automatically
 	@echo "📎 Fixing Clippy suggestions..."
@@ -92,8 +91,7 @@ test-features: ## Run feature-specific tests
 	@cargo test --features stdio --verbose
 	@cargo test --features http --verbose
 	@cargo test --features websocket --verbose
-	@cargo test --features validation --verbose
-	@cargo test --features validation --verbose
+	@cargo test --features "http,tls,otel" --verbose
 
 # Examples
 examples: ## Build all examples
@@ -180,7 +178,7 @@ coverage-clean: ## Clean coverage data
 # Benchmarks
 bench: ## Run performance benchmarks
 	@echo "⚡ Running benchmarks..."
-	@cargo bench
+	@cargo bench --features bench,plugin,http --bench all_benchmarks
 
 # Clean
 clean: ## Clean build artifacts

@@ -1,151 +1,109 @@
 #!/usr/bin/env python3
-"""
-Check documentation quality and identify issues:
-- Duplicate content
-- Missing cross-references
-- Broken links
-- API documentation that should be auto-generated
+"""Validate maintained Markdown documentation.
+
+Checks exact duplicate documents, broken local links, and references to files
+that were removed during documentation consolidation.
 """
 
+from __future__ import annotations
+
+import hashlib
 import re
 import sys
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
+from urllib.parse import unquote
 
-def check_for_duplicates():
-    """Check for duplicate content across documentation files."""
-    docs_dir = Path('docs')
-    issues = []
-    
-    # Key phrases that indicate duplication
-    key_phrases = [
-        'smart retry logic',
-        'circuit breaker protection',
-        'exponential backoff',
-        'production-ready error handling',
-        'health monitoring',
-        'transport configuration'
+ROOT = Path(__file__).resolve().parents[2]
+EXCLUDED_PARTS = {".git", "target", ".local"}
+REMOVED_PATHS = {
+    "docs/DEVELOPMENT.md",
+    "docs/index.html",
+    "docs/guides/plugin-types.md",
+    "docs/ci/LOGGING_GUIDE.md",
+    "docs/examples/ai-tool-configs/README.md",
+    "scripts/utils/fix-badges.md",
+    ".github/badges/doc-examples-badge.md",
+}
+LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
+
+
+def markdown_files() -> list[Path]:
+    return sorted(
+        path
+        for path in ROOT.rglob("*.md")
+        if not EXCLUDED_PARTS.intersection(path.relative_to(ROOT).parts)
+    )
+
+
+def normalized_document(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def duplicate_issues(files: list[Path]) -> list[str]:
+    by_digest: dict[str, list[Path]] = defaultdict(list)
+    for path in files:
+        normalized = normalized_document(path)
+        if normalized:
+            by_digest[hashlib.sha256(normalized.encode()).hexdigest()].append(path)
+    return [
+        "exact duplicate documents: "
+        + ", ".join(str(path.relative_to(ROOT)) for path in paths)
+        for paths in by_digest.values()
+        if len(paths) > 1
     ]
-    
-    phrase_locations = defaultdict(list)
-    
-    for doc_file in docs_dir.rglob('*.md'):
-        if 'archive' in str(doc_file):
-            continue
-            
-        with open(doc_file, 'r') as f:
-            content = f.read().lower()
-            for phrase in key_phrases:
-                if phrase.lower() in content:
-                    phrase_locations[phrase].append(doc_file.relative_to(docs_dir))
-    
-    for phrase, locations in phrase_locations.items():
-        if len(locations) > 1:
-            issues.append(f"Duplicate content '{phrase}' in: {', '.join(str(l) for l in locations)}")
-    
-    return issues
 
-def check_for_api_docs():
-    """Check for manually written API documentation that should be auto-generated."""
-    docs_dir = Path('docs')
+
+def local_link_issues(files: list[Path]) -> list[str]:
     issues = []
-    
-    # Patterns that indicate API documentation
-    api_patterns = [
-        r'pub struct \w+',
-        r'pub fn \w+',
-        r'pub trait \w+',
-        r'pub enum \w+',
-        r'impl \w+ for \w+',
-        r'fn \w+\([^)]*\) -> \w+'
-    ]
-    
-    for doc_file in docs_dir.rglob('*.md'):
-        if 'archive' in str(doc_file) or 'api-reference.md' in str(doc_file):
-            continue
-            
-        with open(doc_file, 'r') as f:
-            content = f.read()
-            for pattern in api_patterns:
-                if re.search(pattern, content):
-                    issues.append(f"Manual API docs found in {doc_file.relative_to(docs_dir)} - should be auto-generated")
-                    break
-    
+    for path in files:
+        text = path.read_text(encoding="utf-8")
+        for raw_target in LINK_RE.findall(text):
+            target = raw_target.strip().split(maxsplit=1)[0].strip("<>")
+            if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+                continue
+            target = unquote(target.split("#", 1)[0].split("?", 1)[0])
+            if not target or any(token in target for token in ("${{", "{{", "<")):
+                continue
+            resolved = (path.parent / target).resolve()
+            try:
+                resolved.relative_to(ROOT)
+            except ValueError:
+                issues.append(f"{path.relative_to(ROOT)} links outside repository: {raw_target}")
+                continue
+            if not resolved.exists():
+                issues.append(f"{path.relative_to(ROOT)} has broken link: {raw_target}")
     return issues
 
-def check_cross_references():
-    """Check that cross-references use proper anchors."""
-    docs_dir = Path('docs')
+
+def stale_reference_issues(files: list[Path]) -> list[str]:
     issues = []
-    
-    # Find all markdown links
-    link_pattern = r'\[([^\]]+)\]\(([^)]+)\)'
-    
-    for doc_file in docs_dir.rglob('*.md'):
-        if 'archive' in str(doc_file):
-            continue
-            
-        with open(doc_file, 'r') as f:
-            content = f.read()
-            links = re.findall(link_pattern, content)
-            
-            for link_text, link_url in links:
-                # Check for vague references
-                if link_url.startswith('./') and '#' not in link_url and link_url.endswith('.md'):
-                    # Check if this could use a more specific anchor
-                    if any(word in link_text.lower() for word in ['error', 'retry', 'circuit', 'health', 'transport']):
-                        issues.append(f"Missing anchor in {doc_file.name}: [{link_text}]({link_url}) - consider adding #section")
-    
+    for path in files:
+        relative = path.relative_to(ROOT)
+        text = path.read_text(encoding="utf-8")
+        for removed in REMOVED_PATHS:
+            if removed in text:
+                issues.append(f"{relative} references removed document: {removed}")
     return issues
 
-def main():
-    print("\nDocumentation Quality Check\n")
-    print("=" * 40)
-    
-    all_issues = []
-    
-    # Check for duplicates
-    print("\nChecking for duplicate content...")
-    duplicates = check_for_duplicates()
-    if duplicates:
-        print(f"[!] Found {len(duplicates)} duplication issues:")
-        for issue in duplicates:
-            print(f"  - {issue}")
-        all_issues.extend(duplicates)
-    else:
-        print("[x] No significant duplications found")
-    
-    # Check for manual API docs
-    print("\nChecking for manual API documentation...")
-    api_docs = check_for_api_docs()
-    if api_docs:
-        print(f"[!] Found {len(api_docs)} manual API doc issues:")
-        for issue in api_docs:
-            print(f"  - {issue}")
-        all_issues.extend(api_docs)
-    else:
-        print("[x] No manual API documentation found")
-    
-    # Check cross-references
-    print("\nChecking cross-references...")
-    refs = check_cross_references()
-    if refs:
-        print(f"Warning: Found {len(refs)} cross-reference improvements:")
-        for issue in refs:
-            print(f"  - {issue}")
-        all_issues.extend(refs)
-    else:
-        print("[x] All cross-references properly anchored")
-    
-    # Summary
-    print("\n" + "=" * 40)
-    if all_issues:
-        print(f"\nWarning: Total issues found: {len(all_issues)}")
-        print("Please review and fix the issues above.")
+
+def main() -> int:
+    files = markdown_files()
+    issues = (
+        duplicate_issues(files)
+        + local_link_issues(files)
+        + stale_reference_issues(files)
+    )
+    print(f"Checked {len(files)} Markdown files")
+    if issues:
+        for issue in issues:
+            print(f"ERROR: {issue}")
         return 1
-    else:
-        print("\n[x] Documentation quality check passed!")
-        return 0
+    print("Documentation quality check passed")
+    return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())

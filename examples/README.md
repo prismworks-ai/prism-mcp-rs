@@ -1,61 +1,44 @@
-# Prism MCP SDK Examples
+# Examples
 
-> 🚀 **Examples demonstrating core prism-mcp-rs SDK capabilities**
+The canonical learning sequence is the numbered `examples/features/` set. Root-level examples include compatibility, corrected, and diagnostic variants retained for API regression coverage; similar filenames do not represent separate recommended approaches.
 
-This directory contains example applications demonstrating how to use the Prism MCP SDK.
+## Start here
 
-## 📚 Available Examples
+| Example | Feature |
+|---------|---------|
+| `closure_handlers.rs` | Register tools with closures and handlers |
+| `bidirectional_basic.rs` | Basic bidirectional client/server behavior |
+| `custom_transport.rs` | Implement a custom transport |
+| `features/01_mcp_tool_macro.rs` | Direct `ToolHandler` registration (despite the legacy filename) |
+| `features/02_resources_api.rs` | Resources |
+| `features/03_prompts_api.rs` | Prompts |
+| `features/04_sampling_api.rs` | Sampling |
+| `features/05_http_transport.rs` | HTTP types |
+| `features/06_websocket_transport.rs` | WebSocket types |
+| `features/07_authentication.rs` | Authentication concepts; illustrative only |
+| `features/08_error_handling.rs` | Error handling |
+| `features/09_configuration.rs` | Configuration |
+| `features/10_plugin_system.rs` | In-process extension pattern; not the native plugin loader |
+| `features/11_advanced_tools.rs` | Advanced tool patterns |
+| `features/12_integration_patterns.rs` | Integration patterns |
 
-| Example | Description |
-|---------|-------------|
-| **`bidirectional_basic.rs`** | Two-way communication between client and server |
-| **`closure_handlers.rs`** | Using closures for handling tools and resources |
-| **`custom_transport.rs`** | Implementing custom transport layers |
-
-## 🚀 Running Examples
+Build every configured example:
 
 ```bash
-# Build all examples
-cargo build --examples
+cargo build --examples --all-features
+```
 
-# Run a specific example
-cargo run --example bidirectional_basic
+Run a specific example with its required features:
+
+```bash
 cargo run --example closure_handlers
-cargo run --example custom_transport
+cargo run --example 05_http_transport --features http
 ```
 
-## 📝 Documentation Examples
+Some examples demonstrate construction/registration and exit without starting a transport. Use [Getting Started](../docs/GETTING_STARTED.md) for a complete STDIO server loop and [Production Controls](../docs/PRODUCTION_CONTROLS.md) for network security.
 
-The SDK source code contains many small documentation examples that are tested with:
+## Generated examples
 
-```bash
-cargo test --doc
-```
+`examples/generated/` is produced from Rust documentation examples and indexed by [generated/README.md](generated/README.md). Do not use generated filenames as stable API names. Regenerate through the documentation-example tests rather than editing the index manually.
 
-These appear in the generated documentation:
-
-```bash
-cargo doc --open
-```
-
-## 🎓 Learning Path
-
-1. **Start with**: `closure_handlers` - Learn how to handle MCP operations
-2. **Then try**: `bidirectional_basic` - Understand two-way communication
-3. **Advanced**: `custom_transport` - Build your own transport layer
-
-## 🤝 Contributing Examples
-
-When adding new examples:
-
-1. **Keep it simple**: One concept per example
-2. **Use clear names**: Descriptive but concise
-3. **Add comments**: Explain what the example demonstrates
-4. **Test it**: `cargo build --example your_example`
-5. **Update this README**: Add your example to the table above
-
-## 🔗 Related Resources
-
-- [SDK Documentation](../README.md)
-- [API Reference](https://docs.rs/prism-mcp-rs)
-- [MCP Specification](https://spec.modelcontextprotocol.io)
+When adding an example, keep it focused, include it in `Cargo.toml` when feature gating is required, build it in CI, and update this table only if it is part of the recommended learning path.

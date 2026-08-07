@@ -152,7 +152,10 @@ impl McpClientBuilder {
             .max_retries(1)
     }
 
-    /// Production-ready builder with safe defaults
+    /// Convenience preset with validation, timeout, and retry values.
+    ///
+    /// Applications must still configure transport security, authentication,
+    /// policy, and workload-specific deadlines.
     pub fn production(name: impl Into<String>, version: impl Into<String>) -> Self {
         Self::new()
             .name(name)

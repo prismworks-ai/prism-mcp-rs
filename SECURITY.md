@@ -1,209 +1,76 @@
 # Security Policy
 
-## Reporting Security Vulnerabilities
+## Reporting a vulnerability
 
-We take the security of prism-mcp-rs seriously. If you discover a security vulnerability, please follow these steps:
+Do not open a public issue for a suspected vulnerability. Email `security@prismworks.ai` with:
 
-### Immediate Reporting
+- the affected version and feature set;
+- impact and realistic attack scenario;
+- reproduction steps or a minimal proof of concept;
+- any suggested mitigation; and
+- a safe way to contact you.
 
-**DO NOT** create a public GitHub issue for security vulnerabilities.
+The project aims to acknowledge reports within 48 hours, provide an initial assessment within seven days, and coordinate disclosure after a fix or mitigation is available. These are response targets, not contractual guarantees.
 
-Instead, please report security issues via:
+## Supported versions
 
-- **Email**: security@prismworks.ai
-- **Subject**: `[SECURITY] prism-mcp-rs vulnerability report`
-- **PGP Key**: Available upon request for sensitive disclosures
+| Version | Support |
+|---------|---------|
+| 2.x | Security fixes |
+| 1.x and earlier | Upgrade required |
 
-### What to Include
+## Security model
 
-Please provide the following information in your report:
+The crate is a library, so security depends on enabled features and host integration.
 
-1. **Description**: Clear description of the vulnerability
-2. **Impact**: Potential impact and attack scenarios
-3. **Reproduction**: Step-by-step instructions to reproduce
-4. **Affected Versions**: Specific versions affected
-5. **Suggested Fix**: If you have suggestions for remediation
-6. **Contact Information**: How we can reach you for follow-up
+### Implemented controls
 
-### Response Timeline
+- Core request handling is written in safe Rust. Dynamic native plugin loading has a narrow `unsafe` FFI boundary.
+- `RbacAuthorizer` is deny by default once installed and can match MCP methods plus resource/tool patterns.
+- `RateLimiter` enforces an in-process token bucket per principal and MCP method.
+- HTTP mTLS requires TLS 1.3, verifies client certificates against the configured client CA, and lets clients verify servers against a configured CA.
+- HTTP tracing can propagate W3C Trace Context and export spans through OTLP.
+- Endpoint failover replays naturally idempotent methods. Potentially mutating methods are not replayed unless the caller provides an idempotency key.
+- JSON-RPC and MCP validation can reject malformed input before handlers run.
 
-We are committed to responding to security reports promptly:
+### Important boundaries
 
-- **Initial Response**: Within 48 hours
-- **Vulnerability Assessment**: Within 7 days
-- **Fix Development**: Within 30 days for critical issues
-- **Disclosure**: Coordinated disclosure after fix is available
+- Authentication is not enabled by default. The host must validate credentials and build a trustworthy `RequestContext`.
+- The default `RequestPolicy` allows requests for backward compatibility. Production services should install explicit RBAC and rate limiting.
+- The rate limiter is process-local. Use an edge or distributed limiter for a cluster-wide quota or volumetric denial-of-service protection.
+- Native plugins are trusted in-process code. The crate does not sandbox plugins or enforce plugin CPU/memory limits.
+- TLS is opt-in. Plain HTTP remains available for trusted local networks or deployments terminated by a secure proxy.
+- Certificate issuance, rotation, revocation, key storage, and certificate-to-principal mapping are deployment responsibilities.
+- The crate does not provide MFA, API-key storage, encryption at rest, data retention policy, active endpoint health checks, or service discovery.
+- CPU affinity and OS/container resource limits belong to the host runtime and deployment platform.
 
-## Security Measures
+See [Production Controls](docs/PRODUCTION_CONTROLS.md) for concrete configuration guidance.
 
-### Development Security
+## Deployment checklist
 
-#### Code Review Process
-- All code changes require review from security-aware maintainers
-- Automated security scanning on all pull requests
-- Mandatory security considerations for new features
+- Authenticate before dispatch and never trust caller-supplied identity fields.
+- Use least-privilege RBAC; test permitted and denied paths.
+- Apply request, body-size, concurrency, and time limits at the gateway or host as well as SDK rate limits.
+- Use mTLS or a hardened TLS-terminating proxy for network deployments.
+- Keep secrets out of source control and logs; rotate them through a managed secret store.
+- Disable native plugins unless their provenance and build pipeline are trusted.
+- Preserve request IDs and trace IDs in security logs without recording credentials or sensitive payloads.
+- Run dependency and policy checks against the exact release lockfile.
+- Define rollback, incident response, and certificate-expiry alerts before production rollout.
 
-#### Dependency Management
-- Weekly automated security audits using cargo-audit
-- Comprehensive supply chain verification with cargo-vet
-- License compliance checking with cargo-deny
-- Automated dependency updates with security prioritization
-
-#### Testing
-- Security-focused test cases for all public APIs
-- Fuzzing for input validation and protocol parsing
-- Integration tests with malicious input scenarios
-- Performance testing to prevent DoS vulnerabilities
-
-### Runtime Security
-
-#### Memory Safety
-- 100% safe Rust with minimal unsafe code
-- All unsafe blocks audited and documented
-- Memory sanitizer testing in CI/CD
-
-#### Network Security
-- TLS 1.3 by default for all network communications
-- Certificate validation and pinning support
-- Rate limiting and DDoS protection
-- Input validation and sanitization
-
-#### Authentication & Authorization
-- JWT-based authentication with configurable expiration
-- Role-based access control (RBAC)
-- Audit logging for security events
-- Secure credential storage recommendations
-
-## Security Architecture
-
-### Trust Boundaries
-
-1. **Network Boundary**: All external communications encrypted
-2. **Process Boundary**: Plugin isolation and sandboxing
-3. **Data Boundary**: Input validation and output sanitization
-4. **Configuration Boundary**: Secure configuration management
-
-### Security Controls
-
-#### Authentication
-- Multi-factor authentication support
-- Token-based authentication with refresh mechanisms
-- Session management with timeout controls
-
-#### Authorization
-- Principle of least privilege
-- Resource-based access control
-- API key management
-
-#### Data Protection
-- Encryption at rest recommendations
-- Secure data transmission (TLS 1.3)
-- PII handling guidelines
-- Data retention policies
-
-## Compliance
-
-### Standards Adherence
-
-- **OWASP Top 10**: Regular assessment against current threats
-- **NIST Cybersecurity Framework**: Security controls alignment
-- **CIS Controls**: Implementation of critical security controls
-
-### Audit Trail
-
-- Security event logging
-- Dependency audit history
-- Code change tracking
-- Vulnerability response documentation
-
-## Security Tools
-
-### Automated Security Scanning
+## Security verification
 
 ```bash
-# Security audit script
-./scripts/security-audit.sh
-
-# Individual tools
-cargo audit           # Vulnerability scanning
-cargo deny check all   # Policy compliance
-cargo vet check       # Supply chain verification
+cargo audit --deny warnings
+cargo deny check
+cargo clippy --all-features --all-targets -- -D warnings
+cargo test --all-features
 ```
 
-### CI/CD Security
+`cargo audit` reports the state of the dependency graph at the time it runs. A clean result must not be presented as a permanent guarantee.
 
-- GitHub Actions security workflows
-- Automated dependency scanning
-- SAST (Static Application Security Testing)
-- License compliance verification
+## Unsafe code and plugins
 
-## Supported Versions
+Unsafe code should remain confined to the native plugin loading boundary. Changes to FFI types, symbol loading, ownership, or unloading require focused review and tests. Do not load untrusted native libraries; process isolation is the safe choice until a sandboxed runtime exists.
 
-| Version | Supported          | Security Updates |
-| ------- | ------------------ | ---------------- |
-| 1.0.x   | :white_check_mark: | :white_check_mark: |
-| 0.1.x   | :warning: Legacy   | Critical Only    |
-
-### Update Policy
-
-- **Critical Vulnerabilities**: Immediate patch release
-- **High Severity**: Patch within 7 days
-- **Medium/Low Severity**: Next scheduled release
-- **Supply Chain Issues**: Weekly monitoring and updates
-
-## Security Best Practices
-
-### For Developers
-
-1. **Secure Coding**
-   - Follow Rust security guidelines
-   - Validate all inputs
-   - Use safe APIs and avoid unsafe code
-   - Implement proper error handling
-
-2. **Configuration**
-   - Use secure defaults
-   - Enable TLS in production
-   - Configure authentication properly
-   - Set appropriate timeouts and limits
-
-3. **Deployment**
-   - Keep dependencies updated
-   - Monitor security advisories
-   - Use least privilege principles
-   - Implement monitoring and alerting
-
-### For Users
-
-1. **Updates**
-   - Keep prism-mcp-rs updated to latest version
-   - Subscribe to security advisories
-   - Test updates in staging environments
-
-2. **Configuration**
-   - Use strong authentication mechanisms
-   - Enable TLS for all communications
-   - Implement proper access controls
-   - Regular security configuration reviews
-
-3. **Monitoring**
-   - Enable audit logging
-   - Monitor for suspicious activities
-   - Set up alerting for security events
-   - Regular security assessments
-
-## Security Contact
-
-- **Security Team**: security@prismworks.ai
-- **General Contact**: developers@prismworks.ai
-- **Discord**: https://discord.gg/prismworks
-
-## Acknowledgments
-
-We appreciate security researchers and the community who help improve the security of prism-mcp-rs. Responsible disclosure contributors will be acknowledged in our security advisories (with permission).
-
----
-
-**Last Updated**: September 13, 2025  
-**Next Review**: December 13, 2025  
-**Document Version**: 1.0
+Last reviewed: 2026-08-06.

@@ -1,4 +1,8 @@
-//! Example: Authentication
+//! Illustrative tool-argument validation; this is not transport authentication.
+//!
+//! Production services must validate credentials before MCP dispatch, construct
+//! a trusted `RequestContext`, and enforce authorization centrally. Never pass a
+//! bearer token as a tool argument as this demonstration does.
 
 use prism_mcp_rs::prelude::*;
 use std::collections::HashMap;
@@ -9,7 +13,8 @@ struct AuthenticatedTool;
 #[async_trait]
 impl ToolHandler for AuthenticatedTool {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        // In a real implementation, you would validate auth tokens here
+        // Deliberately simplified demonstration. Do not copy this token pattern
+        // into a production MCP service.
         let token = arguments
             .get("auth_token")
             .and_then(|v| v.as_str())

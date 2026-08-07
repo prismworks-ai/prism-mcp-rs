@@ -78,7 +78,8 @@ cat > "${REPORT_DIR}/summary-${DATE}.md" << EOF
 # Security Audit Summary - ${DATE}
 
 ## Overview
-This report summarizes the security audit performed on $(date).
+This dated report summarizes the commands run on $(date). It is a snapshot, not
+a guarantee about later commits or advisory-database updates.
 
 ## Tools Used
 - cargo-audit: Security vulnerability scanning
@@ -87,7 +88,7 @@ This report summarizes the security audit performed on $(date).
 - cargo-outdated: Dependency freshness analysis
 
 ## Files Generated
-$(ls -la "${REPORT_DIR}"/*-${DATE}.* | sed 's/^/- /')
+$(find "${REPORT_DIR}" -maxdepth 1 -type f -name "*-${DATE}.*" -exec basename {} \; | sort | sed 's/^/- /')
 
 ## Next Steps
 1. Review any vulnerabilities found in audit-${DATE}.json

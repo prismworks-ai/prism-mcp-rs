@@ -1,33 +1,22 @@
-# Coverage Report
+# Coverage Report Snapshot
 
-## Summary
+Generated: 2025-08-20 01:51:13 UTC.
 
-Generated on: $(date)
+This is a historical snapshot, not the coverage of the current branch. Regenerate from the exact commit and feature set before making a coverage decision.
 
-Wed Aug 20 01:51:13 UTC 2025
+## Recorded summary
 
-### Overall Coverage: 66.40%
+- Line coverage: 66.40%
+- Lines found: 19,506
+- Lines hit: 12,953
 
-- **Lines Found:** 19506
-- **Lines Hit:** 12953
+The original module excerpt was incomplete and has been removed to avoid implying comprehensive per-module coverage.
 
-![Coverage](https://img.shields.io/badge/coverage-66.40%25-yellow)
+## Regenerate
 
-## Module Coverage
+```bash
+cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+./scripts/ci/generate-coverage-report.sh
+```
 
-| Module | Coverage | Lines |
-|--------|----------|-------|
-| mod | 54.3% | 25/46 |
-| lib | 100.0% | 3/3 |
-| api | 0% | 0/35 |
-| mod | 100.0% | 3/3 |
-| types | 100.0% | 8/8 |
-
-## Codecov Integration
-
-Coverage data has been generated in lcov.info format and is ready for upload to Codecov.
-
-To view detailed coverage:
-1. Check the Codecov dashboard after CI completes
-2. View HTML report in `target/llvm-cov/html/index.html` (if generated locally)
-
+Local HTML output is written below `target/llvm-cov/html/` when available. Hosted CI uploads LCOV and report artifacts and may send LCOV to Codecov.

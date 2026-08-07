@@ -1,120 +1,36 @@
-# GitHub Actions Setup Guide
+# GitHub Actions Setup
 
-## Nightly Dependency Updates
+Most workflows require no repository secrets. Review workflow permissions and branch protection before enabling automation that writes to the repository.
 
-This repository includes an automated dependency update workflow that runs nightly to keep dependencies up-to-date and secure.
+## Dependency update workflow
 
-### Features
+`.github/workflows/dependency-update.yml` runs daily at 02:00 UTC and supports manual `compatible`, `latest`, and `security` modes. It updates dependencies, runs tests/checks when the lockfile changes, and commits selected files directly to the triggering branch with a skip-CI marker.
 
-- **Nightly Updates**: Automatically runs at 2 AM UTC (configurable)
-- **Security Focus**: Detects and fixes security vulnerabilities
-- **Three Update Modes**:
-  - `compatible`: Updates to latest compatible versions (default)
-  - `latest`: Updates to latest versions, including breaking changes
-  - `security`: Only updates packages with known vulnerabilities
-- **Automatic Testing**: Runs tests after updates to ensure nothing breaks
-- **Direct Commits**: Bypasses PRs for faster updates (configurable)
-- **Failure Notifications**: Creates GitHub issues if updates fail
+That direct-write model is convenient but bypasses normal review. The recommended production setup is branch protection plus a pull-request-based dependency tool or enabling and validating the workflow's optional PR job before use.
 
-### Setting Up PAT Token (Required for CI Triggering)
+## Optional PAT
 
-To ensure the dependency updates trigger your CI workflows:
+The workflow falls back to `GITHUB_TOKEN`. Define `PAT_TOKEN` only if the desired automation cannot be achieved with scoped workflow permissions. Prefer a fine-grained token limited to this repository and the minimum contents/pull-request permissions; avoid classic `repo` scope when it is unnecessary. Store it under repository Actions secrets and rotate it according to organizational policy.
 
-1. **Create a Personal Access Token**:
-   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Click "Generate new token (classic)"
-   - Give it a descriptive name (e.g., "Dependency Update Bot")
-   - Select scopes:
-     - `repo` (full control of private repositories)
-     - `workflow` (update GitHub Action workflows)
-   - Generate and copy the token
+Never print a token in workflow logs or use a personal token where a GitHub App or `GITHUB_TOKEN` can provide narrower, auditable access.
 
-2. **Add Token to Repository Secrets**:
-   - Go to your repository → Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Name: `PAT_TOKEN`
-   - Value: Paste your personal access token
-   - Click "Add secret"
+## Manual run
 
-3. **Verify Setup**:
-   - The workflow will use `PAT_TOKEN` if available, otherwise fall back to `GITHUB_TOKEN`
-   - With PAT_TOKEN, commits will trigger CI workflows
-   - Without it, updates will still work but won't trigger other workflows
+In GitHub, open Actions → Nightly Dependency Update → Run workflow and choose an update type. Review the resulting commit and workflow logs. The current workflow reports failure in the run summary; it does not create a GitHub issue automatically.
 
-### Manual Triggering
+## Changing behavior
 
-You can manually trigger the workflow:
+- Edit the cron under `on.schedule` to change frequency.
+- To adopt PR mode, disable the direct commit step and enable/test the `create-pr` job as one coherent change.
+- Remove the skip-CI marker only after checking that workflow concurrency cannot create an update loop.
+- Keep third-party actions pinned to reviewed versions and review their permissions.
 
-1. Go to Actions → "Nightly Dependency Update"
-2. Click "Run workflow"
-3. Select update type (compatible/latest/security)
-4. Click "Run workflow"
+Validate workflow changes with syntax tooling and, where practical, Act. GitHub-hosted behavior remains authoritative.
 
-### Configuration Options
+## Operational checklist
 
-#### Change Schedule
-
-Edit `.github/workflows/dependency-update.yml`:
-
-```yaml
-schedule:
-  - cron: '0 2 * * *'  # Daily at 2 AM UTC
-  # Examples:
-  # - cron: '0 0 * * 1'     # Weekly on Monday
-  # - cron: '0 0 1 * *'     # Monthly on the 1st
-  # - cron: '0 */6 * * *'   # Every 6 hours
-```
-
-#### Enable Pull Requests Instead of Direct Commits
-
-Change `if: false` to `if: true` in the `create-pr` job:
-
-```yaml
-create-pr:
-  name: Create Pull Request (Optional)
-  runs-on: ubuntu-latest
-  needs: update-dependencies
-  if: true  # Changed from false
-```
-
-#### Skip CI on Updates
-
-The workflow includes `[skip ci]` in commit messages by default. Remove this line from the commit message if you want CI to run:
-
-```yaml
-commit_message: |
-  chore: automated dependency update
-  ...
-  # Remove the line below to enable CI
-  [skip ci] remove this line if you want CI to run
-```
-
-### Monitoring
-
-- **Success**: Dependencies are automatically updated and committed
-- **Failure**: A GitHub issue is created with details
-- **Security**: Warning annotations appear when vulnerabilities are fixed
-
-### Troubleshooting
-
-1. **Workflow not running**: Check Actions are enabled in repository settings
-2. **CI not triggered**: Ensure PAT_TOKEN is properly configured
-3. **Update failures**: Check the created GitHub issue for details
-4. **cargo-vet failures**: The workflow attempts to auto-update audits
-
-### Security Best Practices
-
-- Regularly review automated updates
-- Set up branch protection rules for `main`
-- Consider using PR mode for production repositories
-- Monitor security alerts in the Security tab
-- Keep PAT token permissions minimal
-- Rotate PAT token periodically
-
-### Benefits
-
-- **Reduced maintenance burden**: No manual dependency updates
-- **Improved security**: Automatic vulnerability fixes
-- **Better stability**: Regular small updates vs. large breaking changes
-- **Time savings**: Automated testing and verification
-- **Audit trail**: All updates tracked in git history
+- Require reviews/status checks on protected branches.
+- Grant the workflow only the permissions it uses.
+- Confirm Dependabot/security alerts and failed-run notifications reach maintainers.
+- Review automated updates rather than assuming successful tests eliminate supply-chain risk.
+- Revoke unused tokens and audit workflow changes like application code.

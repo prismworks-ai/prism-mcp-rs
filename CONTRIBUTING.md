@@ -1,422 +1,104 @@
-# Contributing Guidelines
+# Contributing
 
-## Overview
+Thank you for improving `prism-mcp-rs`. Keep changes focused, preserve compatibility unless a breaking release is intended, and describe security or behavior changes explicitly.
 
-Contributions to the Prism MCP SDK follow a structured process to maintain code quality, consistency, and architectural integrity. This document outlines the technical requirements and procedures for contributing.
+## Prerequisites
 
-## Development Prerequisites
-
-### Required Tools
-
-| Tool | Version | Purpose |
-|------|---------|------|
-| Rust | ≥ 1.85.0 | Compiler and toolchain |
-| Cargo | Latest | Build and dependency management |
-| Git | ≥ 2.25 | Version control |
-| Make | ≥ 3.81 | Build automation (optional) |
-
-### Development Environment Setup
+- Rust 1.85 or newer with `rustfmt` and `clippy`
+- Git
+- Optional: `cargo-audit`, `cargo-deny`, `cargo-llvm-cov`, and Act
 
 ```bash
-# Clone repository
+rustup component add rustfmt clippy
+cargo install cargo-audit cargo-deny cargo-llvm-cov
+```
+
+Do not install tools you do not need for the change.
+
+## Setup
+
+```bash
 git clone https://github.com/prismworks-ai/prism-mcp-rs
 cd prism-mcp-rs
-
-# Install development dependencies
-make install-tools
-
-# Alternatively, install manually
-cargo install cargo-audit cargo-llvm-cov cargo-deny cargo-nextest
-rustup component add rustfmt clippy
+cargo check --all-features
+cargo test --all-features
 ```
 
-## Contribution Workflow
+Use a topic branch. An issue is recommended for significant features or API changes so design and compatibility can be discussed before implementation; trivial fixes do not require ceremony.
 
-### 1. Issue Creation
+## Development standards
 
-All contributions must originate from a GitHub issue:
+- Prefer small, typed APIs and the smallest necessary feature/dependency surface.
+- Keep transport-independent behavior in the shared server path.
+- Preserve explicit trust boundaries: identity must be verified before creating `RequestContext`; native plugins are not sandboxed.
+- Avoid blocking work on Tokio executor threads.
+- Add regression tests for fixes and focused unit/integration tests for new behavior.
+- Document public APIs and update maintained guides when user-visible behavior changes.
+- Do not add latency, throughput, coverage, vulnerability, or compliance claims without a reproducible artifact and date.
+- Keep unsafe code confined and justified. Plugin FFI changes require extra review.
 
-1. Search [existing issues](https://github.com/prismworks-ai/prism-mcp-rs/issues)
-2. Create new issue with appropriate template
-3. Wait for maintainer acknowledgment
-4. Reference issue number in all commits
+## Required checks
 
-### 2. Branch Strategy
+Run checks proportional to the change. Before requesting review, the expected full set is:
 
 ```bash
-# Create feature branch from main
-git checkout main
-git pull origin main
-git checkout -b issue-{number}-{brief-description}
-
-# Examples:
-# issue-123-circuit-breaker
-# issue-456-http2-optimization
+cargo fmt --all -- --check
+cargo clippy --all-features --all-targets -- -D warnings
+cargo test --all-features
+cargo test --doc --all-features
+cargo build --examples --all-features
+cargo doc --no-deps --all-features
+python3 scripts/docs/check-docs-quality.py
 ```
 
-### 3. Development Process
+For dependency, security, or release changes also run:
 
-#### Code Standards
-
-| Requirement | Command | Acceptance Criteria |
-|-------------|---------|--------------------|
-| Formatting | `cargo fmt --all -- --check` | No formatting changes |
-| Linting | `cargo clippy -- -D warnings` | Zero warnings |
-| Testing | `cargo test --all-features` | 100% pass rate |
-| Documentation | `cargo doc --no-deps` | No broken links |
-| Coverage | `cargo llvm-cov --html` | ≥65% coverage |
-
-#### Commit Convention
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
+```bash
+cargo audit --deny warnings
+cargo deny check
+cargo package --allow-dirty
 ```
 
-**Types:**
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation
-- `style`: Formatting
-- `refactor`: Code restructuring
-- `perf`: Performance improvement
-- `test`: Testing
-- `chore`: Maintenance
+For performance-sensitive changes:
 
-**Example:**
-```
-feat(transport): Add HTTP/3 support
-
-Implements QUIC-based HTTP/3 transport with connection migration
-and 0-RTT support.
-
-Closes #789
+```bash
+cargo bench --features bench,plugin,http --bench all_benchmarks
 ```
 
-### 4. Pull Request Process
+Record hardware, toolchain, feature set, benchmark name, and before/after statistics. Do not optimize against one noisy sample.
 
-#### PR Checklist
+The Makefile and scripts are conveniences; direct Cargo commands above are the source of truth. `./scripts/ci/run_ci_local.sh` can run native checks or use Act when installed.
 
-- [ ] Issue linked in description
-- [ ] Tests added/updated
-- [ ] Documentation updated
-- [ ] CHANGELOG.md updated
-- [ ] CI passes
-- [ ] Code review addressed
+## Tests
 
-#### PR Template
+- Unit tests live near the code they cover.
+- Cross-module and transport behavior belongs in `tests/`.
+- Documentation examples should compile where practical; use `no_run` for examples that would block on a server loop and `ignore` only when external infrastructure or secrets are required.
+- Tests must not assume common ports are unused or depend on the public internet.
+- Security tests should include both allowed and denied behavior.
 
-```markdown
-## Description
-Brief description of changes
+## Documentation
 
-## Motivation
-Why these changes are needed
+The canonical documentation index is [docs/README.md](docs/README.md). Contributor workflow belongs here rather than in a second development guide. Script details belong in [scripts/README.md](scripts/README.md). Generated reports and examples must state their provenance and should not be edited into timeless claims.
 
-## Changes
-- Change 1
-- Change 2
+Use relative links for repository files. After moving or deleting documentation, search for old paths and run the documentation quality checker.
 
-## Testing
-How changes were tested
+## Commits and pull requests
 
-## Checklist
-- [ ] Tests pass
-- [ ] Documentation updated
-- [ ] Breaking changes documented
+Use clear imperative commit subjects. Conventional prefixes such as `feat:`, `fix:`, `docs:`, `test:`, and `chore:` are welcome but not mandatory unless repository automation requires them.
 
-Closes #issue_number
-```
+A pull request should state:
 
-## Code Quality Standards
+- the problem and chosen approach;
+- user-visible or compatibility impact;
+- security and operational implications where relevant;
+- the exact verification performed; and
+- related issues or follow-up work.
 
-### Documentation Requirements
+Update `CHANGELOG.md` under `Unreleased` for meaningful user-facing changes. Review feedback should be addressed with new commits until the branch is ready; maintainers may squash at merge.
 
-All public APIs must include:
+## Reporting security issues
 
-```rust
-/// Brief description.
-///
-/// Detailed explanation of functionality, behavior, and usage patterns.
-///
-/// # Arguments
-///
-/// * `param_name` - Parameter description with constraints
-///
-/// # Returns
-///
-/// Description of return value and possible states
-///
-/// # Errors
-///
-/// Returns [`McpError`] when:
-/// - Specific error condition
-/// - Another error condition
-///
-/// # Examples
-///
-/// ```rust
-/// use prism_mcp_rs::prelude::*;
-///
-/// let result = function_name(param).await?;
-/// assert_eq!(result, expected);
-/// ```
-///
-/// # Panics
-///
-/// Panics if:
-/// - Panic condition (if applicable)
-///
-/// # Safety
-///
-/// Safety requirements (for unsafe functions)
-pub async fn function_name(param: Type) -> McpResult<ReturnType> {
-    // Implementation
-}
-```
+Do not disclose a vulnerability in a public issue or pull request. Follow [SECURITY.md](SECURITY.md).
 
-### Testing Standards
-
-#### Unit Tests
-
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rstest::*;
-
-    #[rstest]
-    #[case(input1, expected1)]
-    #[case(input2, expected2)]
-    #[tokio::test]
-    async fn test_function_behavior(
-        #[case] input: Type,
-        #[case] expected: Type,
-    ) {
-        let result = function_under_test(input).await;
-        assert_eq!(result, expected);
-    }
-
-    #[tokio::test]
-    async fn test_error_condition() {
-        let result = function_under_test(invalid_input).await;
-        assert!(matches!(result, Err(McpError::InvalidParams(_))));
-    }
-}
-```
-
-#### Integration Tests
-
-```rust
-// tests/integration_test.rs
-use prism_mcp_rs::prelude::*;
-use serial_test::serial;
-
-#[tokio::test]
-#[serial]
-async fn test_end_to_end_workflow() {
-    let server = setup_test_server().await;
-    let client = setup_test_client().await;
-    
-    // Test workflow
-    let result = client.call_tool("test", args).await;
-    assert!(result.is_ok());
-    
-    // Cleanup
-    teardown(server, client).await;
-}
-```
-
-### Performance Considerations
-
-#### Benchmarking Requirements
-
-Performance-critical changes must include benchmarks:
-
-```rust
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-
-fn benchmark_new_feature(c: &mut Criterion) {
-    c.bench_function("feature_name", |b| {
-        b.iter(|| {
-            // Benchmark code
-            black_box(function_under_test(input))
-        });
-    });
-}
-
-criterion_group!(benches, benchmark_new_feature);
-criterion_main!(benches);
-```
-
-### Security Requirements
-
-#### Input Validation
-
-```rust
-pub async fn process_input(input: String) -> McpResult<String> {
-    // Validate length
-    if input.len() > MAX_INPUT_SIZE {
-        return Err(McpError::invalid_params("Input exceeds maximum size"));
-    }
-    
-    // Validate content
-    if !input.chars().all(|c| c.is_ascii_alphanumeric()) {
-        return Err(McpError::invalid_params("Invalid characters in input"));
-    }
-    
-    // Process validated input
-    Ok(process_safe(input).await?)
-}
-```
-
-#### Secure Defaults
-
-- TLS enabled by default for network transports
-- Authentication required for production configurations
-- Rate limiting enabled with reasonable defaults
-- Input sanitization for all user-provided data
-
-## Architecture Guidelines
-
-### Module Organization
-
-```
-src/
-├── core/           # Core abstractions and traits
-├── protocol/       # Protocol implementation
-├── transport/      # Transport implementations
-├── server/         # Server implementation
-├── client/         # Client implementation
-├── plugin/         # Plugin system
-└── auth/           # Authentication/authorization
-```
-
-### Dependency Management
-
-- Minimize external dependencies
-- Audit dependencies regularly: `cargo audit`
-- Use feature flags for optional dependencies
-- Document dependency rationale in comments
-
-### Error Handling
-
-```rust
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum ComponentError {
-    #[error("Invalid configuration: {0}")]
-    InvalidConfig(String),
-    
-    #[error("Operation failed: {context}")]
-    OperationFailed {
-        context: String,
-        #[source]
-        source: Box<dyn std::error::Error + Send + Sync>,
-    },
-}
-
-// Convert to McpError
-impl From<ComponentError> for McpError {
-    fn from(err: ComponentError) -> Self {
-        McpError::internal(err.to_string())
-    }
-}
-```
-
-## Review Process
-
-### Code Review Criteria
-
-1. **Correctness** - Logic is sound and bug-free
-2. **Performance** - No unnecessary allocations or blocking calls
-3. **Security** - Input validation and secure defaults
-4. **Documentation** - Clear and comprehensive
-5. **Testing** - Adequate coverage and edge cases
-6. **Style** - Consistent with codebase conventions
-
-### Review Response Time
-
-| PR Size | Target Response | Maximum Wait |
-|---------|----------------|-------------|
-| Small (<100 lines) | 24 hours | 3 days |
-| Medium (<500 lines) | 48 hours | 5 days |
-| Large (>500 lines) | 72 hours | 7 days |
-
-## Release Process
-
-### Version Numbering
-
-Follows [Semantic Versioning](https://semver.org/):
-
-- **Major** (x.0.0): Breaking API changes
-- **Minor** (0.x.0): New features, backward compatible
-- **Patch** (0.0.x): Bug fixes, backward compatible
-
-### Release Checklist
-
-1. Update version in `Cargo.toml`
-2. Update `CHANGELOG.md`
-3. Run full test suite
-4. Generate documentation
-5. Push to `main` (auto-tag workflow creates `vX.Y.Z` when version changes)
-6. Verify `Release` workflow completes (GitHub release + crates.io publication)
-7. Confirm package is visible on crates.io and docs.rs
-
-### Automated Publishing Rules
-
-- A crates.io publish is triggered by the `Release` workflow on tags matching `v*`.
-- Tags are auto-created by `Auto Tag Release` only when:
-  - `Cargo.toml` version changes in a push to `main`
-  - matching `vX.Y.Z` tag does not already exist
-  - version is not already published on crates.io
-- Non-version changes (docs/CI/workflow-only changes) do not publish a new crate.
-
-## Community Standards
-
-### Code of Conduct
-
-All contributors must adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
-
-### Communication Channels
-
-- **GitHub Issues** - Bug reports and feature requests
-- **GitHub Discussions** - General questions and ideas
-- **Discord** - Real-time community support
-- **Email** - Security issues (security@prismworks.ai)
-
-### Recognition
-
-Contributors are recognized in:
-- `CONTRIBUTORS.md` file
-- Release notes
-- Annual contributor report
-
-## Legal
-
-### Contributor License Agreement
-
-By submitting a pull request, you agree that:
-
-1. Your contribution is your original work
-2. You grant an MIT license for your contribution
-3. Your contribution complies with the project license
-
-### Copyright Header
-
-```rust
-// Copyright (c) 2025 Prismworks AI
-// SPDX-License-Identifier: MIT
-```
-
-## Support
-
-For contribution support:
-
-- Review [existing PRs](https://github.com/prismworks-ai/prism-mcp-rs/pulls) for examples
-- Ask questions in [GitHub Discussions](https://github.com/prismworks-ai/prism-mcp-rs/discussions)
-- Join [Discord](https://discord.gg/prismworks) for real-time help
+By contributing, you agree that your contribution is licensed under the repository's MIT license.

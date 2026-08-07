@@ -1,461 +1,140 @@
-# Prism MCP SDK for Rust
+# Prism MCP Rust SDK
 
 [![Crates.io](https://img.shields.io/crates/v/prism-mcp-rs.svg?style=flat-square)](https://crates.io/crates/prism-mcp-rs)
-[![Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=downloads&color=brightgreen)](https://crates.io/crates/prism-mcp-rs)
-[![Documentation](https://img.shields.io/docsrs/prism-mcp-rs?style=flat-square&label=docs)](https://docs.rs/prism-mcp-rs)
-[![CI](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/ci.yml?style=flat-square&label=CI&logo=github)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
-[![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![MCP](https://img.shields.io/badge/MCP-2025--11--25%20Compliant-0A7EA4?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/docs/guides/migration.md#compatibility-notes)
-[![Performance](https://img.shields.io/badge/performance-tracked-brightgreen?style=flat-square)](https://prismworks-ai.github.io/prism-mcp-rs/benchmarks/)
-[![Security Audit](https://img.shields.io/github/actions/workflow/status/prismworks-ai/prism-mcp-rs/security.yml?style=flat-square&label=security&logo=shield)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
-[![codecov](https://img.shields.io/codecov/c/github/prismworks-ai/prism-mcp-rs?style=flat-square&logo=codecov)](https://codecov.io/gh/prismworks-ai/prism-mcp-rs)
+[![Documentation](https://docs.rs/prism-mcp-rs/badge.svg)](https://docs.rs/prism-mcp-rs)
+[![CI](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
+[![Security audit](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security-audit.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security-audit.yml)
+[![License](https://img.shields.io/crates/l/prism-mcp-rs.svg?style=flat-square)](LICENSE)
+[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square&logo=rust)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
-[![dependency status](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs/status.svg)](https://deps.rs/repo/github/prismworks-ai/prism-mcp-rs)
-[![Total Downloads](https://img.shields.io/crates/d/prism-mcp-rs.svg?style=flat-square&label=total%20downloads&color=success)](https://crates.io/crates/prism-mcp-rs)
-[![API Stability](https://img.shields.io/badge/API-1.x-brightgreen.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/blob/main/CHANGELOG.md)
+`prism-mcp-rs` is an async Rust SDK for building Model Context Protocol (MCP) clients and servers. It implements MCP 2025-11-25 types and supports tools, resources, prompts, sampling, roots, completion, and multiple transports.
 
-[![Contributors](https://img.shields.io/github/contributors/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/graphs/contributors)
-[![Last Commit](https://img.shields.io/github/last-commit/prismworks-ai/prism-mcp-rs.svg?style=flat-square)](https://github.com/prismworks-ai/prism-mcp-rs/commits/main)
-[![Release](https://img.shields.io/github/v/release/prismworks-ai/prism-mcp-rs.svg?style=flat-square&include_prereleases)](https://github.com/prismworks-ai/prism-mcp-rs/releases)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865f2?style=flat-square&logo=discord)](https://discord.gg/prismworks)
+## Capability status
 
-**prism-mcp-rs** is a production-grade Rust SDK for building MCP servers and clients with typed protocol models, multi-transport support, and operational controls for real deployments.
+| Area | Status | Feature |
+|------|--------|---------|
+| STDIO client/server | Implemented; default | `stdio` |
+| HTTP client/server | Implemented | `http` |
+| WebSocket | Implemented | `websocket` |
+| SSE notifications | Implemented | `sse` |
+| HTTP/2 helpers | Implemented | `http2` |
+| Compression | Implemented | `compression` |
+| OAuth client primitives | Implemented; application integration required | `auth` with `http` |
+| Fine-grained RBAC and rate limiting | Implemented; opt in | core |
+| TLS 1.3 mutual authentication | Implemented for HTTP | `http,tls` |
+| OTLP/OpenTelemetry tracing | Implemented; opt in | `otel` |
+| Endpoint balancing and failover | Implemented; reactive and process-local | core plus chosen transports |
+| Native plugins | Implemented for trusted code | `plugin` |
+| Sandboxed plugins | Not implemented | — |
+| CPU affinity | Host/deployment responsibility | — |
+| Service discovery and active health probing | Not implemented | — |
 
-Safety note: core library paths are safe Rust; plugin loading uses a narrow, audited `unsafe` FFI boundary.
+The default request policy is backward-compatible and permits requests. Production services should authenticate at the transport boundary and install a deny-by-default policy. Native plugins execute in process and are not a security boundary.
 
-
-## Why prism-mcp-rs
-
-This SDK targets teams that need more than baseline protocol wiring. It combines MCP conformance with reliability, observability, and security defaults expected in enterprise environments.
-
-### MCP 2025-11-25 Compliance Snapshot
-
-| Area | Status |
-|------|--------|
-| Core JSON-RPC + lifecycle | Implemented |
-| Metadata/UI fields (`title`, `icons`, `_meta`) | Implemented |
-| Sampling updates (`tool_choice`, `stopReason`) | Implemented |
-| Elicitation (form + URL modes) + completion notification | Implemented |
-| Task status updates + cancellation notifications | Implemented |
-| Auth challenge handling (HTTP `401`/`403`) | Implemented |
-
-### What Differentiates It
-
-1. **Production-first runtime controls**: Circuit breakers, adaptive retries, and health checks are part of the SDK, not external glue code.
-2. **Rust-native typed protocol surface**: Strong typing and convenience builders reduce runtime drift from MCP message contracts.
-3. **Transport flexibility**: STDIO, HTTP/SSE, WebSocket, and HTTP/2 support are available under one crate.
-4. **Supply-chain and quality gates**: CI, clippy (`-D warnings`), security workflows, and audit tooling are built into the project baseline.
-5. **Optional plugin runtime**: Hot-reloadable plugin capabilities for extensible deployments without forcing plugin complexity on all users.
-
-### How It Fits with Agent Frameworks
-
-`prism-mcp-rs` complements orchestration frameworks; it does not replace them.
-
-| Layer | Responsibility |
-|------|----------------|
-| Agent framework (LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, etc.) | Planning, orchestration, workflow logic |
-| `prism-mcp-rs` | MCP protocol runtime, transport handling, server/client implementation, reliability primitives |
-
-Use this SDK when your services are in Rust and need deterministic MCP behavior under real operational load.
-
-## Detailed Capabilities
-
-### 1. Advanced Resilience Patterns
-
-- **Circuit Breaker Pattern**: Automatic failure isolation preventing cascading failures
-- **Adaptive Retry Policies**: Smart backoff with jitter and error-based retry decisions
-- **Health Check System**: Multi-level health monitoring for transport, protocol, and resources
-- **Graceful Degradation**: Automatic fallback strategies when services become unavailable
-
-### 2. Enterprise Transport Features
-
-- **Streaming HTTP/2**: Full multiplexing, server push, and flow control support
-- **Adaptive Compression**: Dynamic selection of Gzip, Brotli, or Zstd based on content analysis
-- **Chunked Transfer Encoding**: Efficient handling of large payloads with streaming
-- **Connection Pooling**: Intelligent connection reuse with keep-alive management
-- **TLS/mTLS Support**: Enterprise-grade security with certificate validation
-
-### 3. Plugin System Architecture
-
-- **Hot Reload Support**: Update plugins without service interruption
-- **C ABI Plugin Boundary**: Dynamic plugin interface with runtime compatibility checks
-- **Plugin Isolation**: Sandboxed execution with resource limits
-- **Dynamic Discovery**: Runtime plugin loading with dependency resolution
-- **Lifecycle Management**: Automated plugin health monitoring and recovery
-
-### 4. Protocol Extensions
-
-- **Schema Introspection**: Complete runtime discovery of server capabilities
-- **Batch Operations**: Efficient bulk request processing with transaction support
-- **Progressive Content Delivery**: Streaming responses for large datasets
-- **Rich Metadata Support**: Comprehensive annotations and capability negotiation
-- **Custom Method Extensions**: Seamless protocol extensibility
-
-### 5. Production Observability
-
-- **Structured Logging**: Contextual tracing with correlation IDs
-- **Metrics Collection**: Performance counters, histograms, and gauges
-- **Distributed Tracing**: OpenTelemetry integration for request flow analysis
-- **Error Forensics**: Detailed error context with stack traces and recovery hints
-
-## Technical Architecture
-
-### Core Components
-
-| Component | Description | Key Features |
-|-----------|-------------|-------------|
-| **Transport Layer** | Multi-protocol transport abstraction | STDIO, HTTP/1.1, HTTP/2, WebSocket, SSE |
-| **Protocol Engine** | MCP 2025-11-25 implementation | JSON-RPC, batch operations, streaming |
-| **Plugin Runtime** | Dynamic extension system | Hot reload, sandboxing, versioning |
-| **Resilience Core** | Fault tolerance mechanisms | Circuit breakers, retries, health checks |
-| **Security Module** | Authentication and authorization | JWT, OAuth2, mTLS, rate limiting |
-
-### Performance Characteristics
-
-- **Zero-Copy Operations**: Minimal memory allocation in hot paths
-- **Async/Await Runtime**: Tokio-based non-blocking I/O
-- **Connection Multiplexing**: Single TCP connection for multiple streams
-- **Smart Buffering**: Adaptive buffer sizing based on throughput
-- **CPU Affinity**: Thread pinning for cache optimization
-
-## Installation
-
-### Standard Installation
+## Install
 
 ```toml
 [dependencies]
-prism-mcp-rs = "1"
+prism-mcp-rs = "2"
 tokio = { version = "1", features = ["full"] }
-serde_json = "1.0"
 async-trait = "0.1"
+serde_json = "1"
 ```
 
-### Feature Matrix
-
-| Feature Category | Features | Use Case |
-|-----------------|----------|----------|
-| **Core Transports** | `stdio`, `http`, `websocket` | Basic connectivity |
-| **HTTP Extensions** | `sse`, `http2`, `chunked-encoding`, `compression` | Advanced HTTP capabilities |
-| **Security** | `auth`, `tls` | Authentication and encryption |
-| **Extensions** | `plugin` | Runtime extensibility |
-| **Bundles** | `full`, `minimal` | Convenience feature sets |
-
-### Advanced Configuration
+Enable only what the application uses:
 
 ```toml
-# High-performance configuration
-[dependencies]
-prism-mcp-rs = { 
-    version = "1", 
-    features = ["http2", "compression", "plugin", "auth", "tls"] 
-}
-
-# Memory-constrained environments
-[dependencies]
-prism-mcp-rs = { 
-    version = "1", 
-    default-features = false,
-    features = ["stdio"] 
+prism-mcp-rs = {
+    version = "2",
+    features = ["http", "tls", "auth", "otel"]
 }
 ```
 
+`full` enables every optional feature. The minimum supported Rust version is 1.85.
 
-## Clean & Simple API
+## Minimal STDIO server
 
-### 30-Second Server Setup
-
-```rust
+```rust,no_run
 use prism_mcp_rs::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Clone)]
-struct SystemToolHandler;
+struct Echo;
 
 #[async_trait]
-impl ToolHandler for SystemToolHandler {
+impl ToolHandler for Echo {
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult> {
-        match arguments.get("tool_name").and_then(|v| v.as_str()) {
-            Some("system_info") => {
-                let info = format!(
-                    "Host: {}, OS: {}", 
-                    hostname::get().unwrap_or_default().to_string_lossy(),
-                    std::env::consts::OS
-                );
-                Ok(ToolResult {
-                    content: vec![ContentBlock::text(&info)],
-                    is_error: Some(false),
-                    meta: None,
-                    structured_content: None,
-                })
-            },
-            _ => Err(McpError::invalid_request("Unknown tool"))
-        }
+        let message = arguments
+            .get("message")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+
+        Ok(ToolResult {
+            content: vec![ContentBlock::text(message)],
+            is_error: Some(false),
+            structured_content: None,
+            meta: None,
+        })
     }
 }
 
 #[tokio::main]
 async fn main() -> McpResult<()> {
-    let mut server = McpServer::new(
-        "system-server".to_string(), 
-        "1.0.0".to_string()
-    );
-    
-    // Add the system_info tool using the async add_tool method
-    server.add_tool(
-        "system_info",
-        Some("Get system information"),
-        json!({"type": "object", "properties": {}}),
-        SystemToolHandler,
-    ).await?;
-    // Start server with STDIO transport
-    let transport = StdioServerTransport::new();
-    server.start(transport).await
-}
-```
-
-### Enterprise-Grade Client
-
-```rust
-use prism_mcp_rs::prelude::*;
-use prism_mcp_rs::transport::StdioClientTransport;
-
-let transport = StdioClientTransport::new("./server");
-let client = McpClient::new(
-    "test-client".to_string(),
-    "1.0.0".to_string()
-);
-
-client.initialize().await?;
-client.set_transport(Box::new(transport)).await?;
-
-// Make requests to the server
-let tools_response = client.list_tools(None, None).await?;
-let tool_result = client.call_tool(
-    "system_info".to_string(),
-    json!({})
-).await?;
-
-println!("Available tools: {:?}", tools_response);
-println!("Tool result: {:?}", tool_result);
-```
-
-### Hot-Reloadable Plugins
-
-```rust
-use prism_mcp_rs::prelude::*;
-use prism_mcp_rs::plugin::*;
-use std::any::Any;
-
-struct WeatherPlugin {
-    api_key: String,
-}
-
-#[async_trait]
-impl ToolPlugin for WeatherPlugin {
-    fn metadata(&self) -> PluginMetadata {
-        PluginMetadata {
-            id: "weather-plugin".to_string(),
-            name: "Weather Plugin".to_string(),
-            version: "1.0.0".to_string(),
-            author: Some("Example Author".to_string()),
-            description: Some("Provides weather information".to_string()),
-            homepage: None,
-            license: Some("MIT".to_string()),
-            mcp_version: "1.1.0".to_string(),
-            capabilities: PluginCapabilities::default(),
-            dependencies: vec![],
-        }
-    }
-
-    fn tool_definition(&self) -> Tool {
-        Tool::new(
-            "get_weather".to_string(),
-            Some("Get weather information for a location".to_string()),
+    let server = McpServer::create("echo-server", "1.0.0");
+    server
+        .add_tool(
+            "echo",
+            Some("Echo a message"),
             json!({
                 "type": "object",
-                "properties": {
-                    "location": {"type": "string", "description": "Location to get weather for"}
-                },
-                "required": ["location"]
+                "properties": { "message": { "type": "string" } },
+                "required": ["message"]
             }),
-            EchoTool // Placeholder - would use actual weather handler
+            Echo,
         )
-    }
+        .await?;
 
-    async fn execute(&self, arguments: Value) -> McpResult<ToolResult> {
-        let location = arguments["location"].as_str().unwrap_or("Unknown");
-        let weather_data = json!({
-            "location": location,
-            "temperature": "22°C",
-            "condition": "Sunny"
-        });
-        
-        Ok(ToolResult {
-            content: vec![ContentBlock::text(&format!("Weather in {}: {}", location, weather_data))],
-            is_error: Some(false),
-            meta: None,
-            structured_content: Some(weather_data),
-        })
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
+    server
+        .run_with_transport(StdioServerTransport::new())
+        .await
 }
-
-// Runtime plugin management
-let mut plugin_manager = PluginManager::new();
-plugin_manager.reload_plugin("weather_plugin").await?; // Hot reload support
 ```
 
-## Architectural Innovations
+STDIO servers must reserve stdout for MCP frames; write diagnostics through `tracing` or stderr.
 
-### Zero-Configuration Service Discovery
-Automatic capability negotiation and runtime schema introspection eliminates manual configuration:
+## Production controls
 
-```rust
-// Client connects and discovers server capabilities
-let transport = StdioClientTransport::new("./server");
-let client = McpClient::new("discovery-client".to_string(), "1.0.0".to_string());
+The SDK provides shared request context, deny-by-default RBAC, per-principal/per-method token-bucket limiting, TLS 1.3 mTLS, W3C trace propagation with OTLP export, and conservative endpoint failover. These controls are opt-in because identity verification, certificates, quotas, and availability policy belong to the host application.
 
-client.initialize().await?;
-client.set_transport(Box::new(transport)).await?;
+See [Production Controls](docs/PRODUCTION_CONTROLS.md) for integration examples and explicit trust boundaries.
 
-// Discover server capabilities through initialization
-let server_info = client.get_server_info().await?;
-println!("Server capabilities: {:?}", server_info.capabilities);
-```
+## Verification
 
-### Fault-Tolerant by Design
-Built-in resilience patterns prevent cascading failures in distributed AI systems:
-
-```rust
-// Basic tool call with proper error handling
-let result = match client.call_tool("analyze".to_string(), data).await {
-    Ok(result) => result,
-    Err(e) => {
-        eprintln!("Tool call failed: {}", e);
-        // Implement your own fallback logic here
-        return Err(e);
-    }
-};
-```
-
-### Plugin Ecosystem Revolution
-Hot-swappable plugins with ABI stability across Rust versions:
-
-```rust
-// Plugin lifecycle management
-plugin_manager.unload_plugin("analyzer_v1").await?;
-plugin_manager.load_plugin("analyzer_v2.so").await?;
-// Plugin health monitoring
-let health = plugin_manager.check_plugin_health("analyzer_v2").await?;
-```
-
-## New Use Cases Enabled
-
-### **Multi-Agent AI Orchestration**
-Combine multiple AI services with automatic failover and load balancing.
-
-### **Enterprise Integration Hubs**
-Connect legacy systems to modern AI tools with protocol translation and security policies.
-
-### **Real-Time AI Pipelines**
-Build streaming data processing pipelines with sub-millisecond latency guarantees.
-
-### **Federated AI Networks**
-Create distributed AI service meshes with automatic service discovery and routing.
-
-### **Edge AI Deployment**
-Deploy AI capabilities to edge devices with offline-first architecture and smart sync.
-## Production-Ready Performance
-
-| Metric | Value | Impact |
-|--------|-------|---------|
-| **Zero-downtime deployments** | < 100ms | Keep AI services running during updates |
-| **Automatic failover** | < 50ms | No user-visible service interruptions |
-| **Memory efficiency** | 2-12MB baseline | Deploy to edge and resource-constrained environments |
-| **Protocol overhead** | < 0.5ms | Sub-millisecond response times for real-time AI |
-
-## Security & Supply Chain
-
-### **🔒 Security-First Design**
-- **Memory Safety**: 100% safe Rust with minimal unsafe blocks (only in plugin FFI)
-- **TLS 1.3**: Modern encryption with rustls and ring cryptography
-- **Supply Chain Security**: Comprehensive dependency auditing with cargo-audit, cargo-deny, and cargo-vet
-- **Vulnerability Monitoring**: Automated security scans and dependency updates
-- **License Compliance**: All dependencies verified against approved open-source licenses
-
-### **🛡️ Security Features**
-- **Authentication**: JWT tokens with configurable expiration and refresh
-- **Authorization**: Role-based access control with fine-grained permissions
-- **Input Validation**: Comprehensive request validation and sanitization
-- **Rate Limiting**: Configurable request throttling and DDoS protection
-- **Audit Logging**: Security event logging with structured output
-
-### **📊 Supply Chain Transparency**
-- **Dependencies**: 379 crates, all security-audited
-- **Vulnerabilities**: Zero known security vulnerabilities
-- **License Review**: MIT-compatible licensing across entire dependency tree
-- **Update Frequency**: Weekly automated security audits and monthly dependency updates
-- **Audit Trail**: Complete supply chain verification with Mozilla import chain
-
-### **🔧 Security Tools**
 ```bash
-# Run security audit
-./scripts/security-audit.sh
-
-# Update dependencies safely
-./scripts/update-dependencies.sh
-
-# Check supply chain status
-cargo vet check
-cargo deny check all
-cargo audit
+cargo fmt --all -- --check
+cargo clippy --all-features --all-targets -- -D warnings
+cargo test --all-features
+cargo test --doc --all-features
+cargo bench --features bench,plugin,http --bench all_benchmarks
 ```
+
+Benchmark results depend on hardware, enabled features, handlers, payloads, and network conditions. The checked-in [benchmark report](reports/benchmark-report.md) is a development snapshot, not an SLA.
 
 ## Documentation
 
-### **📚 Getting Started**
-- [Quick Start Guide](docs/GETTING_STARTED.md) - Installation, setup, and first steps
-- [AI Tool Integration](docs/AI_TOOL_INTEGRATION.md) - Connect to Claude, Cursor, VS Code, Windsurf
-- [Configuration Examples](docs/examples/ai-tool-configs/README.md) - Ready-to-use configuration templates
-- [API Reference](https://docs.rs/prism-mcp-rs) - Complete API documentation
+- [Documentation index](docs/README.md)
+- [Getting started](docs/GETTING_STARTED.md)
+- [AI tool integration](docs/AI_TOOL_INTEGRATION.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Deployment](docs/DEPLOYMENT_GUIDE.md)
+- [Production controls](docs/PRODUCTION_CONTROLS.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Examples](examples/README.md)
+- [API reference](https://docs.rs/prism-mcp-rs)
 
-### **🚀 Deployment & Production**
-- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) - Production deployment strategies
-- [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Common issues and solutions
+## Contributing and security
 
-### **🏗️ Development Guides**
-- [Architecture Guide](docs/ARCHITECTURE.md) - System design and components
-- [Plugin Development](docs/guides/plugins.md) - Building custom plugins
-- [Plugin Types Reference](docs/guides/plugin-types.md) - Detailed component specifications
-- [Error Handling](docs/guides/error-handling.md) - Comprehensive error management patterns
-- [Performance Tuning](docs/guides/performance.md) - Optimization strategies
-- [Authentication Guide](docs/guides/authentication.md) - Authentication and authorization
-- [Development Setup](docs/DEVELOPMENT.md) - Development environment and workflows
-
-### **🔄 Migration & Updates**
-- [Migration Guide](docs/guides/migration.md) - Migrating from other MCP implementations
-- [Changelog](CHANGELOG.md) - Version history and breaking changes
-
-### **🔒 Security & Policies**
-- [Security Policy](SECURITY.md) - Vulnerability reporting and security practices
-
-## Contributing
-
-Contributions are welcome! Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
-
-See our [Contributors](CONTRIBUTORS.md) for a list of everyone who has contributed to this project.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a change. Report vulnerabilities privately according to [SECURITY.md](SECURITY.md); do not use a public issue for a suspected vulnerability.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Support
-
-- GitHub Issues: [Bug Reports & Feature Requests](https://github.com/prismworks-ai/prism-mcp-rs/issues)
-- Discord: [Community Support](https://discord.gg/prismworks)
-- Email: developers@prismworks.ai
+MIT. See [LICENSE](LICENSE).

@@ -60,7 +60,9 @@ impl From<&McpError> for ErrorLogLevel {
             McpError::SchemaValidation(_) => ErrorLogLevel::Info,
 
             // Cancellation is informational
-            McpError::Auth(_) => ErrorLogLevel::Warning,
+            McpError::Auth(_) | McpError::Forbidden(_) | McpError::RateLimited { .. } => {
+                ErrorLogLevel::Warning
+            }
             McpError::Cancelled(_) => ErrorLogLevel::Info,
         }
     }

@@ -48,7 +48,7 @@ jobs:
       - name: Run benchmarks
         run: |
           # Run cargo bench and capture output
-          cargo bench --features bench,plugin 2>&1 | tee benchmark_output.txt
+          cargo bench --features bench,plugin,http 2>&1 | tee benchmark_output.txt
 
       - name: Parse benchmark results to JSON
         run: |
@@ -83,18 +83,16 @@ jobs:
                       'value': val
                   })
 
-              # If no results found, create a dummy result
+              # Parsing failure is a failed benchmark run, never a fabricated result.
               if not results:
-                  results = [{'name': 'dummy_benchmark', 'unit': 'ns', 'value': 100}]
+                  raise RuntimeError('Criterion produced no parseable benchmark results')
 
               with open('benchmark_results.txt', 'w') as f:
                   json.dump(results, f)
 
           except Exception as e:
               print(f'Error parsing benchmarks: {e}')
-              # Create dummy result on error
-              with open('benchmark_results.txt', 'w') as f:
-                  json.dump([{'name': 'dummy_benchmark', 'unit': 'ns', 'value': 100}], f)
+              raise
           PYTHON_SCRIPT
       
       - name: Parse benchmark results

@@ -19,16 +19,14 @@ if command -v cargo-llvm-cov &> /dev/null; then
     cargo llvm-cov --all-features --workspace --text > reports/coverage.txt
     
     # Create a basic markdown report
-    cat > reports/coverage-report.md << 'EOF'
+    cat > reports/coverage-report.md << EOF
 # Coverage Report (Simplified)
 
-Generated on: $(date)
+Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 ## Coverage Summary
 
 EOF
-    date >> reports/coverage-report.md
-    echo "" >> reports/coverage-report.md
     echo "\`\`\`" >> reports/coverage-report.md
     tail -20 reports/coverage.txt >> reports/coverage-report.md
     echo "\`\`\`" >> reports/coverage-report.md
@@ -42,7 +40,7 @@ else
     # Fallback to basic test output
     echo "# Coverage Report (Test Output Only)" > reports/coverage-report.md
     echo "" >> reports/coverage-report.md
-    echo "Generated on: $(date)" >> reports/coverage-report.md
+    echo "Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> reports/coverage-report.md
     echo "" >> reports/coverage-report.md
     echo "## Test Results" >> reports/coverage-report.md
     echo "" >> reports/coverage-report.md
@@ -52,9 +50,7 @@ else
     echo "" >> reports/coverage-report.md
     echo "Note: Install cargo-llvm-cov for detailed coverage metrics." >> reports/coverage-report.md
     
-    # Create empty lcov.info to prevent codecov upload failure
-    touch lcov.info
-    echo "⚠️  Warning: No actual coverage data generated (cargo-llvm-cov not available)"
+    echo "⚠️  Warning: No LCOV data generated (cargo-llvm-cov not available)"
 fi
 
 exit 0

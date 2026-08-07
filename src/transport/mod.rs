@@ -36,7 +36,7 @@
 //! # #[cfg(feature = "http")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Requires "http" feature in Cargo.toml:
-//! // prism-mcp-rs = { version = "*", features = ["http"] }
+//! // prism-mcp-rs = { version = "2", features = ["http"] }
 //! use prism_mcp_rs::transport::HttpServerTransport;
 //!
 //! // HttpServerTransport takes a bind address directly
@@ -51,7 +51,7 @@
 //! # #[cfg(feature = "websocket")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Requires "websocket" feature in Cargo.toml:
-//! // prism-mcp-rs = { version = "*", features = ["websocket"] }
+//! // prism-mcp-rs = { version = "2", features = ["websocket"] }
 //! use prism_mcp_rs::transport::WebSocketServerTransport;
 //!
 //! // WebSocketServerTransport uses new() method, not bind()
@@ -87,6 +87,7 @@
 //! implementing custom transports or need very specific control, use the
 //! high-level APIs provided by `McpServer` and `McpClient`.
 
+pub mod endpoint_pool;
 pub mod traits;
 
 #[cfg(feature = "stdio")]
@@ -110,6 +111,7 @@ pub mod websocket;
 pub mod streaming_http;
 
 // Re-export commonly used types
+pub use endpoint_pool::{is_request_idempotent, EndpointPoolConfig, EndpointPoolTransport};
 pub use traits::{
     ConnectionState, EventEmittingTransport, FilterableTransport, ReconnectConfig,
     ReconnectableTransport, ServerTransport, Transport, TransportConfig, TransportEvent,
@@ -122,6 +124,9 @@ pub use stdio::{StdioClientTransport, StdioServerTransport};
 
 #[cfg(feature = "http")]
 pub use http::{HttpClientTransport, HttpServerTransport};
+
+#[cfg(all(feature = "http", feature = "tls"))]
+pub use http::{MtlsClientConfig, MtlsServerConfig};
 
 #[cfg(feature = "http")]
 pub use http_auth::{AuthorizedHttpTransport, AuthorizedHttpTransportBuilder};

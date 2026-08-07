@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1778902770765,
+  "lastUpdate": 1786075405764,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3933,6 +3933,65 @@ window.BENCHMARK_DATA = {
           {
             "name": "call_tool_result_generation",
             "value": 171.66,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "e9f57ccea2080a2eec60bff70eabddf40f6ac8b2",
+          "message": "feat: add production controls and consolidate docs",
+          "timestamp": "2026-08-06T23:58:02-04:00",
+          "tree_id": "3488923b184b0c4a8dc620580e94350bf1273356",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/e9f57ccea2080a2eec60bff70eabddf40f6ac8b2"
+        },
+        "date": 1786075404381,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 8.9315,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 439.41,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 15.52,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 56.449,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 125.43,
+            "unit": "ns"
+          },
+          {
+            "name": "server_request_dispatch_ping",
+            "value": 658.26,
+            "unit": "ns"
+          },
+          {
+            "name": "endpoint_failover_read",
+            "value": 461.55,
             "unit": "ns"
           }
         ]

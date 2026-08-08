@@ -47,6 +47,7 @@
 //!     }
 //! }
 //!
+//! # #[cfg(feature = "stdio")]
 //! #[tokio::main]
 //! async fn main() -> McpResult<()> {
 //!     let server = McpServer::create("echo-server", "1.0.0");
@@ -65,6 +66,8 @@
 //!
 //!     server.run_with_transport(StdioServerTransport::new()).await
 //! }
+//! # #[cfg(not(feature = "stdio"))]
+//! # fn main() {}
 //! ```
 //!
 //! ## Module Organization

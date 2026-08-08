@@ -531,10 +531,8 @@ impl SchemaCompletionHandler {
                                 .filter(|value| value.starts_with(current_value))
                                 .collect();
                         }
-                        "number" | "integer" => {
-                            if current_value.is_empty() {
-                                return vec!["0".to_string(), "1".to_string(), "10".to_string()];
-                            }
+                        "number" | "integer" if current_value.is_empty() => {
+                            return vec!["0".to_string(), "1".to_string(), "10".to_string()];
                         }
                         _ => {}
                     }

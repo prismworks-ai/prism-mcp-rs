@@ -31,7 +31,7 @@ cargo run --example <example_name> --features "feature1 feature2"
 - **core_completion_handlers_example_1** - Line 35
 - **core_completion_handlers_example_2** - Line 243
 - **core_completion_handlers_example_3** - Line 389
-- **core_completion_handlers_example_4** - Line 565
+- **core_completion_handlers_example_4** - Line 563
 
 ### core::tool
 

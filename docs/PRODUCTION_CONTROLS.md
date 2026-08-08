@@ -25,7 +25,7 @@ let rbac = RbacAuthorizer::new([
 
 let rate_limit = RateLimiter::new(RateLimitConfig::new(20, 10.0)?);
 let policy = RequestPolicy::new(rbac).with_rate_limiter(rate_limit);
-let server = McpServer::create("production-server", "2.0.1")
+let server = McpServer::create("production-server", "2.0.2")
     .with_request_policy(policy);
 # Ok::<(), prism_mcp_rs::McpError>(())
 ```

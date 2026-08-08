@@ -13,6 +13,8 @@ were inaccurate; current behavior and trust boundaries are documented in
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-08-07
+
 ### Added
 - Shared `RequestContext` and principal model for transport-independent policy enforcement.
 - Deny-by-default fine-grained RBAC with method and resource patterns.
@@ -27,10 +29,15 @@ were inaccurate; current behavior and trust boundaries are documented in
 - Consolidated project documentation around one maintained index; merged and removed redundant development, plugin, AI-configuration, CI-logging, HTML landing-page, and badge-status documents.
 - Documentation validation now detects exact duplicate Markdown files, broken local links, and references to removed documents.
 - Benchmark CI fails when Criterion output cannot be parsed instead of publishing fabricated fallback data.
+- Dependency updates now arrive as reviewable Dependabot pull requests instead of direct scheduled commits.
+- Dependency security checks are consolidated into one least-privilege workflow with retained lockfile, audit, and supply-chain evidence.
+- Removed duplicate audit jobs and the misleading empty SARIF upload.
 
 ### Fixed
 - HTTP server transports now retain and install the `McpServer` request handler before accepting traffic.
 - Network-negative tests no longer assume that `localhost:3000` is unused.
+- The quick-start doctest now compiles when default transport features are disabled.
+- Schema completion handling passes current stable Rust Clippy checks.
 
 ## [2.0.1] - 2026-05-16
 
@@ -299,7 +306,8 @@ were inaccurate; current behavior and trust boundaries are documented in
 ### Contributors
 - Prismworks AI Team
 
-[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.2...v2.0.0
 [1.1.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.1...v1.1.2

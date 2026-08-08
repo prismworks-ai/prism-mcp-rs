@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/prism-mcp-rs.svg?style=flat-square)](https://crates.io/crates/prism-mcp-rs)
 [![Documentation](https://docs.rs/prism-mcp-rs/badge.svg)](https://docs.rs/prism-mcp-rs)
 [![CI](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)
-[![Security audit](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security-audit.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security-audit.yml)
+[![Security](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
 [![License](https://img.shields.io/crates/l/prism-mcp-rs.svg?style=flat-square)](LICENSE)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
 

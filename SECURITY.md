@@ -55,7 +55,7 @@ See [Production Controls](docs/PRODUCTION_CONTROLS.md) for concrete configuratio
 - Keep secrets out of source control and logs; rotate them through a managed secret store.
 - Disable native plugins unless their provenance and build pipeline are trusted.
 - Preserve request IDs and trace IDs in security logs without recording credentials or sensitive payloads.
-- Run dependency and policy checks against the exact release lockfile.
+- Retain the resolved release dependency snapshot and audit report so a result can be reproduced.
 - Define rollback, incident response, and certificate-expiry alerts before production rollout.
 
 ## Security verification
@@ -67,10 +67,10 @@ cargo clippy --all-features --all-targets -- -D warnings
 cargo test --all-features
 ```
 
-`cargo audit` reports the state of the dependency graph at the time it runs. A clean result must not be presented as a permanent guarantee.
+`cargo audit` reports the state of the dependency graph at the time it runs. CI retains the resolved `Cargo.lock` and JSON audit report for 30 days, but a clean result must not be presented as a permanent guarantee.
 
 ## Unsafe code and plugins
 
 Unsafe code should remain confined to the native plugin loading boundary. Changes to FFI types, symbol loading, ownership, or unloading require focused review and tests. Do not load untrusted native libraries; process isolation is the safe choice until a sandboxed runtime exists.
 
-Last reviewed: 2026-08-06.
+Last reviewed: 2026-08-07.

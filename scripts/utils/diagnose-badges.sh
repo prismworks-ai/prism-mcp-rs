@@ -32,7 +32,6 @@ echo "-------------------"
 BADGES=(
     "CI:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg"
     "Security:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg"
-    "Dependencies:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/dependencies.yml/badge.svg"
     "Docs:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/docs.yml/badge.svg"
     "Benchmarks:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml/badge.svg"
     "Release:https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/release.yml/badge.svg"

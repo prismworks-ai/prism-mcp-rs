@@ -11,7 +11,6 @@ echo "🔄 Refreshing GitHub Action badges..."
 BADGE_URLS=(
     "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg"
     "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg"
-    "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/dependencies.yml/badge.svg"
     "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/docs.yml/badge.svg"
     "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/benchmarks.yml/badge.svg"
     "https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/release.yml/badge.svg"

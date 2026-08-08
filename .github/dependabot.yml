@@ -1,0 +1,36 @@
+version: 2
+
+updates:
+  - package-ecosystem: cargo
+    directory: "/"
+    target-branch: main
+    schedule:
+      interval: daily
+      time: "03:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 10
+    groups:
+      rust-non-major:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: main
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(actions)"

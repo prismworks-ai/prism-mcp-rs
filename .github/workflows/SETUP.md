@@ -1,36 +1,35 @@
-# GitHub Actions Setup
+# GitHub automation
 
-Most workflows require no repository secrets. Review workflow permissions and branch protection before enabling automation that writes to the repository.
+Repository automation is review-first: dependency changes arrive as pull requests, while security workflows have read-only repository access.
 
-## Dependency update workflow
+## Dependency updates
 
-`.github/workflows/dependency-update.yml` runs daily at 02:00 UTC and supports manual `compatible`, `latest`, and `security` modes. It updates dependencies, runs tests/checks when the lockfile changes, and commits selected files directly to the triggering branch with a skip-CI marker.
+`.github/dependabot.yml` checks Rust dependencies daily at 03:00 UTC and GitHub Actions weekly on Monday at 04:00 UTC. Compatible Rust minor and patch releases are grouped to reduce pull-request noise; major releases remain separate for focused review.
 
-That direct-write model is convenient but bypasses normal review. The recommended production setup is branch protection plus a pull-request-based dependency tool or enabling and validating the workflow's optional PR job before use.
+Dependabot updates version requirements when a change is required. This crate intentionally does not commit `Cargo.lock`, because downstream library consumers resolve their own compatible dependency graph. Maintainers must review Dependabot pull requests and require the normal CI and Security checks before merging.
 
-## Optional PAT
+GitHub creates security-update pull requests independently of the version-update schedule when Dependabot security updates are enabled in the repository settings. Enable Dependabot alerts, security updates, and failed-run notifications for maintainers.
 
-The workflow falls back to `GITHUB_TOKEN`. Define `PAT_TOKEN` only if the desired automation cannot be achieved with scoped workflow permissions. Prefer a fine-grained token limited to this repository and the minimum contents/pull-request permissions; avoid classic `repo` scope when it is unnecessary. Store it under repository Actions secrets and rotate it according to organizational policy.
+## Security workflow
 
-Never print a token in workflow logs or use a personal token where a GitHub App or `GITHUB_TOKEN` can provide narrower, auditable access.
+`.github/workflows/security.yml` is the single dependency-security workflow:
+
+- daily and dependency-related changes: resolve the current compatible graph, fail on cargo-audit vulnerabilities or warnings, and enforce cargo-deny bans, licenses, and sources;
+- weekly and relevant pull requests: run cargo-vet as an advisory supply-chain review until the attestation baseline is complete;
+- pull requests: run GitHub's dependency review and reject newly introduced vulnerabilities of moderate severity or higher.
+
+Every audit run uploads the resolved `Cargo.lock` and JSON report for 30 days. Weekly supply-chain runs upload their resolved lockfile and cargo-vet report. These artifacts make a scheduled result reproducible without imposing a repository lockfile on library consumers.
+
+The workflow deliberately has no SARIF job: cargo-audit does not emit SARIF natively, and uploading an empty conversion creates a misleading Security tab. Audit failures remain visible as required checks, workflow summaries, and retained JSON artifacts.
 
 ## Manual run
 
-In GitHub, open Actions → Nightly Dependency Update → Run workflow and choose an update type. Review the resulting commit and workflow logs. The current workflow reports failure in the run summary; it does not create a GitHub issue automatically.
+Open **Actions → Security → Run workflow**. The optional `run_supply_chain` input controls whether the advisory cargo-vet job runs; vulnerability and dependency-policy checks always run.
 
-## Changing behavior
+## Repository settings
 
-- Edit the cron under `on.schedule` to change frequency.
-- To adopt PR mode, disable the direct commit step and enable/test the `create-pr` job as one coherent change.
-- Remove the skip-CI marker only after checking that workflow concurrency cannot create an update loop.
-- Keep third-party actions pinned to reviewed versions and review their permissions.
-
-Validate workflow changes with syntax tooling and, where practical, Act. GitHub-hosted behavior remains authoritative.
-
-## Operational checklist
-
-- Require reviews/status checks on protected branches.
-- Grant the workflow only the permissions it uses.
-- Confirm Dependabot/security alerts and failed-run notifications reach maintainers.
-- Review automated updates rather than assuming successful tests eliminate supply-chain risk.
-- Revoke unused tokens and audit workflow changes like application code.
+- Protect `main` and require CI plus the blocking Security jobs.
+- Enable Dependabot alerts and Dependabot security updates.
+- Allow GitHub Actions read access by default; grant elevated permissions only to a specific workflow that needs them.
+- Review third-party action updates like application-code changes.
+- Remove `PAT_TOKEN` if it was used only by the retired direct-write updater.

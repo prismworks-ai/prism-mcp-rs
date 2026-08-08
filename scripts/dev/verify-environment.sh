@@ -41,7 +41,7 @@ fi
 print_status "📍" "Checking project structure..."
 
 # Check workflow files exist
-WORKFLOWS=("ci.yml" "security.yml" "docs.yml" "release.yml" "benchmarks.yml" "dependencies.yml")
+WORKFLOWS=("ci.yml" "security.yml" "docs.yml" "release.yml" "benchmarks.yml")
 for workflow in "${WORKFLOWS[@]}"; do
     if [ -f ".github/workflows/$workflow" ]; then
         print_status "[x]" "Workflow file: $workflow"

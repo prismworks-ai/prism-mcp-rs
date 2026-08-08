@@ -364,64 +364,6 @@ jobs:
           path: target/doc/
           retention-days: 7
 
-  # Supply chain audit with cargo-vet
-  vet:
-    name: Supply Chain Audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cargo-vet
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-vet
-
-      - name: Update lock file to match index
-        run: cargo generate-lockfile
-
-      - name: Run cargo vet
-        run: |
-          echo "🔐 Running supply chain audit with cargo-vet..."
-          cargo vet check
-        continue-on-error: true
-
-      - name: Check for unvetted dependencies
-        run: |
-          echo "📊 Supply chain audit summary:"
-          cargo vet check | tail -1 || true
-        continue-on-error: true
-
-  # Security audit with better error handling
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cargo-audit
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-audit
-
-      - name: Security audit
-        run: |
-          echo "🔒 Running security audit..."
-          cargo audit || (echo "Security audit found issues" && exit 1)
-
   # Package verification
   check:
     name: Package Check
@@ -583,7 +525,7 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [test, minimal, fmt, clippy, doc, vet, security, check, examples]
+    needs: [test, minimal, fmt, clippy, doc, check, examples]
     if: always()
     steps:
       - name: Check all jobs
@@ -591,8 +533,7 @@ jobs:
           echo "Checking status of all jobs..."
 
           # Required jobs that must pass
-          # Note: vet is informational only (continue-on-error: true)
-          required_jobs=("test" "minimal" "fmt" "clippy" "security" "check")
+          required_jobs=("test" "minimal" "fmt" "clippy" "check")
 
           for job in "${required_jobs[@]}"; do
             case "$job" in
@@ -620,12 +561,6 @@ jobs:
                   exit 1
                 fi
                 ;;
-              "security")
-                if [ "${{ needs.security.result }}" != "success" ]; then
-                  echo "❌ Required job '$job' failed or was cancelled"
-                  exit 1
-                fi
-                ;;
               "check")
                 if [ "${{ needs.check.result }}" != "success" ]; then
                   echo "❌ Required job '$job' failed or was cancelled"
@@ -639,10 +574,6 @@ jobs:
           # Optional jobs (warn but don't fail)
           if [ "${{ needs.doc.result }}" != "success" ]; then
             echo "⚠️ Optional job 'doc' failed, but not blocking CI"
-          fi
-
-          if [ "${{ needs.vet.result }}" != "success" ]; then
-            echo "⚠️ Supply chain audit 'vet' has unvetted dependencies (informational only)"
           fi
 
           if [ "${{ needs.examples.result }}" != "success" ]; then

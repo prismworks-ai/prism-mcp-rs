@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786075405764,
+  "lastUpdate": 1786161732512,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -3992,6 +3992,65 @@ window.BENCHMARK_DATA = {
           {
             "name": "endpoint_failover_read",
             "value": 461.55,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "70e3d7bad74bdba1d67cdae83bfa8cf015d69f89",
+          "message": "ci: replace nightly updates with Dependabot",
+          "timestamp": "2026-08-07T23:57:19-04:00",
+          "tree_id": "38aaf299e032f621faddee242a3d1e432849a0d4",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/70e3d7bad74bdba1d67cdae83bfa8cf015d69f89"
+        },
+        "date": 1786161730051,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.409,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 366.15,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.835,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 77.636,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 173.1,
+            "unit": "ns"
+          },
+          {
+            "name": "server_request_dispatch_ping",
+            "value": 949.86,
+            "unit": "ns"
+          },
+          {
+            "name": "endpoint_failover_read",
+            "value": 427.09,
             "unit": "ns"
           }
         ]

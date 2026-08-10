@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786162166803,
+  "lastUpdate": 1786338068604,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -4110,6 +4110,65 @@ window.BENCHMARK_DATA = {
           {
             "name": "endpoint_failover_read",
             "value": 437.26,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "4dedbd45dc5397b9431765e231e8ead5839ca012",
+          "message": "release: add native MCP 2026 support for v3.0.0",
+          "timestamp": "2026-08-10T00:56:03-04:00",
+          "tree_id": "2d37376866ac8a26fff58b28780753b356792e5d",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/4dedbd45dc5397b9431765e231e8ead5839ca012"
+        },
+        "date": 1786338067433,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.721,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 372.64,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.904,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 78.395,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 186.5,
+            "unit": "ns"
+          },
+          {
+            "name": "server_request_dispatch_ping",
+            "value": 953.7,
+            "unit": "ns"
+          },
+          {
+            "name": "endpoint_failover_read",
+            "value": 419.21,
             "unit": "ns"
           }
         ]

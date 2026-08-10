@@ -19,7 +19,7 @@ Add dependencies:
 
 ```toml
 [dependencies]
-prism-mcp-rs = "2"
+prism-mcp-rs = "3"
 tokio = { version = "1", features = ["full"] }
 async-trait = "0.1"
 serde_json = "1"
@@ -82,6 +82,20 @@ cargo test
 
 Running `cargo run` starts the server and waits for newline-delimited JSON-RPC on stdin. This is expected. Configure the compiled command in an MCP client using [AI Tool Integration](AI_TOOL_INTEGRATION.md).
 
+The server accepts MCP 2026-07-28 and MCP 2025-11-25 by default. Pin a revision only when the deployment requires it:
+
+```rust,no_run
+use prism_mcp_rs::prelude::*;
+
+let server = ServerBuilder::new()
+    .name("hello-mcp")
+    .version("1.0.0")
+    .protocol_mode(ProtocolMode::ModernOnly)
+    .build();
+```
+
+Clients use `ProtocolMode::Auto`: 2026 discovery is attempted first, and 2025 initialization is used only after an explicit `Method not found` response.
+
 ## Handler behavior
 
 Use `McpResult::Err` for protocol, transport, authorization, or internal failures. For an expected tool-domain failure that should be returned as a successful JSON-RPC response, return `ToolResult` with `is_error: Some(true)` and explanatory content.
@@ -92,7 +106,7 @@ Never write human-readable output to stdout in a STDIO server because it corrupt
 
 ```toml
 prism-mcp-rs = {
-    version = "2",
+    version = "3",
     features = ["http", "tls", "otel"]
 }
 ```

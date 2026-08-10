@@ -1,11 +1,11 @@
 [package]
 name = "prism-mcp-rs"
-version = "2.0.2"
+version = "3.0.0"
 edition = "2021"
 rust-version = "1.85"
 authors = ["Prismworks AI <developers@prismworks.ai>"]
 license = "MIT"
-description = "Async Rust SDK for building Model Context Protocol clients and servers"
+description = "Dual-era Rust SDK for stateless MCP 2026 and interoperable MCP 2025 clients and servers"
 repository = "https://github.com/prismworks-ai/prism-mcp-rs"
 homepage = "https://github.com/prismworks-ai/prism-mcp-rs"
 documentation = "https://docs.rs/prism-mcp-rs"
@@ -165,6 +165,16 @@ required-features = ["stdio"]
 name = "custom_transport"
 path = "examples/custom_transport.rs"
 required-features = ["stdio"]
+
+[[example]]
+name = "conformance_2026_client"
+path = "examples/conformance_2026_client.rs"
+required-features = ["http"]
+
+[[example]]
+name = "conformance_2026_server"
+path = "examples/conformance_2026_server.rs"
+required-features = ["http"]
 
 # Feature examples
 [[example]]

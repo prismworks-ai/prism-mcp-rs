@@ -6,6 +6,69 @@
 use crate::core::error::McpResult;
 use crate::protocol::types::{JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
 use async_trait::async_trait;
+use serde_json::Value;
+use tokio::sync::{mpsc, oneshot};
+
+/// Client-side handle for a long-lived `subscriptions/listen` request.
+pub struct ClientSubscription {
+    id: Value,
+    notifications: mpsc::UnboundedReceiver<JsonRpcNotification>,
+    completion: Option<oneshot::Receiver<McpResult<JsonRpcResponse>>>,
+    abort_handle: Option<tokio::task::AbortHandle>,
+}
+
+impl ClientSubscription {
+    pub fn new(
+        id: Value,
+        notifications: mpsc::UnboundedReceiver<JsonRpcNotification>,
+        completion: oneshot::Receiver<McpResult<JsonRpcResponse>>,
+    ) -> Self {
+        Self {
+            id,
+            notifications,
+            completion: Some(completion),
+            abort_handle: None,
+        }
+    }
+
+    #[cfg(feature = "http")]
+    pub(crate) fn with_abort_handle(mut self, handle: tokio::task::AbortHandle) -> Self {
+        self.abort_handle = Some(handle);
+        self
+    }
+
+    pub fn id(&self) -> &Value {
+        &self.id
+    }
+
+    /// Wait for the next notification on this subscription.
+    pub async fn next(&mut self) -> Option<JsonRpcNotification> {
+        self.notifications.recv().await
+    }
+
+    /// Wait for a graceful terminal response. HTTP connection closure may
+    /// instead end this channel without a response.
+    pub async fn completion(&mut self) -> McpResult<JsonRpcResponse> {
+        let receiver = self.completion.take().ok_or_else(|| {
+            crate::core::error::McpError::Protocol(
+                "subscription completion was already consumed".to_string(),
+            )
+        })?;
+        receiver.await.map_err(|_| {
+            crate::core::error::McpError::Transport(
+                "subscription stream closed without a final response".to_string(),
+            )
+        })?
+    }
+}
+
+impl Drop for ClientSubscription {
+    fn drop(&mut self) {
+        if let Some(handle) = self.abort_handle.take() {
+            handle.abort();
+        }
+    }
+}
 
 /// Transport trait for MCP clients
 ///
@@ -81,6 +144,24 @@ pub trait Transport: Send + Sync {
     /// Result containing an optional notification or an error
     async fn receive_notification(&mut self) -> McpResult<Option<JsonRpcNotification>>;
 
+    /// Open a modern long-lived subscription stream.
+    async fn open_subscription(
+        &mut self,
+        _request: JsonRpcRequest,
+    ) -> McpResult<ClientSubscription> {
+        Err(crate::core::error::McpError::MethodNotFound(
+            "subscriptions/listen is not supported by this transport".to_string(),
+        ))
+    }
+
+    /// Cancel an open subscription. HTTP implementations close the response
+    /// stream; STDIO implementations send `notifications/cancelled`.
+    async fn cancel_subscription(&mut self, _request_id: &Value) -> McpResult<()> {
+        Err(crate::core::error::McpError::MethodNotFound(
+            "subscription cancellation is not supported by this transport".to_string(),
+        ))
+    }
+
     /// Handle incoming server request (for bidirectional communication)
     ///
     /// Method is called to check for incoming requests from the server.
@@ -148,6 +229,31 @@ pub type ServerRequestHandler = std::sync::Arc<
 /// sending responses in a server-side MCP connection.
 #[async_trait]
 pub trait ServerTransport: Send + Sync {
+    /// Provide registered tool input schemas to transports that mirror and
+    /// validate MCP routing headers. Other transports may ignore them.
+    fn set_tool_schemas(
+        &mut self,
+        _schemas: std::collections::HashMap<String, serde_json::Value>,
+    ) -> McpResult<()> {
+        Ok(())
+    }
+
+    /// Provide the capabilities used to acknowledge subscription filters.
+    fn set_server_capabilities(
+        &mut self,
+        _capabilities: crate::protocol::ServerCapabilities,
+    ) -> McpResult<()> {
+        Ok(())
+    }
+
+    /// Attach task-status notifications to the transport's subscription hub.
+    fn set_task_notifications(
+        &mut self,
+        _receiver: tokio::sync::broadcast::Receiver<JsonRpcNotification>,
+    ) -> McpResult<()> {
+        Ok(())
+    }
+
     /// Start the server transport and begin listening for connections
     ///
     /// # Returns

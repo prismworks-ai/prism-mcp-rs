@@ -81,6 +81,7 @@ pub mod builder;
 pub mod discovery_handler;
 pub mod handlers;
 pub mod mcp_server;
+pub mod tasks;
 
 // Test types for complete testing
 #[cfg(test)]
@@ -93,6 +94,7 @@ pub mod http_server;
 // Re-export the main server type and builder
 pub use builder::{ServerBuilder, ServerBuilderError};
 pub use mcp_server::{McpServer, ServerConfig, ServerState};
+pub use tasks::{ComposedTaskToolHandler, TaskContext, TaskToolHandler};
 
 // Re-export HTTP server when feature is enabled
 #[cfg(feature = "http")]

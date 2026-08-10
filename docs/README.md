@@ -7,6 +7,7 @@ This is the canonical index for maintained project documentation. Public Rust AP
 | Document | Purpose |
 |----------|---------|
 | [Getting Started](GETTING_STARTED.md) | Install the crate and run a STDIO server |
+| [Protocol Versions](PROTOCOL_VERSIONS.md) | Understand 2026 behavior, 2025 interoperability, and downgrade rules |
 | [AI Tool Integration](AI_TOOL_INTEGRATION.md) | Configure Claude, Cursor, VS Code, and Windsurf |
 | [Architecture](ARCHITECTURE.md) | Understand modules, dispatch, and trust boundaries |
 | [Deployment Guide](DEPLOYMENT_GUIDE.md) | Package and operate an SDK-based service |
@@ -19,7 +20,7 @@ This is the canonical index for maintained project documentation. Public Rust AP
 |-------|---------|
 | [Authentication](guides/authentication.md) | OAuth client primitives and application responsibilities |
 | [Error Handling](guides/error-handling.md) | Error categories and handler behavior |
-| [Migration](guides/migration.md) | Move to the 2.x API and feature model |
+| [Migration](guides/migration.md) | Move from 2.x to the 3.x dual-protocol API |
 | [Performance](guides/performance.md) | Benchmark and tune without unsupported guarantees |
 | [Plugins](guides/plugins.md) | Load trusted native plugins and understand the security boundary |
 
@@ -34,7 +35,7 @@ Contributor setup and release workflow are maintained in the root [Contributing 
 | `websocket` | WebSocket transport | Optional |
 | `sse` | Server-Sent Events | Implies `http` |
 | `http2` | HTTP/2 support | Implies `http` |
-| `chunked-encoding` | Chunked HTTP support | Implies `http` |
+| `chunked-encoding` | Proprietary Prism chunked endpoint helpers | Implies `http`; explicit legacy-only use |
 | `compression` | Brotli, gzip, and zstd support | Implies `http` |
 | `plugin` | Trusted native plugin loading | Not sandboxed |
 | `auth` | OAuth/JWT/Argon2 primitives | Implies `http` through current module wiring |

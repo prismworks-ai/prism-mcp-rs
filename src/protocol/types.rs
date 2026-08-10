@@ -1,8 +1,7 @@
-//! Complete MCP Protocol Types for 2025-11-25 Specification
+//! Shared MCP protocol types for the 2025-11-25 and 2026-07-28 revisions.
 //!
 //! This module contains all the core types defined by the Model Context Protocol
-//! specification version 2025-11-25, with simplified JSON-RPC (no batching) and
-//! improved metadata handling
+//! Version-specific lifecycle and envelope types live in `protocol::version`.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -11,11 +10,11 @@ use std::collections::HashMap;
 // Core Protocol Constants
 // ============================================================================
 
-/// MCP Protocol version (2025-11-25)
-pub const LATEST_PROTOCOL_VERSION: &str = "2025-11-25";
+/// Latest MCP protocol revision implemented by this crate.
+pub const LATEST_PROTOCOL_VERSION: &str = "2026-07-28";
 pub const JSONRPC_VERSION: &str = "2.0";
 
-// Legacy constant for compatibility
+/// Latest protocol constant retained for source compatibility.
 pub const PROTOCOL_VERSION: &str = LATEST_PROTOCOL_VERSION;
 
 // ============================================================================
@@ -86,7 +85,18 @@ pub struct Icon {
     pub mime_type: Option<String>,
     /// Optional icon dimensions in pixels.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sizes: Option<String>,
+    pub sizes: Option<Vec<String>>,
+    /// Optional light/dark theme hint.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub theme: Option<IconTheme>,
+}
+
+/// Theme for which an icon was designed.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum IconTheme {
+    Light,
+    Dark,
 }
 
 // ============================================================================
@@ -107,6 +117,12 @@ pub struct Implementation {
     /// Optional description for UI contexts.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// Optional implementation website.
+    #[serde(rename = "websiteUrl", skip_serializing_if = "Option::is_none")]
+    pub website_url: Option<String>,
+    /// Optional UI icons.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub icons: Option<Vec<Icon>>,
 }
 
 impl Implementation {
@@ -117,6 +133,8 @@ impl Implementation {
             version: version.into(),
             title: None,
             description: None,
+            website_url: None,
+            icons: None,
         }
     }
 
@@ -127,12 +145,26 @@ impl Implementation {
             version: version.into(),
             title: Some(title.into()),
             description: None,
+            website_url: None,
+            icons: None,
         }
     }
 
     /// Add an optional human-readable description.
     pub fn with_description<S: Into<String>>(mut self, description: S) -> Self {
         self.description = Some(description.into());
+        self
+    }
+
+    /// Add the implementation website URL.
+    pub fn with_website_url<S: Into<String>>(mut self, website_url: S) -> Self {
+        self.website_url = Some(website_url.into());
+        self
+    }
+
+    /// Add UI icons advertised by the implementation.
+    pub fn with_icons(mut self, icons: Vec<Icon>) -> Self {
+        self.icons = Some(icons);
         self
     }
 }
@@ -148,6 +180,9 @@ pub type ClientInfo = Implementation;
 /// Server capabilities for 2025-11-25
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ServerCapabilities {
+    /// Standards-track and vendor extensions supported by this server.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<HashMap<String, serde_json::Value>>,
     /// Prompt-related capabilities
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prompts: Option<PromptsCapability>,
@@ -174,6 +209,9 @@ pub struct ServerCapabilities {
 /// Client capabilities for 2025-11-25
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct ClientCapabilities {
+    /// Standards-track and vendor extensions supported by this client.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<HashMap<String, serde_json::Value>>,
     /// Sampling-related capabilities
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sampling: Option<SamplingCapability>,
@@ -1894,7 +1932,7 @@ mod tests {
 
     #[test]
     fn test_protocol_version() {
-        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-11-25");
+        assert_eq!(LATEST_PROTOCOL_VERSION, "2026-07-28");
         assert_eq!(JSONRPC_VERSION, "2.0");
     }
 

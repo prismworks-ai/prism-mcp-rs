@@ -48,6 +48,7 @@ mod route_handler_tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: Some(handler),
+            tool_schemas: HashMap::new(),
         }));
         
         let request = create_test_request(Value::from(123), "test_method");
@@ -73,6 +74,7 @@ mod route_handler_tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: None,
+            tool_schemas: HashMap::new(),
         }));
         
         let request = create_test_request(Value::from(456), "test_method");
@@ -102,6 +104,7 @@ mod route_handler_tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: Some(handler),
+            tool_schemas: HashMap::new(),
         }));
         
         let request = create_test_request(Value::from(789), "failing_method");
@@ -143,6 +146,7 @@ mod route_handler_tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender: notification_sender.clone(),
             request_handler: None,
+            tool_schemas: HashMap::new(),
         }));
         
         let state_extract = State(state);
@@ -162,6 +166,7 @@ mod route_handler_tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: None,
+            tool_schemas: HashMap::new(),
         }));
         
         let state_extract = State(state);
@@ -199,6 +204,7 @@ mod route_handler_tests {
         let state = HttpServerState {
             notification_sender: notification_sender.clone(),
             request_handler: None,
+            tool_schemas: HashMap::new(),
         };
         
         // Test that state can be cloned (required for Axum)
@@ -259,6 +265,7 @@ mod route_handler_tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: Some(handler),
+            tool_schemas: HashMap::new(),
         }));
         
         // Test with different ID types

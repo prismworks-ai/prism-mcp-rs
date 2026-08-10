@@ -7,6 +7,8 @@
 pub const INITIALIZE: &str = "initialize";
 pub const INITIALIZED: &str = "notifications/initialized";
 pub const PING: &str = "ping";
+/// Stateless capability and revision discovery (MCP 2026-07-28).
+pub const SERVER_DISCOVER: &str = "server/discover";
 
 // Tool-related methods
 pub const TOOLS_LIST: &str = "tools/list";
@@ -41,10 +43,19 @@ pub const COMPLETION_COMPLETE: &str = "completion/complete";
 pub const ELICITATION_CREATE: &str = "elicitation/create";
 pub const ELICITATION_COMPLETE: &str = "notifications/elicitation/complete";
 
-// Task utility methods (New in 2025-11-25)
+// Historical Prism task utility methods. Retained for source compatibility;
+// they are not part of the MCP 2026 Tasks extension.
 pub const TASKS_SEND: &str = "tasks/send";
 pub const TASKS_CANCEL: &str = "tasks/cancel";
 pub const TASKS_STATUS_UPDATE: &str = "notifications/tasks/status/update";
+/// MCP Tasks extension methods (2026-07-28 extension vocabulary).
+pub const TASKS_GET: &str = "tasks/get";
+pub const TASKS_UPDATE: &str = "tasks/update";
+pub const TASKS_STATUS: &str = "notifications/tasks";
+
+/// Stateless notification stream request (MCP 2026-07-28).
+pub const SUBSCRIPTIONS_LISTEN: &str = "subscriptions/listen";
+pub const SUBSCRIPTIONS_ACKNOWLEDGED: &str = "notifications/subscriptions/acknowledged";
 
 // Logging methods
 pub const LOGGING_SET_LEVEL: &str = "logging/setLevel";

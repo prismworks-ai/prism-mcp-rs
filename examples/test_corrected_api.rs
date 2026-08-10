@@ -28,7 +28,7 @@ impl ToolHandler for SystemToolHandler {
 #[tokio::main]
 async fn main() -> McpResult<()> {
     // Create server
-    let mut server = McpServer::new("corrected-example-server".to_string(), "1.0.0".to_string());
+    let server = McpServer::new("corrected-example-server".to_string(), "1.0.0".to_string());
 
     // Add the system_info tool with corrected API - using the async method
 
@@ -52,6 +52,7 @@ async fn main() -> McpResult<()> {
     println!("Starting MCP server with corrected API patterns...");
     #[cfg(feature = "stdio")]
     {
+        let mut server = server;
         let transport = StdioServerTransport::new();
         return server.start(transport).await;
     }

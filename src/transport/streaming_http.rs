@@ -1,13 +1,16 @@
-//! Advanced HTTP Transport Features
+//! Proprietary Prism HTTP transport extensions
 //!
-//! This module provides advanced HTTP transport capabilities.
+//! This module implements historical Prism chunked/compressed endpoints. It is
+//! not the MCP 2026 Streamable HTTP conformance surface. Prefer
+//! `HttpClientTransport` and `HttpServerTransport` for interoperable MCP; these
+//! helpers require explicit `ProtocolMode::LegacyOnly` at the high-level client.
 //!
 //! ## Feature Requirements
 //!
 //! ```toml
 //! # Cargo.toml - HTTP enhancements
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["http", "chunked-encoding", "compression", "http2"] }
+//! prism-mcp-rs = { version = "3", features = ["http", "chunked-encoding", "compression", "http2"] }
 //! ```
 //!
 //! Individual features:
@@ -15,21 +18,21 @@
 //! ### Chunked Encoding Feature
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["chunked-encoding"] }
+//! prism-mcp-rs = { version = "3", features = ["chunked-encoding"] }
 //! ```
-//! Enables chunked transfer encoding for large payloads and streaming data.
+//! Enables Prism-specific chunked request endpoints for matching legacy peers.
 //!
 //! ### Compression Feature  
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["compression"] }
+//! prism-mcp-rs = { version = "3", features = ["compression"] }
 //! ```
 //! Enables response compression with Gzip, Brotli, and Zstd algorithms.
 //!
 //! ### HTTP/2 Feature
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["http2"] }
+//! prism-mcp-rs = { version = "3", features = ["http2"] }
 //! ```
 //! Enables HTTP/2 protocol support with multiplexing and server push.
 //!
@@ -40,11 +43,8 @@
 //! - Configurable compression strategies
 //! - Backpressure and flow control
 //!
-//! Ideal for:
-//! - Large data processing (>100KB payloads)
-//! - Memory-constrained environments
-//! - Applications that have measured a benefit from these features
-//! - Applications with mixed payload sizes
+//! Use only when both peers explicitly implement these endpoints and deployment
+//! measurements justify the additional protocol surface.
 
 use async_trait::async_trait;
 use serde_json::Value;

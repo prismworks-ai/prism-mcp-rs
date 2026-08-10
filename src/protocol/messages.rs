@@ -938,6 +938,8 @@ mod tests {
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Client".to_string()),
+                website_url: None,
+                icons: None,
             },
             meta: None,
         };
@@ -961,6 +963,8 @@ mod tests {
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Server".to_string()),
+                website_url: None,
+                icons: None,
             },
             instructions: Some("Test instructions".to_string()),
             meta: None,

@@ -4,15 +4,19 @@
 //! initialize connections, and perform operations like calling tools, reading resources,
 //! and executing prompts according to the Model Context Protocol specification.
 //!
-//! # Advanced HTTP Features
+//! # Standards-track and proprietary HTTP
 //!
-//! For streaming and large payload support, enable the chunked-encoding feature:
+//! Use [`McpClient::connect_with_http`] for standards-track MCP, including
+//! MCP 2026 request-scoped subscription SSE. The optional `chunked-encoding`
+//! feature exposes historical Prism-specific endpoints:
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["chunked-encoding"] }
+//! prism-mcp-rs = { version = "3", features = ["chunked-encoding"] }
 //! ```
 //!
-//! This enables the streaming HTTP client transport for large payloads.
+//! Those helpers require explicit [`ProtocolMode::LegacyOnly`] and a peer that
+//! implements the same proprietary routes; automatic transport selection never
+//! chooses them.
 
 use serde_json::Value;
 use std::collections::HashMap;
@@ -21,8 +25,12 @@ use tokio::sync::{Mutex, RwLock};
 
 use crate::client::request_handler::{ClientRequestHandler, DefaultClientRequestHandler};
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::{messages::*, methods, types::*, validation::*};
-use crate::transport::traits::Transport;
+use crate::protocol::tasks::{
+    has_tasks_extension, CancelTaskParams, CreateTaskResult, GetTaskParams, GetTaskResult, Task,
+    TaskAcknowledgement, TaskStatus, UpdateTaskParams, TASKS_EXTENSION_ID,
+};
+use crate::protocol::{messages::*, methods, types::*, validation::*, version::*};
+use crate::transport::traits::{ClientSubscription, Transport};
 
 /// Configuration for the MCP client
 #[derive(Debug, Clone)]
@@ -37,6 +45,10 @@ pub struct ClientConfig {
     pub validate_requests: bool,
     /// Whether to validate incoming responses
     pub validate_responses: bool,
+    /// Runtime MCP revision policy.
+    pub protocol_mode: ProtocolMode,
+    /// Maximum automatic multi-round-trip input cycles.
+    pub max_mrtr_rounds: u8,
 }
 
 impl Default for ClientConfig {
@@ -47,6 +59,8 @@ impl Default for ClientConfig {
             retry_delay_ms: 1000,
             validate_requests: true,
             validate_responses: true,
+            protocol_mode: ProtocolMode::Auto,
+            max_mrtr_rounds: 10,
         }
     }
 }
@@ -71,6 +85,8 @@ pub struct McpClient {
     connected: Arc<RwLock<bool>>,
     /// Request handler for server-initiated requests
     request_handler: Arc<dyn ClientRequestHandler>,
+    /// Protocol selected for the active connection.
+    negotiated_protocol: Arc<RwLock<Option<NegotiatedProtocol>>>,
 }
 
 impl McpClient {
@@ -90,6 +106,7 @@ impl McpClient {
             request_counter: Arc::new(Mutex::new(0)),
             connected: Arc::new(RwLock::new(false)),
             request_handler: Arc::new(DefaultClientRequestHandler),
+            negotiated_protocol: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -116,6 +133,7 @@ impl McpClient {
             request_counter: Arc::new(Mutex::new(0)),
             connected: Arc::new(RwLock::new(false)),
             request_handler: Arc::new(DefaultClientRequestHandler),
+            negotiated_protocol: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -174,6 +192,14 @@ impl McpClient {
     /// Set client capabilities
     pub fn set_capabilities(&mut self, capabilities: ClientCapabilities) {
         self.capabilities = capabilities;
+    }
+
+    /// Declare support for the official MCP Tasks extension.
+    pub fn enable_tasks_extension(&mut self) {
+        self.capabilities
+            .extensions
+            .get_or_insert_with(HashMap::new)
+            .insert(TASKS_EXTENSION_ID.to_string(), serde_json::json!({}));
     }
 
     /// Set custom request handler for server-initiated requests
@@ -278,6 +304,16 @@ impl McpClient {
         &self.config
     }
 
+    /// Set the protocol selection policy before connecting.
+    pub fn set_protocol_mode(&mut self, mode: ProtocolMode) {
+        self.config.protocol_mode = mode;
+    }
+
+    /// Return the protocol selected for the active connection.
+    pub async fn negotiated_protocol(&self) -> Option<NegotiatedProtocol> {
+        self.negotiated_protocol.read().await.clone()
+    }
+
     /// Get server capabilities (if connected)
     pub async fn server_capabilities(&self) -> Option<ServerCapabilities> {
         let capabilities = self.server_capabilities.read().await;
@@ -301,7 +337,7 @@ impl McpClient {
     // ========================================================================
 
     /// Connect to an MCP server using the provided transport
-    pub async fn connect<T>(&mut self, transport: T) -> McpResult<InitializeResult>
+    pub async fn connect<T>(&mut self, transport: T) -> McpResult<ConnectResult>
     where
         T: Transport + 'static,
     {
@@ -311,8 +347,18 @@ impl McpClient {
             *transport_guard = Some(Box::new(transport));
         }
 
-        // Initialize the connection
-        let init_result = self.initialize().await?;
+        let connection = match self.config.protocol_mode {
+            ProtocolMode::ModernOnly => self.discover_modern().await?,
+            ProtocolMode::LegacyOnly => self.initialize_legacy().await?,
+            ProtocolMode::Auto => match self.discover_modern().await {
+                Ok(result) => result,
+                Err(error) if is_method_not_found(&error) => {
+                    tracing::info!("server/discover unavailable; using MCP 2025-11-25");
+                    self.initialize_legacy().await?
+                }
+                Err(error) => return Err(error),
+            },
+        };
 
         // Mark as connected
         {
@@ -320,7 +366,7 @@ impl McpClient {
             *connected = true;
         }
 
-        Ok(init_result)
+        Ok(connection)
     }
 
     /// Disconnect from the server
@@ -349,14 +395,74 @@ impl McpClient {
             let mut connected = self.connected.write().await;
             *connected = false;
         }
+        *self.negotiated_protocol.write().await = None;
 
         Ok(())
     }
 
-    /// Initialize the connection with the server
-    async fn initialize(&self) -> McpResult<InitializeResult> {
+    /// Negotiate the stateless MCP 2026-07-28 lifecycle.
+    async fn discover_modern(&self) -> McpResult<ConnectResult> {
+        let params = DiscoverParams {
+            meta: RequestMetaObject::modern(self.info.clone(), self.capabilities.clone()),
+        };
+        let request = JsonRpcRequest::new(
+            Value::from(self.next_request_id().await),
+            methods::SERVER_DISCOVER.to_string(),
+            Some(params.clone()),
+        )?;
+        let response = match self.send_request(request).await {
+            Err(McpError::UnsupportedProtocolVersion { supported, .. })
+                if supported
+                    .iter()
+                    .any(|version| version == MODERN_PROTOCOL_VERSION) =>
+            {
+                tracing::info!(
+                    protocol.version = MODERN_PROTOCOL_VERSION,
+                    "retrying server/discover with a mutually supported version"
+                );
+                let retry = JsonRpcRequest::new(
+                    Value::from(self.next_request_id().await),
+                    methods::SERVER_DISCOVER.to_string(),
+                    Some(params),
+                )?;
+                self.send_request(retry).await?
+            }
+            result => result?,
+        };
+        let result: DiscoverResult = serde_json::from_value(
+            response
+                .result
+                .ok_or_else(|| McpError::Protocol("Missing discover result".to_string()))?,
+        )?;
+        if !result
+            .supported_versions
+            .iter()
+            .any(|version| version == MODERN_PROTOCOL_VERSION)
+        {
+            return Err(McpError::UnsupportedProtocolVersion {
+                requested: MODERN_PROTOCOL_VERSION.to_string(),
+                supported: result.supported_versions,
+            });
+        }
+
+        let protocol = NegotiatedProtocol::modern();
+        let server_info = result.server_info();
+        *self.server_capabilities.write().await = Some(result.capabilities.clone());
+        *self.server_info.write().await = server_info.clone();
+        *self.negotiated_protocol.write().await = Some(protocol.clone());
+
+        Ok(ConnectResult {
+            protocol,
+            capabilities: result.capabilities,
+            server_info,
+            instructions: result.instructions,
+        })
+    }
+
+    /// Initialize the legacy MCP 2025-11-25 lifecycle.
+    async fn initialize_legacy(&self) -> McpResult<ConnectResult> {
         let params = InitializeParams::new(
-            crate::protocol::LATEST_PROTOCOL_VERSION.to_string(),
+            LEGACY_PROTOCOL_VERSION.to_string(),
             self.capabilities.clone(),
             self.info.clone(),
         );
@@ -388,7 +494,14 @@ impl McpClient {
             *server_info = Some(result.server_info.clone());
         }
 
-        Ok(result)
+        let protocol = NegotiatedProtocol::legacy();
+        *self.negotiated_protocol.write().await = Some(protocol.clone());
+        Ok(ConnectResult {
+            protocol,
+            capabilities: result.capabilities,
+            server_info: Some(result.server_info),
+            instructions: result.instructions,
+        })
     }
 
     // ========================================================================
@@ -410,7 +523,7 @@ impl McpClient {
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
     /// let init_result = client.connect_with_stdio("my-mcp-server", vec!["--verbose"]).await?;
-    /// println!("Connected to {}", init_result.server_info.name);
+    /// println!("Protocol: {}", init_result.protocol.version);
     /// Ok(())
     /// }
     /// ```
@@ -419,11 +532,41 @@ impl McpClient {
         &mut self,
         command: &str,
         args: Vec<&str>,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         use crate::transport::stdio::StdioClientTransport;
 
-        let transport = StdioClientTransport::new(command, args).await?;
-        self.connect(transport).await
+        if self.config.protocol_mode != ProtocolMode::Auto {
+            let transport = StdioClientTransport::new(command, args).await?;
+            return self.connect(transport).await;
+        }
+
+        // Some legacy stdio servers terminate after an unknown-method probe.
+        // Probe a disposable child and start a clean sibling for initialization.
+        let probe = StdioClientTransport::new(command, args.clone()).await?;
+        *self.transport.lock().await = Some(Box::new(probe));
+        match self.discover_modern().await {
+            Ok(connection) => {
+                *self.connected.write().await = true;
+                Ok(connection)
+            }
+            Err(error) if is_method_not_found(&error) => {
+                if let Some(transport) = self.transport.lock().await.as_mut() {
+                    let _ = transport.close().await;
+                }
+                let legacy = StdioClientTransport::new(command, args).await?;
+                *self.transport.lock().await = Some(Box::new(legacy));
+                let connection = self.initialize_legacy().await?;
+                *self.connected.write().await = true;
+                Ok(connection)
+            }
+            Err(error) => {
+                if let Some(transport) = self.transport.lock().await.as_mut() {
+                    let _ = transport.close().await;
+                }
+                *self.transport.lock().await = None;
+                Err(error)
+            }
+        }
     }
 
     /// Connect to an MCP server over HTTP (convenience method)
@@ -445,7 +588,7 @@ impl McpClient {
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
     /// let init_result = client.connect_with_http("http://localhost:3000", None).await?;
-    /// println!("Connected to {}", init_result.server_info.name);
+    /// println!("Protocol: {}", init_result.protocol.version);
     /// Ok(())
     /// }
     /// ```
@@ -454,7 +597,7 @@ impl McpClient {
         &mut self,
         server_url: &str,
         sse_url: Option<&str>,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         use crate::transport::http::HttpClientTransport;
 
         let transport = HttpClientTransport::new(server_url, sse_url).await?;
@@ -477,15 +620,12 @@ impl McpClient {
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
     /// let init_result = client.connect_with_stdio_simple("my-mcp-server").await?;
-    /// println!("Connected to {}", init_result.server_info.name);
+    /// println!("Protocol: {}", init_result.protocol.version);
     /// Ok(())
     /// }
     /// ```
     #[cfg(feature = "stdio")]
-    pub async fn connect_with_stdio_simple(
-        &mut self,
-        command: &str,
-    ) -> McpResult<InitializeResult> {
+    pub async fn connect_with_stdio_simple(&mut self, command: &str) -> McpResult<ConnectResult> {
         self.connect_with_stdio(command, vec![]).await
     }
 
@@ -507,15 +647,12 @@ impl McpClient {
     /// async fn main() -> McpResult<()> {
     /// let mut client = McpClient::new("my-client".to_string(), "1.0.0".to_string());
     /// let init_result = client.connect_with_websocket("ws://localhost:8080").await?;
-    /// println!("Connected to {}", init_result.server_info.name);
+    /// println!("Protocol: {}", init_result.protocol.version);
     /// Ok(())
     /// }
     /// ```
     #[cfg(feature = "websocket")]
-    pub async fn connect_with_websocket(
-        &mut self,
-        server_url: &str,
-    ) -> McpResult<InitializeResult> {
+    pub async fn connect_with_websocket(&mut self, server_url: &str) -> McpResult<ConnectResult> {
         use crate::transport::websocket::WebSocketClientTransport;
 
         let transport = WebSocketClientTransport::new(server_url).await?;
@@ -562,11 +699,16 @@ impl McpClient {
     {
         // Connect with STDIO
         let init_result = self.connect_with_stdio(command, args).await?;
-        tracing::info!(
-            "Connected to server: {} v{}",
-            init_result.server_info.name,
-            init_result.server_info.version
-        );
+        if let Some(server_info) = &init_result.server_info {
+            tracing::info!(
+                "Connected to server: {} v{} using {}",
+                server_info.name,
+                server_info.version,
+                init_result.protocol.version
+            );
+        } else {
+            tracing::info!("Connected using {}", init_result.protocol.version);
+        }
 
         // Set up Ctrl+C handler
         let (tx, mut rx) = tokio::sync::mpsc::channel::<()>(1);
@@ -600,6 +742,17 @@ impl McpClient {
     // ========================================================================
     // Streaming HTTP Transport Methods
     // ========================================================================
+
+    #[cfg(feature = "chunked-encoding")]
+    fn ensure_legacy_prism_streaming(&self) -> McpResult<()> {
+        if self.config.protocol_mode != ProtocolMode::LegacyOnly {
+            return Err(McpError::Transport(
+                "Prism chunked/compressed endpoint helpers are legacy-only; use connect_with_http for standards-track MCP or set ProtocolMode::LegacyOnly explicitly"
+                    .to_string(),
+            ));
+        }
+        Ok(())
+    }
 
     /// Connect to an MCP server with streaming HTTP transport for optimal efficiency
     ///
@@ -635,7 +788,7 @@ impl McpClient {
     /// let mut client = McpClient::new("data-processor".to_string(), "1.0.0".to_string());
     /// let config = StreamingConfig::performance_improved();
     /// let init = client.connect_with_chunked_encoding("http://localhost:3000", config).await?;
-    /// println!("Connected with streaming HTTP to {}", init.server_info.name);
+    /// println!("Connected with {}", init.protocol.version);
     /// Ok(())
     /// }
     /// ```
@@ -644,9 +797,10 @@ impl McpClient {
         &mut self,
         server_url: &str,
         config: crate::transport::StreamingConfig,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         use crate::transport::streaming_http::StreamingHttpClientTransport;
 
+        self.ensure_legacy_prism_streaming()?;
         let transport = StreamingHttpClientTransport::with_config(server_url, config).await?;
         self.connect(transport).await
     }
@@ -674,9 +828,10 @@ impl McpClient {
     pub async fn connect_with_chunked_encoding_default(
         &mut self,
         server_url: &str,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         use crate::transport::streaming_http::StreamingHttpClientTransport;
 
+        self.ensure_legacy_prism_streaming()?;
         let transport = StreamingHttpClientTransport::new(server_url).await?;
         self.connect(transport).await
     }
@@ -704,10 +859,11 @@ impl McpClient {
     pub async fn connect_with_chunked_encoding_memory_improved(
         &mut self,
         server_url: &str,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         use crate::transport::streaming_http::StreamingHttpClientTransport;
         use crate::transport::StreamingConfig;
 
+        self.ensure_legacy_prism_streaming()?;
         let config = StreamingConfig::memory_improved();
         let transport = StreamingHttpClientTransport::with_config(server_url, config).await?;
         self.connect(transport).await
@@ -736,10 +892,11 @@ impl McpClient {
     pub async fn connect_with_chunked_encoding_performance_improved(
         &mut self,
         server_url: &str,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         use crate::transport::streaming_http::StreamingHttpClientTransport;
         use crate::transport::StreamingConfig;
 
+        self.ensure_legacy_prism_streaming()?;
         let config = StreamingConfig::performance_improved();
         let transport = StreamingHttpClientTransport::with_config(server_url, config).await?;
         self.connect(transport).await
@@ -778,7 +935,7 @@ impl McpClient {
         &mut self,
         use_case: TransportUseCase,
         server_url: &str,
-    ) -> McpResult<InitializeResult> {
+    ) -> McpResult<ConnectResult> {
         match use_case {
             TransportUseCase::CommandLine
             | TransportUseCase::DesktopApp
@@ -790,9 +947,9 @@ impl McpClient {
                 }
                 #[cfg(not(feature = "stdio"))]
                 {
-                    return Err(McpError::Transport(
+                    Err(McpError::Transport(
                         "STDIO transport requested but feature not enabled".to_string(),
-                    ));
+                    ))
                 }
             }
             TransportUseCase::WebApplication
@@ -813,65 +970,32 @@ impl McpClient {
             TransportUseCase::LargeDataProcessing
             | TransportUseCase::MemoryConstrained
             | TransportUseCase::HighPerformance => {
-                // Streaming HTTP transport for complete efficiency
-                #[cfg(feature = "chunked-encoding")]
+                // Standard Streamable HTTP supports streaming responses while
+                // remaining interoperable with conforming MCP peers.
+                #[cfg(feature = "http")]
                 {
-                    match use_case {
-                        TransportUseCase::MemoryConstrained => {
-                            tracing::info!("Using memory-improved streaming HTTP transport");
-                            self.connect_with_chunked_encoding_memory_improved(server_url)
-                                .await
-                        }
-                        TransportUseCase::HighPerformance
-                        | TransportUseCase::LargeDataProcessing => {
-                            tracing::info!("Using performance-improved streaming HTTP transport");
-                            self.connect_with_chunked_encoding_performance_improved(server_url)
-                                .await
-                        }
-                        _ => self.connect_with_chunked_encoding_default(server_url).await,
-                    }
+                    self.connect_with_http(server_url, None).await
                 }
-                #[cfg(not(feature = "chunked-encoding"))]
+                #[cfg(not(feature = "http"))]
                 {
-                    tracing::warn!(
-                        "Streaming HTTP requested but feature not enabled, using traditional HTTP"
-                    );
-                    #[cfg(feature = "http")]
-                    {
-                        self.connect_with_http(server_url, None).await
-                    }
-                    #[cfg(not(feature = "http"))]
-                    {
-                        Err(McpError::Connection(
-                            "No suitable transport available".to_string(),
-                        ))
-                    }
+                    Err(McpError::Connection(
+                        "HTTP transport not available".to_string(),
+                    ))
                 }
             }
             TransportUseCase::RealTime
             | TransportUseCase::HighFrequency
             | TransportUseCase::Interactive => {
-                // WebSocket for real-time communication
-                #[cfg(feature = "websocket")]
+                // MCP 2026 subscriptions are carried by standard HTTP SSE.
+                #[cfg(feature = "http")]
                 {
-                    let ws_url = server_url
-                        .replace("http://", "ws://")
-                        .replace("https://", "wss://");
-                    self.connect_with_websocket(&ws_url).await
+                    self.connect_with_http(server_url, None).await
                 }
-                #[cfg(not(feature = "websocket"))]
+                #[cfg(not(feature = "http"))]
                 {
-                    tracing::warn!("WebSocket requested but feature not enabled, using HTTP");
-                    #[cfg(feature = "http")]
-                    {
-                        self.connect_with_http(server_url, None).await
-                    }
-                    #[cfg(not(feature = "http"))]
-                    {
-                        Err(McpError::Connection(
-                            "No suitable transport available".to_string(),
-                        ))
-                    }
+                    Err(McpError::Connection(
+                        "HTTP transport not available".to_string(),
+                    ))
                 }
             }
         }
@@ -905,12 +1029,12 @@ impl McpClient {
             TransportUseCase::LargeDataProcessing
             | TransportUseCase::MemoryConstrained
             | TransportUseCase::HighPerformance => {
-                "Streaming HTTP Transport - improved for large payloads and memory efficiency. complete chunking, compression (Gzip/Brotli/Zstd), and smart content analysis."
+                "Standard Streamable HTTP - interoperable MCP streaming with HTTP/2-capable clients, proxy compatibility, and subscription SSE."
             }
             TransportUseCase::RealTime
             | TransportUseCase::HighFrequency
             | TransportUseCase::Interactive => {
-                "WebSocket Transport - Best for real-time applications, live collaboration, and high-frequency messaging. Lowest latency with full-duplex communication."
+                "Standard Streamable HTTP subscriptions - interoperable real-time notifications over request-scoped SSE."
             }
         }
     }
@@ -1329,6 +1453,96 @@ impl McpClient {
     }
 
     // ========================================================================
+    // Tasks extension
+    // ========================================================================
+
+    async fn ensure_tasks_extension(&self) -> McpResult<()> {
+        if !has_tasks_extension(&self.capabilities) {
+            return Err(McpError::MissingRequiredClientCapability(
+                serde_json::json!({"extensions": {(TASKS_EXTENSION_ID): {}}}),
+            ));
+        }
+        if self
+            .negotiated_protocol
+            .read()
+            .await
+            .as_ref()
+            .is_none_or(|protocol| protocol.era != ProtocolEra::Modern)
+        {
+            return Err(McpError::MethodNotFound(format!(
+                "the Tasks extension requires MCP {MODERN_PROTOCOL_VERSION}"
+            )));
+        }
+        let server_supports_tasks = self
+            .server_capabilities
+            .read()
+            .await
+            .as_ref()
+            .and_then(|capabilities| capabilities.extensions.as_ref())
+            .is_some_and(|extensions| extensions.contains_key(TASKS_EXTENSION_ID));
+        if !server_supports_tasks {
+            return Err(McpError::MethodNotFound(
+                "the server did not advertise io.modelcontextprotocol/tasks".to_string(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Retrieve the current state of a durable task.
+    pub async fn get_task(&self, task_id: impl Into<String>) -> McpResult<Task> {
+        self.ensure_connected().await?;
+        self.ensure_tasks_extension().await?;
+        let result: GetTaskResult = self
+            .send_task_request(
+                methods::TASKS_GET,
+                GetTaskParams {
+                    task_id: task_id.into(),
+                    meta: HashMap::new(),
+                },
+            )
+            .await?;
+        result.task.validate().map_err(McpError::Protocol)?;
+        Ok(result.task)
+    }
+
+    /// Submit responses for currently outstanding task input requests.
+    pub async fn update_task(
+        &self,
+        task_id: impl Into<String>,
+        input_responses: HashMap<String, Value>,
+    ) -> McpResult<()> {
+        self.ensure_connected().await?;
+        self.ensure_tasks_extension().await?;
+        let _: TaskAcknowledgement = self
+            .send_task_request(
+                methods::TASKS_UPDATE,
+                UpdateTaskParams {
+                    task_id: task_id.into(),
+                    input_responses,
+                    meta: HashMap::new(),
+                },
+            )
+            .await?;
+        Ok(())
+    }
+
+    /// Signal cooperative cancellation of a task.
+    pub async fn cancel_task(&self, task_id: impl Into<String>) -> McpResult<()> {
+        self.ensure_connected().await?;
+        self.ensure_tasks_extension().await?;
+        let _: TaskAcknowledgement = self
+            .send_task_request(
+                methods::TASKS_CANCEL,
+                CancelTaskParams {
+                    task_id: task_id.into(),
+                    meta: HashMap::new(),
+                },
+            )
+            .await?;
+        Ok(())
+    }
+
+    // ========================================================================
     // Notification Handling
     // ========================================================================
 
@@ -1342,28 +1556,275 @@ impl McpClient {
         }
     }
 
+    /// Open a standards-track MCP 2026 notification stream.
+    pub async fn listen(
+        &self,
+        notifications: crate::protocol::SubscriptionFilter,
+    ) -> McpResult<ClientSubscription> {
+        self.ensure_connected().await?;
+        if self
+            .negotiated_protocol
+            .read()
+            .await
+            .as_ref()
+            .is_none_or(|protocol| protocol.era != ProtocolEra::Modern)
+        {
+            return Err(McpError::MethodNotFound(
+                "subscriptions/listen requires MCP 2026-07-28".to_string(),
+            ));
+        }
+        if notifications.requests_tasks() {
+            self.ensure_tasks_extension().await?;
+        }
+        let mut request = JsonRpcRequest::new(
+            Value::from(self.next_request_id().await),
+            methods::SUBSCRIPTIONS_LISTEN.to_string(),
+            Some(crate::protocol::SubscriptionsListenParams {
+                notifications,
+                meta: HashMap::new(),
+            }),
+        )?;
+        decorate_modern_request(&mut request, &self.info, &self.capabilities)?;
+        let mut transport = self.transport.lock().await;
+        transport
+            .as_mut()
+            .ok_or_else(|| McpError::Transport("Not connected".to_string()))?
+            .open_subscription(request)
+            .await
+    }
+
+    /// Close an open subscription using transport-appropriate semantics.
+    pub async fn cancel_subscription(&self, subscription: &ClientSubscription) -> McpResult<()> {
+        let mut transport = self.transport.lock().await;
+        transport
+            .as_mut()
+            .ok_or_else(|| McpError::Transport("Not connected".to_string()))?
+            .cancel_subscription(subscription.id())
+            .await
+    }
+
     // ========================================================================
     // Helper Methods
     // ========================================================================
 
     /// Send a request and get a response
-    async fn send_request(&self, request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
-        if self.config.validate_requests {
-            validate_jsonrpc_request(&request)?;
-            validate_mcp_request(&request.method, request.params.as_ref())?;
+    async fn send_request(&self, mut request: JsonRpcRequest) -> McpResult<JsonRpcResponse> {
+        let modern = request.method == methods::SERVER_DISCOVER
+            || self
+                .negotiated_protocol
+                .read()
+                .await
+                .as_ref()
+                .is_some_and(|protocol| protocol.era == ProtocolEra::Modern);
+        if modern && is_legacy_only_method(&request.method) {
+            return Err(McpError::MethodNotFound(format!(
+                "{} is not part of MCP {MODERN_PROTOCOL_VERSION}",
+                request.method
+            )));
         }
 
-        let mut transport_guard = self.transport.lock().await;
-        if let Some(transport) = transport_guard.as_mut() {
-            let response = transport.send_request(request).await?;
+        let mut round = 0_u8;
+        loop {
+            if modern {
+                decorate_modern_request(&mut request, &self.info, &self.capabilities)?;
+            }
+            if self.config.validate_requests {
+                validate_jsonrpc_request(&request)?;
+                validate_mcp_request(&request.method, request.params.as_ref())?;
+            }
+
+            let mut response = {
+                let mut transport_guard = self.transport.lock().await;
+                let transport = transport_guard
+                    .as_mut()
+                    .ok_or_else(|| McpError::Transport("Not connected".to_string()))?;
+                transport.send_request(request.clone()).await?
+            };
 
             if self.config.validate_responses {
                 validate_jsonrpc_response(&response)?;
             }
+            if !modern {
+                return Ok(response);
+            }
 
-            Ok(response)
-        } else {
-            Err(McpError::Transport("Not connected".to_string()))
+            let result = response.result.as_ref().ok_or_else(|| {
+                McpError::Protocol("modern response is missing a result".to_string())
+            })?;
+            match result.get("resultType").and_then(Value::as_str) {
+                Some("complete") => return Ok(response),
+                Some("task") if request.method == methods::TOOLS_CALL => {
+                    self.ensure_tasks_extension().await?;
+                    let created: CreateTaskResult = serde_json::from_value(result.clone())?;
+                    created.task.validate().map_err(McpError::Protocol)?;
+                    let completed = self.drive_task(created.task).await?;
+                    response.result = Some(completed);
+                    return Ok(response);
+                }
+                Some("task") => {
+                    return Err(McpError::Protocol(format!(
+                        "resultType task is invalid for {}",
+                        request.method
+                    )))
+                }
+                Some("input_required") => {
+                    round = round.saturating_add(1);
+                    if round > self.config.max_mrtr_rounds {
+                        return Err(McpError::Protocol(format!(
+                            "MCP input_required exceeded {} rounds",
+                            self.config.max_mrtr_rounds
+                        )));
+                    }
+                    let input: InputRequiredResult = serde_json::from_value(result.clone())?;
+                    let mut input_responses = serde_json::Map::new();
+                    for (key, input_request) in input.input_requests {
+                        let response = self.fulfill_input_request(input_request).await?;
+                        input_responses.insert(key, response);
+                    }
+
+                    let params = request
+                        .params
+                        .get_or_insert_with(|| Value::Object(serde_json::Map::new()))
+                        .as_object_mut()
+                        .ok_or_else(|| {
+                            McpError::Protocol("MRTR request params must be an object".to_string())
+                        })?;
+                    if !input_responses.is_empty() {
+                        params.insert("inputResponses".to_string(), Value::Object(input_responses));
+                    }
+                    if let Some(request_state) = input.request_state {
+                        params.insert("requestState".to_string(), Value::String(request_state));
+                    }
+                    request.id = Value::from(self.next_request_id().await);
+                }
+                Some(other) => {
+                    return Err(McpError::Protocol(format!(
+                        "unsupported MCP resultType: {other}"
+                    )))
+                }
+                None => {
+                    return Err(McpError::Protocol(
+                        "MCP 2026 response is missing resultType".to_string(),
+                    ))
+                }
+            }
+        }
+    }
+
+    async fn send_task_request<P, T>(&self, method: &str, params: P) -> McpResult<T>
+    where
+        P: serde::Serialize,
+        T: serde::de::DeserializeOwned,
+    {
+        let mut request = JsonRpcRequest::new(
+            Value::from(self.next_request_id().await),
+            method.to_string(),
+            Some(params),
+        )?;
+        decorate_modern_request(&mut request, &self.info, &self.capabilities)?;
+        if self.config.validate_requests {
+            validate_jsonrpc_request(&request)?;
+            validate_mcp_request(&request.method, request.params.as_ref())?;
+        }
+        let response = {
+            let mut transport_guard = self.transport.lock().await;
+            transport_guard
+                .as_mut()
+                .ok_or_else(|| McpError::Transport("Not connected".to_string()))?
+                .send_request(request)
+                .await?
+        };
+        if self.config.validate_responses {
+            validate_jsonrpc_response(&response)?;
+        }
+        self.handle_response(response)
+    }
+
+    async fn drive_task(&self, mut task: Task) -> McpResult<Value> {
+        loop {
+            match task.status {
+                TaskStatus::Completed => {
+                    let mut result = task.result.ok_or_else(|| {
+                        McpError::Protocol("completed task is missing result".to_string())
+                    })?;
+                    if let Some(object) = result.as_object_mut() {
+                        object
+                            .entry("resultType")
+                            .or_insert_with(|| Value::String("complete".to_string()));
+                    }
+                    return Ok(result);
+                }
+                TaskStatus::Failed => {
+                    return Err(McpError::Protocol(format!(
+                        "task {} failed: {}",
+                        task.task_id,
+                        task.error
+                            .as_ref()
+                            .map(Value::to_string)
+                            .unwrap_or_else(|| "unknown error".to_string())
+                    )))
+                }
+                TaskStatus::Cancelled => {
+                    return Err(McpError::Cancelled(format!(
+                        "task {} was cancelled",
+                        task.task_id
+                    )))
+                }
+                TaskStatus::InputRequired => {
+                    let mut responses = HashMap::new();
+                    for (key, input_request) in &task.input_requests {
+                        responses.insert(
+                            key.clone(),
+                            self.fulfill_input_request(input_request.clone()).await?,
+                        );
+                    }
+                    self.update_task(task.task_id.clone(), responses).await?;
+                }
+                TaskStatus::Working => {}
+            }
+            let delay = task.poll_interval_ms.unwrap_or(1_000).max(1);
+            tokio::time::sleep(std::time::Duration::from_millis(delay)).await;
+            task = self.get_task(task.task_id.clone()).await?;
+        }
+    }
+
+    async fn fulfill_input_request(&self, input_request: Value) -> McpResult<Value> {
+        let object = input_request.as_object().ok_or_else(|| {
+            McpError::Protocol("MRTR input request must be an object".to_string())
+        })?;
+        let method = object
+            .get("method")
+            .and_then(Value::as_str)
+            .ok_or_else(|| {
+                McpError::Protocol("MRTR input request is missing method".to_string())
+            })?;
+        let params = object
+            .get("params")
+            .cloned()
+            .unwrap_or_else(|| serde_json::json!({}));
+
+        match method {
+            methods::SAMPLING_CREATE_MESSAGE => {
+                let params: CreateMessageParams = serde_json::from_value(params)?;
+                Ok(serde_json::to_value(
+                    self.request_handler.handle_create_message(params).await?,
+                )?)
+            }
+            methods::ROOTS_LIST => {
+                let params: ListRootsParams = serde_json::from_value(params)?;
+                Ok(serde_json::to_value(
+                    self.request_handler.handle_list_roots(params).await?,
+                )?)
+            }
+            methods::ELICITATION_CREATE => {
+                let params: ElicitParams = serde_json::from_value(params)?;
+                Ok(serde_json::to_value(
+                    self.request_handler.handle_elicit(params).await?,
+                )?)
+            }
+            _ => Err(McpError::MethodNotFound(format!(
+                "unsupported MRTR input method: {method}"
+            ))),
         }
     }
 
@@ -1621,6 +2082,8 @@ mod tests {
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Server".to_string()),
+                website_url: None,
+                icons: None,
             },
         );
 
@@ -1629,9 +2092,10 @@ mod tests {
         let transport = MockTransport::new(vec![init_response]);
 
         let mut client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        client.set_protocol_mode(ProtocolMode::LegacyOnly);
         let result = client.connect(transport).await.unwrap();
 
-        assert_eq!(result.server_info.name, "test-server");
+        assert_eq!(result.server_info.unwrap().name, "test-server");
         assert!(client.is_connected().await);
     }
 
@@ -1645,6 +2109,8 @@ mod tests {
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Server".to_string()),
+                website_url: None,
+                icons: None,
             },
         );
 
@@ -1653,6 +2119,7 @@ mod tests {
         let transport = MockTransport::new(vec![init_response]);
 
         let mut client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        client.set_protocol_mode(ProtocolMode::LegacyOnly);
         client.connect(transport).await.unwrap();
 
         assert!(client.is_connected().await);

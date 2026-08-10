@@ -355,18 +355,17 @@ pub struct SchemaBuilder {
 }
 
 impl SchemaBuilder {
-    /// Create a new schema builder for MCP 2025-11-25
+    /// Create a dual-era schema builder.
     pub fn new() -> Self {
         Self {
             protocol: ProtocolInfo {
                 version: LATEST_PROTOCOL_VERSION.to_string(),
-                min_version: "2024-11-05".to_string(),
+                min_version: crate::protocol::LEGACY_PROTOCOL_VERSION.to_string(),
                 max_version: LATEST_PROTOCOL_VERSION.to_string(),
-                supported_versions: vec![
-                    "2024-11-05".to_string(),
-                    "2025-03-26".to_string(),
-                    "2025-11-25".to_string(),
-                ],
+                supported_versions: crate::protocol::SUPPORTED_PROTOCOL_VERSIONS
+                    .iter()
+                    .map(|version| (*version).to_string())
+                    .collect(),
                 version_features: Self::build_version_features(),
             },
             methods: MethodSchemas {
@@ -426,6 +425,18 @@ impl SchemaBuilder {
                 "structured-tool-output".to_string(),
                 "oauth-2.1".to_string(),
                 "improved-annotations".to_string(),
+            ],
+        );
+
+        features.insert(
+            "2026-07-28".to_string(),
+            vec![
+                "stateless-core".to_string(),
+                "server-discover".to_string(),
+                "multi-round-trip-requests".to_string(),
+                "header-routing".to_string(),
+                "cacheable-results".to_string(),
+                "extensions".to_string(),
             ],
         );
 
@@ -633,7 +644,7 @@ mod tests {
         let builder = SchemaBuilder::new();
         let result = builder.build();
 
-        assert_eq!(result.protocol.version, "2025-11-25");
+        assert_eq!(result.protocol.version, "2026-07-28");
         assert!(result
             .protocol
             .supported_versions

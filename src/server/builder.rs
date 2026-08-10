@@ -10,6 +10,7 @@ use crate::protocol::types::{
     CompletionsCapability, LoggingCapability, PromptsCapability, ResourceTemplate,
     ResourcesCapability, SamplingCapability, ServerCapabilities, ToolsCapability,
 };
+use crate::protocol::ProtocolMode;
 use crate::server::{McpServer, ServerConfig};
 
 /// Builder for creating MCP servers with fluent API
@@ -36,6 +37,7 @@ pub struct ServerBuilder {
     tools: HashMap<String, Tool>,
     prompts: HashMap<String, Prompt>,
     resource_templates: HashMap<String, ResourceTemplate>,
+    protocol_mode: ProtocolMode,
 }
 
 impl ServerBuilder {
@@ -50,6 +52,7 @@ impl ServerBuilder {
             tools: HashMap::new(),
             prompts: HashMap::new(),
             resource_templates: HashMap::new(),
+            protocol_mode: ProtocolMode::Auto,
         }
     }
 
@@ -138,6 +141,12 @@ impl ServerBuilder {
         self
     }
 
+    /// Select dual-stack, modern-only, or legacy-only protocol behavior.
+    pub fn protocol_mode(mut self, mode: ProtocolMode) -> Self {
+        self.protocol_mode = mode;
+        self
+    }
+
     /// Set maximum concurrent requests
     pub fn max_concurrent_requests(mut self, max: usize) -> Self {
         self.config.max_concurrent_requests = max;
@@ -199,6 +208,7 @@ impl ServerBuilder {
         let mut server = McpServer::new(name, version);
         server.set_capabilities(self.capabilities);
         server.set_config(self.config);
+        server.set_protocol_mode(self.protocol_mode);
 
         // Transfer resources, tools, prompts, and templates to the server
         // Note: This requires the server to expose methods to bulk-add items,
@@ -219,6 +229,7 @@ impl ServerBuilder {
         let mut server = McpServer::new(name, version);
         server.set_capabilities(self.capabilities);
         server.set_config(self.config);
+        server.set_protocol_mode(self.protocol_mode);
 
         server.set_initial_resources(self.resources);
         server.set_initial_tools(self.tools);

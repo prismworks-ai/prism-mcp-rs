@@ -36,7 +36,7 @@
 //! # #[cfg(feature = "http")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Requires "http" feature in Cargo.toml:
-//! // prism-mcp-rs = { version = "2", features = ["http"] }
+//! // prism-mcp-rs = { version = "3", features = ["http"] }
 //! use prism_mcp_rs::transport::HttpServerTransport;
 //!
 //! // HttpServerTransport takes a bind address directly
@@ -51,7 +51,7 @@
 //! # #[cfg(feature = "websocket")]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Requires "websocket" feature in Cargo.toml:
-//! // prism-mcp-rs = { version = "2", features = ["websocket"] }
+//! // prism-mcp-rs = { version = "3", features = ["websocket"] }
 //! use prism_mcp_rs::transport::WebSocketServerTransport;
 //!
 //! // WebSocketServerTransport uses new() method, not bind()
@@ -75,8 +75,9 @@
 //!
 //! - **Authentication**: HTTP transport supports various auth mechanisms
 //! - **Compression**: Streaming HTTP supports gzip/brotli/zstd (requires "compression" feature)
-//! - **Chunked Encoding**: For large payloads and streaming data (requires "chunked-encoding" feature)
-//! - **Server-Sent Events**: Real-time notifications (requires "sse" feature)
+//! - **Prism Chunked Endpoints**: Proprietary legacy-only helpers (requires "chunked-encoding" feature)
+//! - **MCP 2026 Subscriptions**: Request-scoped SSE is built into the standard HTTP transport
+//! - **Legacy Server-Sent Events**: Compatibility events route (requires "sse" feature)
 //! - **Reconnection**: Automatic reconnection with backoff
 //! - **Metrics**: Performance monitoring and statistics
 //! - **HTTP/2**: Multiplexed streaming support (requires "http2" feature)
@@ -113,9 +114,9 @@ pub mod streaming_http;
 // Re-export commonly used types
 pub use endpoint_pool::{is_request_idempotent, EndpointPoolConfig, EndpointPoolTransport};
 pub use traits::{
-    ConnectionState, EventEmittingTransport, FilterableTransport, ReconnectConfig,
-    ReconnectableTransport, ServerTransport, Transport, TransportConfig, TransportEvent,
-    TransportStats,
+    ClientSubscription, ConnectionState, EventEmittingTransport, FilterableTransport,
+    ReconnectConfig, ReconnectableTransport, ServerTransport, Transport, TransportConfig,
+    TransportEvent, TransportStats,
 };
 
 // Re-export transport implementations when features are enabled

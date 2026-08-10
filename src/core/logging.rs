@@ -47,6 +47,9 @@ impl From<&McpError> for ErrorLogLevel {
             | McpError::PromptNotFound(_)
             | McpError::MethodNotFound(_)
             | McpError::InvalidParams(_)
+            | McpError::UnsupportedProtocolVersion { .. }
+            | McpError::HeaderMismatch(_)
+            | McpError::MissingRequiredClientCapability(_)
             | McpError::InvalidUri(_)
             | McpError::Url(_) => ErrorLogLevel::Info,
 

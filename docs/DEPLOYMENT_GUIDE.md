@@ -20,13 +20,13 @@ Enable only the required features, normally `http,tls,otel` plus application-spe
 
 ```toml
 prism-mcp-rs = {
-    version = "2",
+    version = "3",
     default-features = false,
     features = ["http", "tls", "otel"]
 }
 ```
 
-The built-in HTTP server provides `/mcp`, `/mcp/notify`, `/mcp/events`, and `/health`. Its permissive CORS behavior and generic health response may not match a public deployment; constrain exposure with an ingress and add application readiness checks around dependencies.
+The built-in HTTP server uses `/mcp` for standards-track requests, notifications, and MCP 2026 subscription SSE, plus `/health` for liveness. `/mcp/notify` and `/mcp/events` remain legacy compatibility routes. Its permissive CORS behavior and generic health response may not match a public deployment; constrain exposure with an ingress and add application readiness checks around dependencies.
 
 ## Recommended production profile
 

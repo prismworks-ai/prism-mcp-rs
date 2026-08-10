@@ -4,7 +4,8 @@
 //! # Prism MCP Rust SDK
 //!
 //! Async client and server primitives for the
-//! [Model Context Protocol](https://modelcontextprotocol.io/) 2025-11-25.
+//! [Model Context Protocol](https://modelcontextprotocol.io/) 2026-07-28 with
+//! interoperable 2025-11-25 support.
 //! The crate includes protocol types, tools, resources, prompts, sampling,
 //! completion, roots, replaceable transports, and opt-in production controls.
 //!
@@ -74,7 +75,7 @@
 //!
 //! - [`core`]: Core abstractions for resources, tools, prompts, and errors
 //! - `plugin`: trusted native dynamic tool loading (feature-gated)
-//! - [`protocol`]: MCP protocol types and message definitions (2025-11-25)
+//! - [`protocol`]: MCP 2026/2025 types, negotiation, and message definitions
 //! - [`transport`]: Transport layer implementations (STDIO, HTTP, WebSocket)
 //! - [`server`]: MCP server implementation and lifecycle management
 //! - [`client`]: MCP client implementation and session management
@@ -102,7 +103,7 @@ pub use protocol::{
     ErrorObject, JsonRpcError, JsonRpcMessage, JsonRpcRequest, JsonRpcResponse, ServerCapabilities,
 };
 
-/// Prelude module for convenient imports (2025-11-25)
+/// Prelude module for convenient imports
 ///
 /// Module re-exports the most commonly used types and traits for easy access.
 /// Use `use prism_mcp_rs::prelude::*;` to import everything you need.
@@ -112,7 +113,7 @@ pub mod prelude {
         error::{McpError, McpResult},
         prompt::{Prompt, PromptHandler},
         resource::{Resource, ResourceHandler},
-        tool::{Tool, ToolHandler},
+        tool::{MultiRoundToolCall, MultiRoundToolHandler, Tool, ToolHandler},
     };
     pub use crate::security::{
         Permission, Principal, RateLimitConfig, RateLimiter, RbacAuthorizer, RequestContext,
@@ -125,6 +126,10 @@ pub mod prelude {
     pub use crate::protocol::messages::*;
     pub use crate::protocol::missing_types::*;
     pub use crate::protocol::types::*;
+    pub use crate::protocol::{
+        ConnectResult, NegotiatedProtocol, ProtocolEra, ProtocolMode, LEGACY_PROTOCOL_VERSION,
+        MODERN_PROTOCOL_VERSION, SUPPORTED_PROTOCOL_VERSIONS,
+    };
 
     // Client and completion handlers
     pub use crate::client::{

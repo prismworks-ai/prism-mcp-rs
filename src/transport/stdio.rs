@@ -10,14 +10,97 @@ use std::process::Stdio;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
 use tokio::process::{Child, Command};
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{broadcast, mpsc, Mutex, RwLock};
 use tokio::time::{timeout, Duration};
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::types::{error_codes, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse};
-use crate::transport::traits::{
-    ConnectionState, ServerRequestHandler, ServerTransport, Transport, TransportConfig,
+use crate::protocol::types::{
+    error_codes, JsonRpcError, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
 };
+use crate::protocol::{
+    has_tasks_extension, json_rpc_error_details, methods, modern_request_context,
+    ServerCapabilities, SubscriptionFilter, SubscriptionsAcknowledgedParams,
+    SubscriptionsListenParams, SubscriptionsListenResult, HEADER_MISMATCH,
+    MISSING_REQUIRED_CLIENT_CAPABILITY, SUBSCRIPTION_ID_META_KEY, TASKS_EXTENSION_ID,
+    UNSUPPORTED_PROTOCOL_VERSION,
+};
+use crate::transport::traits::{
+    ClientSubscription, ConnectionState, ServerRequestHandler, ServerTransport, Transport,
+    TransportConfig,
+};
+
+fn add_subscription_id(notification: &mut JsonRpcNotification, id: &Value) {
+    let params = notification
+        .params
+        .get_or_insert_with(|| Value::Object(serde_json::Map::new()));
+    let Some(params) = params.as_object_mut() else {
+        return;
+    };
+    let meta = params
+        .entry("_meta")
+        .or_insert_with(|| Value::Object(serde_json::Map::new()));
+    if let Some(meta) = meta.as_object_mut() {
+        meta.insert(SUBSCRIPTION_ID_META_KEY.to_string(), id.clone());
+    }
+}
+
+async fn write_stdio_line<T: serde::Serialize>(
+    writer: &Arc<Mutex<BufWriter<tokio::io::Stdout>>>,
+    message: &T,
+) -> McpResult<()> {
+    let line = serde_json::to_string(message).map_err(McpError::serialization)?;
+    let mut writer = writer.lock().await;
+    writer
+        .write_all(line.as_bytes())
+        .await
+        .map_err(McpError::io)?;
+    writer.write_all(b"\n").await.map_err(McpError::io)?;
+    writer.flush().await.map_err(McpError::io)
+}
+
+fn accepted_subscription_filter(
+    requested: &SubscriptionFilter,
+    capabilities: &ServerCapabilities,
+) -> SubscriptionFilter {
+    let tasks_enabled = capabilities
+        .extensions
+        .as_ref()
+        .is_some_and(|extensions| extensions.contains_key(TASKS_EXTENSION_ID));
+    SubscriptionFilter {
+        tools_list_changed: (requested.tools_list_changed == Some(true)
+            && capabilities
+                .tools
+                .as_ref()
+                .is_some_and(|value| value.list_changed == Some(true)))
+        .then_some(true),
+        prompts_list_changed: (requested.prompts_list_changed == Some(true)
+            && capabilities
+                .prompts
+                .as_ref()
+                .is_some_and(|value| value.list_changed == Some(true)))
+        .then_some(true),
+        resources_list_changed: (requested.resources_list_changed == Some(true)
+            && capabilities
+                .resources
+                .as_ref()
+                .is_some_and(|value| value.list_changed == Some(true)))
+        .then_some(true),
+        resource_subscriptions: if capabilities
+            .resources
+            .as_ref()
+            .is_some_and(|value| value.subscribe == Some(true))
+        {
+            requested.resource_subscriptions.clone()
+        } else {
+            Vec::new()
+        },
+        task_ids: if tasks_enabled {
+            requested.task_ids.clone()
+        } else {
+            Vec::new()
+        },
+    }
+}
 
 /// STDIO transport for MCP clients
 ///
@@ -30,7 +113,9 @@ pub struct StdioClientTransport {
     #[allow(dead_code)]
     stdout_reader: Option<BufReader<tokio::process::ChildStdout>>,
     notification_receiver: Option<mpsc::UnboundedReceiver<JsonRpcNotification>>,
-    pending_requests: Arc<Mutex<HashMap<Value, tokio::sync::oneshot::Sender<JsonRpcResponse>>>>,
+    pending_requests:
+        Arc<Mutex<HashMap<Value, tokio::sync::oneshot::Sender<McpResult<JsonRpcResponse>>>>>,
+    subscription_senders: Arc<Mutex<HashMap<Value, mpsc::UnboundedSender<JsonRpcNotification>>>>,
     config: TransportConfig,
     state: ConnectionState,
 }
@@ -145,12 +230,20 @@ impl StdioClientTransport {
 
         let (notification_sender, notification_receiver) = mpsc::unbounded_channel();
         let pending_requests = Arc::new(Mutex::new(HashMap::new()));
+        let subscription_senders = Arc::new(Mutex::new(HashMap::new()));
 
         // Start message processing task
         let reader_pending_requests = pending_requests.clone();
+        let reader_subscription_senders = subscription_senders.clone();
         let reader = stdout_reader;
         tokio::spawn(async move {
-            Self::message_processor(reader, notification_sender, reader_pending_requests).await;
+            Self::message_processor(
+                reader,
+                notification_sender,
+                reader_pending_requests,
+                reader_subscription_senders,
+            )
+            .await;
         });
 
         Ok(Self {
@@ -159,6 +252,7 @@ impl StdioClientTransport {
             stdout_reader: None, // Moved to processor task
             notification_receiver: Some(notification_receiver),
             pending_requests,
+            subscription_senders,
             config,
             state: ConnectionState::Connected,
         })
@@ -167,7 +261,12 @@ impl StdioClientTransport {
     async fn message_processor(
         mut reader: BufReader<tokio::process::ChildStdout>,
         notification_sender: mpsc::UnboundedSender<JsonRpcNotification>,
-        pending_requests: Arc<Mutex<HashMap<Value, tokio::sync::oneshot::Sender<JsonRpcResponse>>>>,
+        pending_requests: Arc<
+            Mutex<HashMap<Value, tokio::sync::oneshot::Sender<McpResult<JsonRpcResponse>>>>,
+        >,
+        subscription_senders: Arc<
+            Mutex<HashMap<Value, mpsc::UnboundedSender<JsonRpcNotification>>>,
+        >,
     ) {
         let mut line = String::new();
 
@@ -186,12 +285,68 @@ impl StdioClientTransport {
 
                     tracing::trace!("Received: {}", line);
 
-                    // Try to parse as response first
-                    if let Ok(response) = serde_json::from_str::<JsonRpcResponse>(line) {
+                    let parsed_value = serde_json::from_str::<Value>(line).ok();
+                    if parsed_value
+                        .as_ref()
+                        .and_then(|value| value.get("error"))
+                        .is_some()
+                    {
+                        let Ok(error_response) = serde_json::from_str::<JsonRpcError>(line) else {
+                            tracing::warn!("Failed to parse JSON-RPC error: {}", line);
+                            continue;
+                        };
+                        let error = match error_response.error.code {
+                            error_codes::METHOD_NOT_FOUND => {
+                                McpError::MethodNotFound(error_response.error.message)
+                            }
+                            HEADER_MISMATCH => {
+                                McpError::HeaderMismatch(error_response.error.message)
+                            }
+                            MISSING_REQUIRED_CLIENT_CAPABILITY => {
+                                let required = error_response
+                                    .error
+                                    .data
+                                    .and_then(|value| value.get("requiredCapabilities").cloned())
+                                    .unwrap_or_else(|| serde_json::json!({}));
+                                McpError::MissingRequiredClientCapability(required)
+                            }
+                            UNSUPPORTED_PROTOCOL_VERSION => {
+                                let data = error_response.error.data.unwrap_or_default();
+                                McpError::UnsupportedProtocolVersion {
+                                    requested: data
+                                        .get("requested")
+                                        .and_then(Value::as_str)
+                                        .unwrap_or("unknown")
+                                        .to_string(),
+                                    supported: data
+                                        .get("supported")
+                                        .and_then(Value::as_array)
+                                        .into_iter()
+                                        .flatten()
+                                        .filter_map(Value::as_str)
+                                        .map(str::to_string)
+                                        .collect(),
+                                }
+                            }
+                            code => McpError::Protocol(format!(
+                                "JSON-RPC error {code}: {}",
+                                error_response.error.message
+                            )),
+                        };
+                        let mut pending = pending_requests.lock().await;
+                        if let Some(sender) = pending.remove(&error_response.id) {
+                            let _ = sender.send(Err(error));
+                        }
+                        subscription_senders.lock().await.remove(&error_response.id);
+                    }
+                    // Try to parse as response.
+                    else if let Ok(response) = serde_json::from_str::<JsonRpcResponse>(line) {
                         let mut pending = pending_requests.lock().await;
                         match pending.remove(&response.id) {
                             Some(sender) => {
-                                let _ = sender.send(response);
+                                let response_id = response.id.clone();
+                                let _ = sender.send(Ok(response));
+                                subscription_senders.lock().await.remove(&response_id);
                             }
                             _ => {
                                 tracing::warn!(
@@ -205,6 +360,21 @@ impl StdioClientTransport {
                     else if let Ok(notification) =
                         serde_json::from_str::<JsonRpcNotification>(line)
                     {
+                        if let Some(subscription_id) = notification
+                            .params
+                            .as_ref()
+                            .and_then(|params| params.get("_meta"))
+                            .and_then(|meta| meta.get(SUBSCRIPTION_ID_META_KEY))
+                        {
+                            if let Some(sender) = subscription_senders
+                                .lock()
+                                .await
+                                .get(subscription_id)
+                                .cloned()
+                            {
+                                let _ = sender.send(notification.clone());
+                            }
+                        }
                         if notification_sender.send(notification).is_err() {
                             tracing::debug!("Notification receiver dropped");
                             break;
@@ -262,7 +432,7 @@ impl Transport for StdioClientTransport {
         let response = timeout(timeout_duration, receiver)
             .await
             .map_err(|_| McpError::timeout("Request timeout"))?
-            .map_err(|_| McpError::transport("Response channel closed"))?;
+            .map_err(|_| McpError::transport("Response channel closed"))??;
 
         Ok(response)
     }
@@ -306,6 +476,56 @@ impl Transport for StdioClientTransport {
         } else {
             Ok(None)
         }
+    }
+
+    async fn open_subscription(
+        &mut self,
+        request: JsonRpcRequest,
+    ) -> McpResult<ClientSubscription> {
+        if request.method != methods::SUBSCRIPTIONS_LISTEN {
+            return Err(McpError::InvalidParams(
+                "open_subscription requires subscriptions/listen".to_string(),
+            ));
+        }
+        let writer = self
+            .stdin_writer
+            .as_mut()
+            .ok_or_else(|| McpError::transport("Transport not connected"))?;
+        let (response_sender, response_receiver) = tokio::sync::oneshot::channel();
+        let (notification_sender, notification_receiver) = mpsc::unbounded_channel();
+        self.pending_requests
+            .lock()
+            .await
+            .insert(request.id.clone(), response_sender);
+        self.subscription_senders
+            .lock()
+            .await
+            .insert(request.id.clone(), notification_sender);
+        let line = serde_json::to_string(&request).map_err(McpError::serialization)?;
+        if let Err(error) = async {
+            writer.write_all(line.as_bytes()).await?;
+            writer.write_all(b"\n").await?;
+            writer.flush().await
+        }
+        .await
+        {
+            self.pending_requests.lock().await.remove(&request.id);
+            self.subscription_senders.lock().await.remove(&request.id);
+            return Err(McpError::io(error));
+        }
+        Ok(ClientSubscription::new(
+            request.id,
+            notification_receiver,
+            response_receiver,
+        ))
+    }
+
+    async fn cancel_subscription(&mut self, request_id: &Value) -> McpResult<()> {
+        let notification = JsonRpcNotification::new(
+            methods::CANCELLED.to_string(),
+            Some(serde_json::json!({"requestId": request_id})),
+        )?;
+        self.send_notification(notification).await
     }
 
     async fn close(&mut self) -> McpResult<()> {
@@ -354,11 +574,14 @@ impl Transport for StdioClientTransport {
 /// It reads requests from stdin and writes responses to stdout.
 pub struct StdioServerTransport {
     stdin_reader: Option<BufReader<tokio::io::Stdin>>,
-    stdout_writer: Option<BufWriter<tokio::io::Stdout>>,
+    stdout_writer: Option<Arc<Mutex<BufWriter<tokio::io::Stdout>>>>,
     #[allow(dead_code)]
     config: TransportConfig,
     running: bool,
     request_handler: Option<ServerRequestHandler>,
+    capabilities: ServerCapabilities,
+    subscriptions: Arc<RwLock<HashMap<Value, SubscriptionFilter>>>,
+    task_notifications: Option<broadcast::Receiver<JsonRpcNotification>>,
 }
 
 impl StdioServerTransport {
@@ -379,7 +602,7 @@ impl StdioServerTransport {
     /// New STDIO server transport instance
     pub fn with_config(config: TransportConfig) -> Self {
         let stdin_reader = BufReader::new(tokio::io::stdin());
-        let stdout_writer = BufWriter::new(tokio::io::stdout());
+        let stdout_writer = Arc::new(Mutex::new(BufWriter::new(tokio::io::stdout())));
 
         Self {
             stdin_reader: Some(stdin_reader),
@@ -387,6 +610,9 @@ impl StdioServerTransport {
             config,
             running: false,
             request_handler: None,
+            capabilities: ServerCapabilities::default(),
+            subscriptions: Arc::new(RwLock::new(HashMap::new())),
+            task_notifications: None,
         }
     }
 }
@@ -400,13 +626,32 @@ impl ServerTransport for StdioServerTransport {
             .stdin_reader
             .take()
             .ok_or_else(|| McpError::transport("STDIN reader already taken"))?;
-        let mut writer = self
+        let writer = self
             .stdout_writer
-            .take()
-            .ok_or_else(|| McpError::transport("STDOUT writer already taken"))?;
+            .as_ref()
+            .cloned()
+            .ok_or_else(|| McpError::transport("STDOUT writer is unavailable"))?;
 
         self.running = true;
         let request_handler = self.request_handler.clone();
+        let subscriptions = self.subscriptions.clone();
+        if let Some(mut task_notifications) = self.task_notifications.take() {
+            let task_writer = writer.clone();
+            let task_subscriptions = subscriptions.clone();
+            tokio::spawn(async move {
+                while let Ok(notification) = task_notifications.recv().await {
+                    let entries = task_subscriptions.read().await.clone();
+                    for (id, filter) in entries {
+                        if !filter.matches(&notification.method, notification.params.as_ref()) {
+                            continue;
+                        }
+                        let mut notification = notification.clone();
+                        add_subscription_id(&mut notification, &id);
+                        let _ = write_stdio_line(&task_writer, &notification).await;
+                    }
+                }
+            });
+        }
 
         let mut line = String::new();
         loop {
@@ -425,9 +670,97 @@ impl ServerTransport for StdioServerTransport {
 
                     tracing::trace!("Received: {}", line);
 
+                    let parsed: Value = match serde_json::from_str(line) {
+                        Ok(value) => value,
+                        Err(error) => {
+                            tracing::warn!(%error, "failed to parse STDIO JSON");
+                            continue;
+                        }
+                    };
+                    if parsed.get("method").and_then(Value::as_str) == Some(methods::CANCELLED)
+                        && parsed.get("id").is_none()
+                    {
+                        if let Some(request_id) = parsed
+                            .get("params")
+                            .and_then(|params| params.get("requestId"))
+                            .cloned()
+                        {
+                            if subscriptions.write().await.remove(&request_id).is_some() {
+                                let mut meta = HashMap::new();
+                                meta.insert(
+                                    SUBSCRIPTION_ID_META_KEY.to_string(),
+                                    request_id.clone(),
+                                );
+                                let response = JsonRpcResponse::success(
+                                    request_id,
+                                    serde_json::to_value(SubscriptionsListenResult {
+                                        result_type: "complete".to_string(),
+                                        meta,
+                                    })?,
+                                )?;
+                                write_stdio_line(&writer, &response).await?;
+                            }
+                        }
+                        continue;
+                    }
+
                     // Parse the request
-                    match serde_json::from_str::<JsonRpcRequest>(line) {
+                    match serde_json::from_value::<JsonRpcRequest>(parsed) {
                         Ok(request) => {
+                            if request.method == methods::SUBSCRIPTIONS_LISTEN {
+                                let context =
+                                    modern_request_context(&request)?.ok_or_else(|| {
+                                        McpError::InvalidParams(
+                                            "subscriptions/listen requires modern metadata"
+                                                .to_string(),
+                                        )
+                                    })?;
+                                let params: SubscriptionsListenParams = serde_json::from_value(
+                                    request.params.clone().ok_or_else(|| {
+                                        McpError::InvalidParams(
+                                            "missing subscription filter".to_string(),
+                                        )
+                                    })?,
+                                )?;
+                                if params.notifications.requests_tasks()
+                                    && !has_tasks_extension(&context.client_capabilities)
+                                {
+                                    let error = McpError::MissingRequiredClientCapability(
+                                        serde_json::json!({"extensions": {(TASKS_EXTENSION_ID): {}}}),
+                                    );
+                                    let (code, data) = json_rpc_error_details(&error);
+                                    let response = JsonRpcError::error(
+                                        request.id,
+                                        code,
+                                        error.to_string(),
+                                        data,
+                                    );
+                                    write_stdio_line(&writer, &response).await?;
+                                    continue;
+                                }
+                                let accepted = accepted_subscription_filter(
+                                    &params.notifications,
+                                    &self.capabilities,
+                                );
+                                subscriptions
+                                    .write()
+                                    .await
+                                    .insert(request.id.clone(), accepted.clone());
+                                let mut meta = HashMap::new();
+                                meta.insert(
+                                    SUBSCRIPTION_ID_META_KEY.to_string(),
+                                    request.id.clone(),
+                                );
+                                let acknowledgement = JsonRpcNotification::new(
+                                    methods::SUBSCRIPTIONS_ACKNOWLEDGED.to_string(),
+                                    Some(SubscriptionsAcknowledgedParams {
+                                        notifications: accepted,
+                                        meta,
+                                    }),
+                                )?;
+                                write_stdio_line(&writer, &acknowledgement).await?;
+                                continue;
+                            }
                             let response_result = if let Some(ref handler) = request_handler {
                                 // Use the provided request handler
                                 handler(request.clone()).await
@@ -443,18 +776,14 @@ impl ServerTransport for StdioServerTransport {
                                 Ok(response) => serde_json::to_string(&response),
                                 Err(error) => {
                                     // Convert McpError to JsonRpcError
+                                    let (code, data) = json_rpc_error_details(&error);
                                     let json_rpc_error = crate::protocol::types::JsonRpcError {
                                         jsonrpc: "2.0".to_string(),
                                         id: request.id,
                                         error: crate::protocol::types::ErrorObject {
-                                            code: match error {
-                                                McpError::Protocol(ref msg) if msg.contains("not found") => {
-                                                    error_codes::METHOD_NOT_FOUND
-                                                }
-                                                _ => crate::protocol::types::error_codes::INTERNAL_ERROR,
-                                            },
+                                            code,
                                             message: error.to_string(),
-                                            data: None,
+                                            data,
                                         },
                                     };
                                     serde_json::to_string(&json_rpc_error)
@@ -466,16 +795,17 @@ impl ServerTransport for StdioServerTransport {
 
                             tracing::trace!("Sending: {}", response_line);
 
-                            writer
+                            let mut writer_guard = writer.lock().await;
+                            writer_guard
                                 .write_all(response_line.as_bytes())
                                 .await
                                 .map_err(|e| {
                                     McpError::transport(format!("Failed to write response: {e}"))
                                 })?;
-                            writer.write_all(b"\n").await.map_err(|e| {
+                            writer_guard.write_all(b"\n").await.map_err(|e| {
                                 McpError::transport(format!("Failed to write newline: {e}"))
                             })?;
-                            writer.flush().await.map_err(|e| {
+                            writer_guard.flush().await.map_err(|e| {
                                 McpError::transport(format!("Failed to flush: {e}"))
                             })?;
                         }
@@ -500,29 +830,40 @@ impl ServerTransport for StdioServerTransport {
         self.request_handler = Some(handler);
     }
 
+    fn set_server_capabilities(&mut self, capabilities: ServerCapabilities) -> McpResult<()> {
+        self.capabilities = capabilities;
+        Ok(())
+    }
+
+    fn set_task_notifications(
+        &mut self,
+        receiver: broadcast::Receiver<JsonRpcNotification>,
+    ) -> McpResult<()> {
+        self.task_notifications = Some(receiver);
+        Ok(())
+    }
+
     async fn send_notification(&mut self, notification: JsonRpcNotification) -> McpResult<()> {
         let writer = self
             .stdout_writer
-            .as_mut()
+            .as_ref()
             .ok_or_else(|| McpError::transport("STDOUT writer not available"))?;
 
-        let notification_line =
-            serde_json::to_string(&notification).map_err(McpError::serialization)?;
-
-        tracing::trace!("Sending notification: {}", notification_line);
-
-        writer
-            .write_all(notification_line.as_bytes())
-            .await
-            .map_err(|e| McpError::transport(format!("Failed to write notification: {e}")))?;
-        writer
-            .write_all(b"\n")
-            .await
-            .map_err(|e| McpError::transport(format!("Failed to write newline: {e}")))?;
-        writer
-            .flush()
-            .await
-            .map_err(|e| McpError::transport(format!("Failed to flush: {e}")))?;
+        let subscriptions = self.subscriptions.read().await.clone();
+        if subscriptions.is_empty() {
+            // Preserve legacy MCP behavior when no 2026 subscription is open.
+            tracing::trace!(method = %notification.method, "sending legacy notification");
+            write_stdio_line(writer, &notification).await?;
+        } else {
+            for (id, filter) in subscriptions {
+                if !filter.matches(&notification.method, notification.params.as_ref()) {
+                    continue;
+                }
+                let mut routed = notification.clone();
+                add_subscription_id(&mut routed, &id);
+                write_stdio_line(writer, &routed).await?;
+            }
+        }
 
         Ok(())
     }
@@ -659,6 +1000,7 @@ mod tests {
             stdout_reader: None,
             notification_receiver: None,
             pending_requests: Arc::new(Mutex::new(HashMap::new())),
+            subscription_senders: Arc::new(Mutex::new(HashMap::new())),
             config: TransportConfig::default(),
             state: ConnectionState::Disconnected,
         };
@@ -688,6 +1030,7 @@ mod tests {
             stdout_reader: None,
             notification_receiver: Some(rx),
             pending_requests: Arc::new(Mutex::new(HashMap::new())),
+            subscription_senders: Arc::new(Mutex::new(HashMap::new())),
             config: TransportConfig::default(),
             state: ConnectionState::Connected,
         };
@@ -714,6 +1057,7 @@ mod tests {
             stdout_reader: None,
             notification_receiver: Some(rx),
             pending_requests: Arc::new(Mutex::new(HashMap::new())),
+            subscription_senders: Arc::new(Mutex::new(HashMap::new())),
             config: TransportConfig {
                 read_timeout_ms: Some(100),
                 ..Default::default()

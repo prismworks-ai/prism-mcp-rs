@@ -19,7 +19,8 @@ mod complete_schema_validation {
     /// Validates the protocol version constant
     #[test]
     fn test_protocol_version_compliance() {
-        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-11-25");
+        assert_eq!(LATEST_PROTOCOL_VERSION, "2026-07-28");
+        assert_eq!(LEGACY_PROTOCOL_VERSION, "2025-11-25");
         assert_eq!(JSONRPC_VERSION, "2.0");
         assert_eq!(PROTOCOL_VERSION, LATEST_PROTOCOL_VERSION); // Legacy compatibility
     }
@@ -32,6 +33,8 @@ mod complete_schema_validation {
             version: "1.0.0".to_string(),
             description: None,
             title: None,
+            website_url: None,
+            icons: None,
         };
 
         let json_val = serde_json::to_value(&impl_info).unwrap();
@@ -45,6 +48,7 @@ mod complete_schema_validation {
     #[test]
     fn test_server_capabilities_schema_compliance() {
         let capabilities = ServerCapabilities {
+            extensions: None,
             prompts: Some(PromptsCapability {
                 list_changed: Some(true),
             }),
@@ -83,6 +87,7 @@ mod complete_schema_validation {
     #[test]
     fn test_client_capabilities_schema_compliance() {
         let capabilities = ClientCapabilities {
+            extensions: None,
             sampling: Some(SamplingCapability::default()),
             roots: Some(RootsCapability {
                 list_changed: Some(true),
@@ -307,6 +312,8 @@ mod complete_schema_validation {
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Client".to_string()),
+                website_url: None,
+                icons: None,
             },
             meta: None,
         };
@@ -331,6 +338,8 @@ mod complete_schema_validation {
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Server".to_string()),
+                website_url: None,
+                icons: None,
             },
             instructions: Some("Test instructions".to_string()),
             meta: None,
@@ -756,13 +765,15 @@ mod complete_schema_validation {
             json!("init-1"),
             INITIALIZE.to_string(),
             Some(InitializeParams {
-                protocol_version: LATEST_PROTOCOL_VERSION.to_string(),
+                protocol_version: LEGACY_PROTOCOL_VERSION.to_string(),
                 capabilities: ClientCapabilities::default(),
                 client_info: Implementation {
                     name: "test-client".to_string(),
                     version: "1.0.0".to_string(),
                     description: None,
                     title: Some("Test Client".to_string()),
+                    website_url: None,
+                    icons: None,
                 },
                 meta: None,
             }),
@@ -777,13 +788,15 @@ mod complete_schema_validation {
         let init_response = JsonRpcResponse::success(
             json!("init-1"),
             InitializeResult {
-                protocol_version: LATEST_PROTOCOL_VERSION.to_string(),
+                protocol_version: LEGACY_PROTOCOL_VERSION.to_string(),
                 capabilities: ServerCapabilities::default(),
                 server_info: Implementation {
                     name: "test-server".to_string(),
                     version: "1.0.0".to_string(),
                     description: None,
                     title: Some("Test Server".to_string()),
+                    website_url: None,
+                    icons: None,
                 },
                 instructions: None,
                 meta: None,
@@ -874,13 +887,15 @@ mod complete_schema_validation {
 
         // Metadata support
         let init_params = InitializeParams {
-            protocol_version: LATEST_PROTOCOL_VERSION.to_string(),
+            protocol_version: LEGACY_PROTOCOL_VERSION.to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: Implementation {
                 name: "test".to_string(),
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test".to_string()),
+                website_url: None,
+                icons: None,
             },
             meta: Some({
                 let mut meta = HashMap::new();
@@ -910,6 +925,8 @@ mod complete_schema_validation {
             version: "1.0.0".to_string(),
             description: None,
             title: Some("Test Implementation".to_string()),
+            website_url: None,
+            icons: None,
         };
         checks_passed += 1;
         println!("✓ Core types (Implementation)");
@@ -964,13 +981,15 @@ mod complete_schema_validation {
 
         // Check 8: Message types
         let _params = InitializeParams {
-            protocol_version: LATEST_PROTOCOL_VERSION.to_string(),
+            protocol_version: LEGACY_PROTOCOL_VERSION.to_string(),
             capabilities: ClientCapabilities::default(),
             client_info: Implementation {
                 name: "test".to_string(),
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test".to_string()),
+                website_url: None,
+                icons: None,
             },
             meta: None,
         };

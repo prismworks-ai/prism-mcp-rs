@@ -17,7 +17,7 @@ cargo run --example <example_name> --features "feature1 feature2"
 
 ### client::mcp_client
 
-- **client_mcp_client_example_1** - Line 1469
+- **client_mcp_client_example_1** - Line 1930
 
 ### core::completion
 
@@ -35,20 +35,20 @@ cargo run --example <example_name> --features "feature1 feature2"
 
 ### core::tool
 
-- **core_tool_example_1** - Line 400
+- **core_tool_example_1** - Line 429
 
 ### server::builder
 
-- **server_builder_example_1** - Line 16
+- **server_builder_example_1** - Line 17
   ///
 
 ### server::mcp_server
 
-- **server_mcp_server_example_1** - Line 100
+- **server_mcp_server_example_1** - Line 105
   ///
 /// ## Basic Server Creation
-- **server_mcp_server_basic_server_creation** - Line 102
-- **server_mcp_server_using_serverbuilder** - Line 109
+- **server_mcp_server_basic_server_creation** - Line 107
+- **server_mcp_server_using_serverbuilder** - Line 114
 
 ### test_utils::mod
 

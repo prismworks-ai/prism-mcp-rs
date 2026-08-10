@@ -12,7 +12,7 @@ use crate::client::mcp_client::McpClient;
 use crate::core::error::{McpError, McpResult};
 use crate::core::logging::ErrorContext;
 use crate::core::retry::{CircuitBreakerConfig, RetryConfig, RetryPolicy};
-use crate::protocol::{messages::*, methods, types::*};
+use crate::protocol::{messages::*, methods, types::*, ConnectResult};
 use crate::transport::traits::Transport;
 
 /// Session state
@@ -218,7 +218,7 @@ impl ClientSession {
     }
 
     /// Connect to the server with the provided transport
-    pub async fn connect<T>(&self, transport: T) -> McpResult<InitializeResult>
+    pub async fn connect<T>(&self, transport: T) -> McpResult<ConnectResult>
     where
         T: Transport + 'static,
     {
@@ -297,7 +297,7 @@ impl ClientSession {
     pub async fn reconnect<T>(
         &self,
         transport_factory: impl Fn() -> T + Send + Sync + 'static,
-    ) -> McpResult<InitializeResult>
+    ) -> McpResult<ConnectResult>
     where
         T: Transport + 'static,
     {
@@ -742,6 +742,8 @@ mod tests {
                     version: "1.0.0".to_string(),
                     description: None,
                     title: Some("Test Server".to_string()),
+                    website_url: None,
+                    icons: None,
                 },
             );
             JsonRpcResponse::success(serde_json::Value::from(1), init_result)
@@ -773,7 +775,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_session_connection() {
-        let client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        let mut client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        client.set_protocol_mode(crate::protocol::ProtocolMode::LegacyOnly);
         let session = ClientSession::new(client);
 
         let transport = MockTransport;
@@ -787,7 +790,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_session_disconnect() {
-        let client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        let mut client = McpClient::new("test-client".to_string(), "1.0.0".to_string());
+        client.set_protocol_mode(crate::protocol::ProtocolMode::LegacyOnly);
         let session = ClientSession::new(client);
 
         // Connect first

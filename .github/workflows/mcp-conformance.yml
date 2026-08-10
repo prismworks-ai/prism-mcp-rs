@@ -1,0 +1,112 @@
+name: MCP Conformance
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  server-2026:
+    name: MCP 2026 server-stateless
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check out pinned official referee
+        uses: actions/checkout@v4
+        with:
+          repository: modelcontextprotocol/conformance
+          ref: c321dd32035556e6769d3724a8ee97d87c3faaac
+          path: .mcp-conformance
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Build pinned official referee
+        working-directory: .mcp-conformance
+        run: npm ci && npm run build
+      - name: Build standards-track server adapter
+        run: cargo build --locked --all-features --example conformance_2026_server
+      - name: Start adapter
+        shell: bash
+        run: |
+          PRISM_CONFORMANCE_ADDR=127.0.0.1:39091 \
+            target/debug/examples/conformance_2026_server \
+            > /tmp/prism-conformance-server.log 2>&1 &
+          echo $! > /tmp/prism-conformance-server.pid
+          for attempt in {1..30}; do
+            if ! kill -0 "$(cat /tmp/prism-conformance-server.pid)" 2>/dev/null; then
+              cat /tmp/prism-conformance-server.log
+              exit 1
+            fi
+            if curl --fail --silent http://127.0.0.1:39091/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/prism-conformance-server.log
+          exit 1
+      - name: Run pinned official referee
+        run: >-
+          node .mcp-conformance/dist/index.js server
+          --url http://127.0.0.1:39091/mcp
+          --scenario server-stateless
+          --spec-version 2026-07-28
+      - name: Stop adapter
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/prism-conformance-server.pid ]; then
+            kill "$(cat /tmp/prism-conformance-server.pid)" 2>/dev/null || true
+          fi
+          cat /tmp/prism-conformance-server.log 2>/dev/null || true
+
+  client-2026:
+    name: MCP 2026 client / ${{ matrix.scenario }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - tools_call
+          - request-metadata
+          - http-standard-headers
+          - json-schema-ref-no-deref
+          - json-schema-2020-12-preservation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check out pinned official referee
+        uses: actions/checkout@v4
+        with:
+          repository: modelcontextprotocol/conformance
+          ref: c321dd32035556e6769d3724a8ee97d87c3faaac
+          path: .mcp-conformance
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Build pinned official referee
+        working-directory: .mcp-conformance
+        run: npm ci && npm run build
+      - name: Build standards-track client adapter
+        run: cargo build --locked --all-features --example conformance_2026_client
+      - name: Run pinned official referee
+        run: >-
+          node .mcp-conformance/dist/index.js client
+          --command "${{ github.workspace }}/target/debug/examples/conformance_2026_client"
+          --scenario "${{ matrix.scenario }}"
+          --spec-version 2026-07-28

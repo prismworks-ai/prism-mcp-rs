@@ -8,7 +8,7 @@ The auth module is currently wired through HTTP support:
 
 ```toml
 [dependencies]
-prism-mcp-rs = { version = "2", features = ["http", "auth"] }
+prism-mcp-rs = { version = "3", features = ["http", "auth"] }
 ```
 
 ## Client configuration

@@ -619,6 +619,7 @@ mod tests {
                 src: "https://example.com/resource-icon.svg".to_string(),
                 mime_type: Some("image/svg+xml".to_string()),
                 sizes: None,
+                theme: None,
             })
             .build(TextResource::new("test".to_string(), None));
 

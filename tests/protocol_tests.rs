@@ -163,7 +163,7 @@ mod protocol_constants_tests {
 
     #[test]
     fn test_protocol_version() {
-        assert_eq!(LATEST_PROTOCOL_VERSION, "2025-11-25");
+        assert_eq!(LATEST_PROTOCOL_VERSION, "2026-07-28");
         assert_eq!(JSONRPC_VERSION, "2.0");
     }
 

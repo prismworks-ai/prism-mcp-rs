@@ -12,7 +12,7 @@ For untrusted, third-party, or failure-prone extensions, run a separate MCP serv
 
 ```toml
 [dependencies]
-prism-mcp-rs = { version = "2", features = ["plugin"] }
+prism-mcp-rs = { version = "3", features = ["plugin"] }
 ```
 
 A plugin is a `cdylib` implementing `plugin::ToolPlugin` and exporting the symbols produced by `export_plugin!`. Its `PluginMetadata` and `Tool` definition identify the tool registered by `PluginManager`.
@@ -35,7 +35,7 @@ manager
 let tools = manager.list_tools().await;
 ```
 
-`PluginManager` supports load, unload, reload, enable/disable state, tool execution, listing, and directory/config-file helpers. `McpServer::load_plugins` can register loaded plugin tools with the server. Consult generated API documentation for exact type details because multiple legacy plugin type modules remain exposed in 2.x.
+`PluginManager` supports load, unload, reload, enable/disable state, tool execution, listing, and directory/config-file helpers. `McpServer::load_plugins` can register loaded plugin tools with the server. Consult generated API documentation for exact type details because multiple legacy plugin type modules remain exposed in 3.x.
 
 ## Lifecycle
 

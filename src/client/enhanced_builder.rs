@@ -4,7 +4,9 @@
 use crate::client::McpClient;
 use crate::core::enhanced_errors::{McpError, McpResult};
 use crate::protocol::types::{ClientCapabilities, ClientInfo};
-// use std::collections::HashMap; // Not needed
+use crate::protocol::ProtocolMode;
+use crate::protocol::TASKS_EXTENSION_ID;
+use std::collections::HashMap;
 use std::time::Duration;
 
 /// Configuration for retry behavior
@@ -55,6 +57,8 @@ pub struct McpClientBuilder {
     max_retries: Option<u32>,
     validate_requests: Option<bool>,
     validate_responses: Option<bool>,
+    protocol_mode: Option<ProtocolMode>,
+    max_mrtr_rounds: Option<u8>,
 }
 
 impl McpClientBuilder {
@@ -68,6 +72,8 @@ impl McpClientBuilder {
             max_retries: None,
             validate_requests: None,
             validate_responses: None,
+            protocol_mode: None,
+            max_mrtr_rounds: None,
         }
     }
 
@@ -86,6 +92,16 @@ impl McpClientBuilder {
     /// Set client capabilities
     pub fn capabilities(mut self, capabilities: ClientCapabilities) -> Self {
         self.capabilities = Some(capabilities);
+        self
+    }
+
+    /// Declare support for the official MCP Tasks extension.
+    pub fn with_tasks_extension(mut self) -> Self {
+        let capabilities = self.capabilities.get_or_insert_with(Default::default);
+        capabilities
+            .extensions
+            .get_or_insert_with(HashMap::new)
+            .insert(TASKS_EXTENSION_ID.to_string(), serde_json::json!({}));
         self
     }
 
@@ -113,6 +129,18 @@ impl McpClientBuilder {
         self
     }
 
+    /// Select automatic, modern-only, or legacy-only protocol behavior.
+    pub fn protocol_mode(mut self, mode: ProtocolMode) -> Self {
+        self.protocol_mode = Some(mode);
+        self
+    }
+
+    /// Bound automatic MCP 2026 multi-round-trip retries.
+    pub fn max_mrtr_rounds(mut self, rounds: u8) -> Self {
+        self.max_mrtr_rounds = Some(rounds.max(1));
+        self
+    }
+
     /// Build the client with validation
     pub fn build(self) -> McpResult<McpClient> {
         let name = self
@@ -129,6 +157,8 @@ impl McpClientBuilder {
             retry_delay_ms: 1000,
             validate_requests: self.validate_requests.unwrap_or(true),
             validate_responses: self.validate_responses.unwrap_or(true),
+            protocol_mode: self.protocol_mode.unwrap_or_default(),
+            max_mrtr_rounds: self.max_mrtr_rounds.unwrap_or(10),
         };
 
         Ok(McpClient::from_parts(client_info, capabilities, config))

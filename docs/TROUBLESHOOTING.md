@@ -52,7 +52,7 @@ curl -v http://127.0.0.1:8080/health
 
 ### HTTP 404
 
-The MCP request endpoint is `/mcp`; health is `/health`, notifications are `/mcp/notify`, and SSE events are `/mcp/events`.
+The standards-track MCP endpoint is `/mcp` for requests, notifications, and 2026 subscription SSE; health is `/health`. `/mcp/notify` and `/mcp/events` are legacy compatibility routes.
 
 ### TLS or mTLS handshake failure
 
@@ -127,4 +127,4 @@ Redact tokens, authorization headers, private keys, personal data, and sensitive
 
 ## Before filing an issue
 
-Provide a minimal reproduction, expected and actual behavior, exact commands, complete error output, version/feature information, and whether the issue reproduces on the current 2.x release. Use the private process in [SECURITY.md](../SECURITY.md) for suspected vulnerabilities.
+Provide a minimal reproduction, expected and actual behavior, exact commands, complete error output, version/feature information, and whether the issue reproduces on the current 3.x release. Use the private process in [SECURITY.md](../SECURITY.md) for suspected vulnerabilities.

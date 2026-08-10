@@ -11,7 +11,7 @@
 //! ```toml
 //! # Cargo.toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["http", "sse"] }
+//! prism-mcp-rs = { version = "3", features = ["http", "sse"] }
 
 use async_trait::async_trait;
 use axum::{
@@ -22,18 +22,15 @@ use axum::{
     Json, Router,
 };
 
-#[cfg(feature = "sse")]
 use axum::response::{sse::Event, Sse};
 use reqwest::Client;
 use serde_json::Value;
-use std::{collections::HashMap, sync::Arc, time::Duration};
-
-#[cfg(feature = "sse")]
-use std::convert::Infallible;
+use std::{collections::HashMap, convert::Infallible, sync::Arc, time::Duration};
 use tokio::sync::{broadcast, mpsc, Mutex, RwLock};
 
 #[cfg(feature = "sse")]
-use futures_util::{Stream, StreamExt};
+use futures::Stream;
+use futures::StreamExt;
 
 #[cfg(feature = "sse")]
 use tokio_stream::wrappers::BroadcastStream;
@@ -52,16 +49,49 @@ use hyper_util::{
 use crate::core::error::{McpError, McpResult};
 use crate::core::logging::ErrorContext;
 use crate::protocol::{
-    methods,
+    encode_http_header_value, has_tasks_extension, json_rpc_error_details, methods,
+    modern_request_context, request_protocol_version, request_routing_name, tool_call_headers,
+    tool_header_mappings,
     types::{
         error_codes, JsonRpcError, JsonRpcMessage, JsonRpcNotification, JsonRpcRequest,
         JsonRpcResponse,
     },
+    validate_http_headers, validate_tool_call_headers, ServerCapabilities, SubscriptionFilter,
+    SubscriptionsAcknowledgedParams, SubscriptionsListenParams, HEADER_MISMATCH, MCP_METHOD_HEADER,
+    MCP_NAME_HEADER, MCP_PROTOCOL_VERSION_HEADER, SUBSCRIPTION_ID_META_KEY, TASKS_EXTENSION_ID,
+    UNSUPPORTED_PROTOCOL_VERSION,
 };
-use crate::transport::traits::{ConnectionState, ServerTransport, Transport, TransportConfig};
+use crate::transport::traits::{
+    ClientSubscription, ConnectionState, ServerTransport, Transport, TransportConfig,
+};
 
 const FORBIDDEN_ERROR: i32 = -32010;
 const RATE_LIMITED_ERROR: i32 = -32011;
+
+fn parse_sse_response(bytes: &[u8], request_id: &Value) -> McpResult<Value> {
+    let body = String::from_utf8_lossy(bytes).replace("\r\n", "\n");
+    for event in body.split("\n\n") {
+        let data = event
+            .lines()
+            .filter_map(|line| line.strip_prefix("data:"))
+            .map(str::trim_start)
+            .collect::<Vec<_>>()
+            .join("\n");
+        if data.is_empty() {
+            continue;
+        }
+        let value: Value = serde_json::from_str(&data)
+            .map_err(|error| McpError::Serialization(format!("invalid SSE JSON data: {error}")))?;
+        if value.get("id") == Some(request_id)
+            && (value.get("result").is_some() || value.get("error").is_some())
+        {
+            return Ok(value);
+        }
+    }
+    Err(McpError::Serialization(
+        "SSE response ended without a JSON-RPC result for the request".to_string(),
+    ))
+}
 
 #[cfg(feature = "otel")]
 struct HeaderExtractor<'a>(&'a HeaderMap);
@@ -207,6 +237,9 @@ pub struct HttpClientTransport {
     pub(crate) config: TransportConfig,
     state: ConnectionState,
     request_id_counter: Arc<Mutex<u64>>,
+    /// Most recently accepted input schema for each discovered tool.
+    tool_schemas: HashMap<String, Value>,
+    subscription_tasks: Arc<Mutex<HashMap<String, tokio::task::AbortHandle>>>,
 }
 
 impl HttpClientTransport {
@@ -252,7 +285,10 @@ impl HttpClientTransport {
 
         let mut headers = HeaderMap::new();
         headers.insert("Content-Type", "application/json".parse().unwrap());
-        headers.insert("Accept", "application/json".parse().unwrap());
+        headers.insert(
+            "Accept",
+            "application/json, text/event-stream".parse().unwrap(),
+        );
 
         // Add custom headers from config
         for (key, value) in &config.headers {
@@ -296,6 +332,8 @@ impl HttpClientTransport {
             config,
             state: ConnectionState::Connected,
             request_id_counter: Arc::new(Mutex::new(0)),
+            tool_schemas: HashMap::new(),
+            subscription_tasks: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 
@@ -415,6 +453,15 @@ impl HttpClientTransport {
         *counter
     }
 
+    fn mcp_url(&self) -> String {
+        let base = self.base_url.trim_end_matches('/');
+        if base.ends_with("/mcp") {
+            base.to_string()
+        } else {
+            format!("{base}/mcp")
+        }
+    }
+
     /// Track request for metrics/debugging purposes
     async fn track_request(&self, request_id: &Value) {
         // For HTTP transport, we mainly use this for debugging and metrics
@@ -435,6 +482,37 @@ impl HttpClientTransport {
     pub async fn active_request_count(&self) -> usize {
         let pending = self.pending_requests.lock().await;
         pending.len()
+    }
+
+    fn capture_tool_schemas(&mut self, response: &mut JsonRpcResponse) {
+        let Some(tools) = response
+            .result
+            .as_mut()
+            .and_then(Value::as_object_mut)
+            .and_then(|result| result.get_mut("tools"))
+            .and_then(Value::as_array_mut)
+        else {
+            return;
+        };
+        self.tool_schemas.clear();
+        tools.retain(|tool| {
+            let Some(name) = tool.get("name").and_then(Value::as_str) else {
+                return false;
+            };
+            let Some(schema) = tool.get("inputSchema") else {
+                return false;
+            };
+            match tool_header_mappings(schema) {
+                Ok(_) => {
+                    self.tool_schemas.insert(name.to_string(), schema.clone());
+                    true
+                }
+                Err(error) => {
+                    tracing::warn!(tool.name = name, %error, "excluding tool with invalid x-mcp-header schema");
+                    false
+                }
+            }
+        });
     }
 
     #[cfg(test)]
@@ -467,7 +545,7 @@ impl Transport for HttpClientTransport {
         // Track the request for debugging/metrics
         self.track_request(&request_with_id.id).await;
 
-        let url = format!("{}/mcp", self.base_url);
+        let url = self.mcp_url();
 
         let mut http_request = self.client.post(&url);
 
@@ -481,6 +559,27 @@ impl Transport for HttpClientTransport {
             let name_str = name.as_str();
             let value_bytes = value.as_bytes();
             http_request = http_request.header(name_str, value_bytes);
+        }
+
+        if let Some(version) = request_protocol_version(&request_with_id) {
+            http_request = http_request
+                .header(MCP_PROTOCOL_VERSION_HEADER, version)
+                .header(MCP_METHOD_HEADER, request_with_id.method.as_str());
+            if let Some(name) = request_routing_name(&request_with_id) {
+                http_request = http_request.header(MCP_NAME_HEADER, encode_http_header_value(name));
+            }
+            if request_with_id.method == methods::TOOLS_CALL {
+                if let Some(params) = request_with_id.params.as_ref().and_then(Value::as_object) {
+                    if let Some(tool_name) = params.get("name").and_then(Value::as_str) {
+                        if let Some(schema) = self.tool_schemas.get(tool_name) {
+                            let arguments = params.get("arguments").unwrap_or(&Value::Null);
+                            for (name, value) in tool_call_headers(schema, arguments)? {
+                                http_request = http_request.header(name, value);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Apply timeout from config if specified
@@ -520,43 +619,41 @@ impl Transport for HttpClientTransport {
                 error
             })?;
 
-        if !response.status().is_success() {
-            // Untrack request on HTTP error
-            self.untrack_request(&request_with_id.id).await;
+        let response_status = response.status();
+        let response_content_type = response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or_default()
+            .to_string();
+        let response_bytes = response
+            .bytes()
+            .await
+            .map_err(|error| McpError::Http(format!("failed to read HTTP response: {error}")))?;
+        let parsed_response = if response_content_type.starts_with("text/event-stream") {
+            parse_sse_response(&response_bytes, &request_with_id.id)
+        } else {
+            serde_json::from_slice(&response_bytes)
+                .map_err(|error| McpError::Serialization(format!("invalid JSON response: {error}")))
+        };
+        let json_value: Value = match parsed_response {
+            Ok(value) => value,
+            Err(_error) if !response_status.is_success() => {
+                self.untrack_request(&request_with_id.id).await;
+                return Err(McpError::Http(format!(
+                    "HTTP error: {} {}",
+                    response_status.as_u16(),
+                    response_status.canonical_reason().unwrap_or("Unknown")
+                )));
+            }
+            Err(error) => {
+                self.untrack_request(&request_with_id.id).await;
+                error.clone().log_with_context(context).await;
+                return Err(error);
+            }
+        };
 
-            let error = McpError::Http(format!(
-                "HTTP error: {} {}",
-                response.status().as_u16(),
-                response.status().canonical_reason().unwrap_or("Unknown")
-            ));
-
-            // Log HTTP status error
-            error.log_with_context(context).await;
-            return Err(error);
-        }
-
-        let json_value: Value = response.json().await.map_err(|e| {
-            // Untrack request on parse error
-            let request_id = request_with_id.id.clone();
-            let pending_requests = self.pending_requests.clone();
-            tokio::spawn(async move {
-                let mut pending = pending_requests.lock().await;
-                pending.remove(&request_id);
-            });
-
-            let error = McpError::connection(format!("Request serialization failed: {e}"));
-
-            // Log parse error
-            let error_clone = error.clone();
-            let context_clone = context.clone();
-            tokio::spawn(async move {
-                error_clone.log_with_context(context_clone).await;
-            });
-
-            error
-        })?;
-
-        let result = if json_value.get("error").is_some() {
+        let mut result = if json_value.get("error").is_some() {
             serde_json::from_value::<JsonRpcError>(json_value)
                 .map_err(|error| McpError::Serialization(error.to_string()))
                 .and_then(|json_error| {
@@ -576,6 +673,36 @@ impl Transport for HttpClientTransport {
                                     .and_then(|value| value.as_u64())
                                     .unwrap_or_default(),
                             },
+                            error_codes::METHOD_NOT_FOUND => {
+                                McpError::MethodNotFound(json_error.error.message)
+                            }
+                            HEADER_MISMATCH => McpError::HeaderMismatch(json_error.error.message),
+                            crate::protocol::MISSING_REQUIRED_CLIENT_CAPABILITY => {
+                                let required = json_error
+                                    .error
+                                    .data
+                                    .and_then(|data| data.get("requiredCapabilities").cloned())
+                                    .unwrap_or_else(|| serde_json::json!({}));
+                                McpError::MissingRequiredClientCapability(required)
+                            }
+                            UNSUPPORTED_PROTOCOL_VERSION => {
+                                let data = json_error.error.data.unwrap_or_default();
+                                McpError::UnsupportedProtocolVersion {
+                                    requested: data
+                                        .get("requested")
+                                        .and_then(Value::as_str)
+                                        .unwrap_or("unknown")
+                                        .to_string(),
+                                    supported: data
+                                        .get("supported")
+                                        .and_then(Value::as_array)
+                                        .into_iter()
+                                        .flatten()
+                                        .filter_map(Value::as_str)
+                                        .map(str::to_string)
+                                        .collect(),
+                                }
+                            }
                             code => McpError::Protocol(format!(
                                 "JSON-RPC error {code}: {}",
                                 json_error.error.message
@@ -583,6 +710,12 @@ impl Transport for HttpClientTransport {
                         })
                     }
                 })
+        } else if !response_status.is_success() {
+            Err(McpError::Http(format!(
+                "HTTP error: {} {}",
+                response_status.as_u16(),
+                response_status.canonical_reason().unwrap_or("Unknown")
+            )))
         } else {
             serde_json::from_value::<JsonRpcResponse>(json_value)
                 .map_err(|error| McpError::Serialization(error.to_string()))
@@ -598,12 +731,17 @@ impl Transport for HttpClientTransport {
                 })
         };
 
+        if request_with_id.method == methods::TOOLS_LIST {
+            if let Ok(response) = &mut result {
+                self.capture_tool_schemas(response);
+            }
+        }
         self.untrack_request(&request_with_id.id).await;
         result
     }
 
     async fn send_notification(&mut self, notification: JsonRpcNotification) -> McpResult<()> {
-        let url = format!("{}/mcp/notify", self.base_url);
+        let url = self.mcp_url();
 
         let mut http_request = self.client.post(&url);
 
@@ -655,7 +793,180 @@ impl Transport for HttpClientTransport {
         }
     }
 
+    async fn open_subscription(
+        &mut self,
+        request: JsonRpcRequest,
+    ) -> McpResult<ClientSubscription> {
+        if request.method != methods::SUBSCRIPTIONS_LISTEN {
+            return Err(McpError::InvalidParams(
+                "open_subscription requires subscriptions/listen".to_string(),
+            ));
+        }
+        let version = request_protocol_version(&request).ok_or_else(|| {
+            McpError::InvalidParams("subscription request is missing modern metadata".to_string())
+        })?;
+        let url = self.mcp_url();
+        let mut http_request = self
+            .client
+            .post(url)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json, text/event-stream")
+            .header(MCP_PROTOCOL_VERSION_HEADER, version)
+            .header(MCP_METHOD_HEADER, methods::SUBSCRIPTIONS_LISTEN);
+        for (name, value) in self.headers.iter() {
+            if !name.as_str().eq_ignore_ascii_case("accept") {
+                http_request = http_request.header(name.as_str(), value.as_bytes());
+            }
+        }
+        #[cfg(feature = "otel")]
+        {
+            http_request = inject_trace_context(http_request);
+        }
+        let response = http_request
+            .json(&request)
+            .send()
+            .await
+            .map_err(|error| McpError::Http(format!("subscription request failed: {error}")))?;
+        let status = response.status();
+        if !status.is_success() {
+            let bytes = response.bytes().await.unwrap_or_default();
+            if let Ok(error) = serde_json::from_slice::<JsonRpcError>(&bytes) {
+                return Err(match error.error.code {
+                    crate::protocol::MISSING_REQUIRED_CLIENT_CAPABILITY => {
+                        McpError::MissingRequiredClientCapability(
+                            error
+                                .error
+                                .data
+                                .and_then(|value| value.get("requiredCapabilities").cloned())
+                                .unwrap_or_else(|| serde_json::json!({})),
+                        )
+                    }
+                    HEADER_MISMATCH => McpError::HeaderMismatch(error.error.message),
+                    code => McpError::Protocol(format!(
+                        "JSON-RPC error {code}: {}",
+                        error.error.message
+                    )),
+                });
+            }
+            return Err(McpError::Http(format!(
+                "subscription HTTP error: {}",
+                status.as_u16()
+            )));
+        }
+        let content_type = response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or_default();
+        if !content_type.starts_with("text/event-stream") {
+            return Err(McpError::Http(format!(
+                "subscriptions/listen requires text/event-stream, received {content_type}"
+            )));
+        }
+
+        let (notification_tx, notification_rx) = mpsc::unbounded_channel();
+        let (completion_tx, completion_rx) = tokio::sync::oneshot::channel();
+        let request_id = request.id.clone();
+        let key = request_id.to_string();
+        let tasks = self.subscription_tasks.clone();
+        let task_key = key.clone();
+        let task = tokio::spawn(async move {
+            let mut completion_tx = Some(completion_tx);
+            let mut stream = response.bytes_stream();
+            let mut buffer = String::new();
+            while let Some(chunk) = stream.next().await {
+                let chunk = match chunk {
+                    Ok(chunk) => chunk,
+                    Err(error) => {
+                        if let Some(sender) = completion_tx.take() {
+                            let _ = sender.send(Err(McpError::Http(format!(
+                                "subscription stream failed: {error}"
+                            ))));
+                        }
+                        tasks.lock().await.remove(&task_key);
+                        return;
+                    }
+                };
+                buffer.push_str(&String::from_utf8_lossy(&chunk));
+                buffer = buffer.replace("\r\n", "\n");
+                while let Some(boundary) = buffer.find("\n\n") {
+                    let event = buffer[..boundary].to_string();
+                    buffer.drain(..boundary + 2);
+                    let data = event
+                        .lines()
+                        .filter_map(|line| line.strip_prefix("data:"))
+                        .map(str::trim_start)
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    if data.is_empty() {
+                        continue;
+                    }
+                    let Ok(value) = serde_json::from_str::<Value>(&data) else {
+                        continue;
+                    };
+                    if value.get("method").is_some() && value.get("id").is_none() {
+                        if let Ok(notification) = serde_json::from_value(value) {
+                            if notification_tx.send(notification).is_err() {
+                                tasks.lock().await.remove(&task_key);
+                                return;
+                            }
+                        }
+                    } else if value.get("result").is_some() {
+                        if let Some(sender) = completion_tx.take() {
+                            let result = serde_json::from_value(value)
+                                .map_err(|error| McpError::Serialization(error.to_string()));
+                            let _ = sender.send(result);
+                        }
+                        tasks.lock().await.remove(&task_key);
+                        return;
+                    } else if value.get("error").is_some() {
+                        if let Some(sender) = completion_tx.take() {
+                            let message = value
+                                .get("error")
+                                .and_then(|error| error.get("message"))
+                                .and_then(Value::as_str)
+                                .unwrap_or("subscription failed");
+                            let _ = sender.send(Err(McpError::Protocol(message.to_string())));
+                        }
+                        tasks.lock().await.remove(&task_key);
+                        return;
+                    }
+                }
+            }
+            if let Some(sender) = completion_tx.take() {
+                let _ = sender.send(Err(McpError::Transport(
+                    "subscription stream closed without a final response".to_string(),
+                )));
+            }
+            tasks.lock().await.remove(&task_key);
+        });
+        let abort_handle = task.abort_handle();
+        self.subscription_tasks
+            .lock()
+            .await
+            .insert(key, abort_handle.clone());
+        Ok(
+            ClientSubscription::new(request_id, notification_rx, completion_rx)
+                .with_abort_handle(abort_handle),
+        )
+    }
+
+    async fn cancel_subscription(&mut self, request_id: &Value) -> McpResult<()> {
+        if let Some(handle) = self
+            .subscription_tasks
+            .lock()
+            .await
+            .remove(&request_id.to_string())
+        {
+            handle.abort();
+        }
+        Ok(())
+    }
+
     async fn close(&mut self) -> McpResult<()> {
+        for (_, task) in self.subscription_tasks.lock().await.drain() {
+            task.abort();
+        }
         self.state = ConnectionState::Disconnected;
         self.notification_receiver = None;
         Ok(())
@@ -688,6 +999,8 @@ type HttpRequestHandler = Arc<
 struct HttpServerState {
     notification_sender: broadcast::Sender<JsonRpcNotification>,
     request_handler: Option<HttpRequestHandler>,
+    tool_schemas: HashMap<String, Value>,
+    capabilities: ServerCapabilities,
 }
 
 /// HTTP transport for MCP servers
@@ -701,6 +1014,9 @@ pub struct HttpServerTransport {
     server_handle: Option<tokio::task::JoinHandle<()>>,
     running: Arc<RwLock<bool>>,
     pending_request_handler: Option<crate::transport::traits::ServerRequestHandler>,
+    pending_tool_schemas: HashMap<String, Value>,
+    pending_capabilities: ServerCapabilities,
+    pending_task_notifications: Option<broadcast::Receiver<JsonRpcNotification>>,
     #[cfg(feature = "tls")]
     mtls_config: Option<MtlsServerConfig>,
 }
@@ -734,10 +1050,15 @@ impl HttpServerTransport {
             state: Arc::new(RwLock::new(HttpServerState {
                 notification_sender,
                 request_handler: None,
+                tool_schemas: HashMap::new(),
+                capabilities: ServerCapabilities::default(),
             })),
             server_handle: None,
             running: Arc::new(RwLock::new(false)),
             pending_request_handler: None,
+            pending_tool_schemas: HashMap::new(),
+            pending_capabilities: ServerCapabilities::default(),
+            pending_task_notifications: None,
             #[cfg(feature = "tls")]
             mtls_config: None,
         }
@@ -788,6 +1109,34 @@ impl HttpServerTransport {
 
 #[async_trait]
 impl ServerTransport for HttpServerTransport {
+    fn set_tool_schemas(&mut self, schemas: HashMap<String, Value>) -> McpResult<()> {
+        for (name, schema) in &schemas {
+            tool_header_mappings(schema).map_err(|error| {
+                McpError::Validation(format!(
+                    "tool {name} has an invalid x-mcp-header schema: {error}"
+                ))
+            })?;
+        }
+        // Server construction occurs outside request processing; blocking here
+        // would be unsafe, so retain schemas on the transport and copy them
+        // into shared state when start() runs.
+        self.pending_tool_schemas = schemas;
+        Ok(())
+    }
+
+    fn set_server_capabilities(&mut self, capabilities: ServerCapabilities) -> McpResult<()> {
+        self.pending_capabilities = capabilities;
+        Ok(())
+    }
+
+    fn set_task_notifications(
+        &mut self,
+        receiver: broadcast::Receiver<JsonRpcNotification>,
+    ) -> McpResult<()> {
+        self.pending_task_notifications = Some(receiver);
+        Ok(())
+    }
+
     async fn start(&mut self) -> McpResult<()> {
         tracing::info!("Starting HTTP server on {}", self.bind_addr);
 
@@ -805,6 +1154,22 @@ impl ServerTransport for HttpServerTransport {
                 rx
             });
             self.state.write().await.request_handler = Some(http_handler);
+        }
+        self.state.write().await.tool_schemas = std::mem::take(&mut self.pending_tool_schemas);
+        self.state.write().await.capabilities = std::mem::take(&mut self.pending_capabilities);
+        if let Some(mut task_notifications) = self.pending_task_notifications.take() {
+            let sender = self.state.read().await.notification_sender.clone();
+            tokio::spawn(async move {
+                loop {
+                    match task_notifications.recv().await {
+                        Ok(notification) => {
+                            let _ = sender.send(notification);
+                        }
+                        Err(broadcast::error::RecvError::Lagged(_)) => continue,
+                        Err(broadcast::error::RecvError::Closed) => break,
+                    }
+                }
+            });
         }
 
         let state = self.state.clone();
@@ -937,11 +1302,141 @@ async fn handle_mcp_request(
     headers: HeaderMap,
     Json(message): Json<JsonRpcMessage>,
 ) -> Result<Response, StatusCode> {
+    let protocol_header = headers
+        .get(MCP_PROTOCOL_VERSION_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_string);
+    let method_header = headers
+        .get(MCP_METHOD_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_string);
+    let name_header = headers
+        .get(MCP_NAME_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_string);
+    let accept_header = headers
+        .get(axum::http::header::ACCEPT)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or_default()
+        .to_string();
+    let custom_headers: HashMap<String, String> = headers
+        .iter()
+        .filter_map(|(name, value)| {
+            name.as_str()
+                .to_ascii_lowercase()
+                .starts_with("mcp-param-")
+                .then(|| {
+                    value
+                        .to_str()
+                        .ok()
+                        .map(|value| (name.as_str().to_string(), value.to_string()))
+                })
+                .flatten()
+        })
+        .collect();
     let dispatch = async move {
         match message {
-            JsonRpcMessage::Request(request) => handle_mcp_jsonrpc_request(state, request)
-                .await
-                .map(|message| Json(message).into_response()),
+            JsonRpcMessage::Request(request) => {
+                let is_modern = request_protocol_version(&request).is_some();
+                if let Err(error) = validate_http_headers(
+                    &request,
+                    protocol_header.as_deref(),
+                    method_header.as_deref(),
+                    name_header.as_deref(),
+                ) {
+                    let (code, data) = json_rpc_error_details(&error);
+                    let body = JsonRpcMessage::Error(JsonRpcError::error(
+                        request.id,
+                        code,
+                        error.to_string(),
+                        data,
+                    ));
+                    return Ok((StatusCode::BAD_REQUEST, Json(body)).into_response());
+                }
+                if is_modern && request.method == methods::SUBSCRIPTIONS_LISTEN {
+                    if !accept_header
+                        .split(',')
+                        .any(|value| value.trim().starts_with("text/event-stream"))
+                    {
+                        let error = McpError::HeaderMismatch(
+                            "subscriptions/listen requires Accept: text/event-stream".to_string(),
+                        );
+                        let (code, data) = json_rpc_error_details(&error);
+                        let body = JsonRpcMessage::Error(JsonRpcError::error(
+                            request.id,
+                            code,
+                            error.to_string(),
+                            data,
+                        ));
+                        return Ok((StatusCode::BAD_REQUEST, Json(body)).into_response());
+                    }
+                    return handle_subscription_stream(state, request).await;
+                }
+                if is_modern && request.method == methods::TOOLS_CALL {
+                    let params = request.params.as_ref().and_then(Value::as_object);
+                    let tool_name = params
+                        .and_then(|params| params.get("name"))
+                        .and_then(Value::as_str);
+                    let arguments = params
+                        .and_then(|params| params.get("arguments"))
+                        .unwrap_or(&Value::Null);
+                    let schema = if let Some(tool_name) = tool_name {
+                        state.read().await.tool_schemas.get(tool_name).cloned()
+                    } else {
+                        None
+                    };
+                    let validation = match schema {
+                        Some(schema) => {
+                            validate_tool_call_headers(&schema, arguments, &custom_headers)
+                        }
+                        None => Ok(()),
+                    };
+                    if let Err(error) = validation {
+                        let (code, data) = json_rpc_error_details(&error);
+                        let body = JsonRpcMessage::Error(JsonRpcError::error(
+                            request.id,
+                            code,
+                            error.to_string(),
+                            data,
+                        ));
+                        return Ok((StatusCode::BAD_REQUEST, Json(body)).into_response());
+                    }
+                }
+                handle_mcp_jsonrpc_request(state, request)
+                    .await
+                    .map(|message| {
+                        let status = match &message {
+                            JsonRpcMessage::Error(error)
+                                if matches!(
+                                    error.error.code,
+                                    HEADER_MISMATCH
+                                        | UNSUPPORTED_PROTOCOL_VERSION
+                                        | crate::protocol::MISSING_REQUIRED_CLIENT_CAPABILITY
+                                        | error_codes::INVALID_REQUEST
+                                        | error_codes::INVALID_PARAMS
+                                ) =>
+                            {
+                                StatusCode::BAD_REQUEST
+                            }
+                            JsonRpcMessage::Error(error)
+                                if is_modern
+                                    && error.error.code == error_codes::METHOD_NOT_FOUND =>
+                            {
+                                StatusCode::NOT_FOUND
+                            }
+                            JsonRpcMessage::Error(error) if error.error.code == FORBIDDEN_ERROR => {
+                                StatusCode::FORBIDDEN
+                            }
+                            JsonRpcMessage::Error(error)
+                                if error.error.code == RATE_LIMITED_ERROR =>
+                            {
+                                StatusCode::TOO_MANY_REQUESTS
+                            }
+                            _ => StatusCode::OK,
+                        };
+                        (status, Json(message)).into_response()
+                    })
+            }
             JsonRpcMessage::Notification(notification) => {
                 handle_mcp_jsonrpc_notification(state, notification).await?;
                 Ok(StatusCode::ACCEPTED.into_response())
@@ -964,9 +1459,147 @@ async fn handle_mcp_request(
 
     #[cfg(not(feature = "otel"))]
     {
-        let _ = headers;
         dispatch.await
     }
+}
+
+async fn handle_subscription_stream(
+    state: Arc<RwLock<HttpServerState>>,
+    request: JsonRpcRequest,
+) -> Result<Response, StatusCode> {
+    let context = modern_request_context(&request).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let context = context.ok_or(StatusCode::BAD_REQUEST)?;
+    let params: SubscriptionsListenParams =
+        request
+            .params
+            .clone()
+            .ok_or(StatusCode::BAD_REQUEST)
+            .and_then(|value| serde_json::from_value(value).map_err(|_| StatusCode::BAD_REQUEST))?;
+    if params.notifications.requests_tasks() && !has_tasks_extension(&context.client_capabilities) {
+        let error = McpError::MissingRequiredClientCapability(serde_json::json!({
+            "extensions": {(TASKS_EXTENSION_ID): {}}
+        }));
+        let (code, data) = json_rpc_error_details(&error);
+        let body = JsonRpcMessage::Error(JsonRpcError::error(
+            request.id,
+            code,
+            error.to_string(),
+            data,
+        ));
+        return Ok((StatusCode::BAD_REQUEST, Json(body)).into_response());
+    }
+
+    let state_guard = state.read().await;
+    let capabilities = &state_guard.capabilities;
+    let tasks_enabled = capabilities
+        .extensions
+        .as_ref()
+        .is_some_and(|extensions| extensions.contains_key(TASKS_EXTENSION_ID));
+    let accepted = SubscriptionFilter {
+        tools_list_changed: (params.notifications.tools_list_changed == Some(true)
+            && capabilities
+                .tools
+                .as_ref()
+                .is_some_and(|value| value.list_changed == Some(true)))
+        .then_some(true),
+        prompts_list_changed: (params.notifications.prompts_list_changed == Some(true)
+            && capabilities
+                .prompts
+                .as_ref()
+                .is_some_and(|value| value.list_changed == Some(true)))
+        .then_some(true),
+        resources_list_changed: (params.notifications.resources_list_changed == Some(true)
+            && capabilities
+                .resources
+                .as_ref()
+                .is_some_and(|value| value.list_changed == Some(true)))
+        .then_some(true),
+        resource_subscriptions: if capabilities
+            .resources
+            .as_ref()
+            .is_some_and(|value| value.subscribe == Some(true))
+        {
+            params.notifications.resource_subscriptions.clone()
+        } else {
+            Vec::new()
+        },
+        task_ids: if tasks_enabled {
+            params.notifications.task_ids.clone()
+        } else {
+            Vec::new()
+        },
+    };
+    let receiver = state_guard.notification_sender.subscribe();
+    drop(state_guard);
+
+    let subscription_id = request.id.clone();
+    let mut ack_meta = HashMap::new();
+    ack_meta.insert(
+        SUBSCRIPTION_ID_META_KEY.to_string(),
+        subscription_id.clone(),
+    );
+    let acknowledgement = JsonRpcNotification::new(
+        methods::SUBSCRIPTIONS_ACKNOWLEDGED.to_string(),
+        Some(SubscriptionsAcknowledgedParams {
+            notifications: accepted.clone(),
+            meta: ack_meta,
+        }),
+    )
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let stream = futures::stream::unfold(
+        (Some(acknowledgement), receiver, accepted, subscription_id),
+        |(first, mut receiver, filter, subscription_id)| async move {
+            if let Some(notification) = first {
+                let data =
+                    serde_json::to_string(&notification).unwrap_or_else(|_| "{}".to_string());
+                return Some((
+                    Ok::<Event, Infallible>(Event::default().data(data)),
+                    (None, receiver, filter, subscription_id),
+                ));
+            }
+            loop {
+                let mut notification = match receiver.recv().await {
+                    Ok(notification) => notification,
+                    Err(broadcast::error::RecvError::Lagged(_)) => continue,
+                    Err(broadcast::error::RecvError::Closed) => return None,
+                };
+                if !filter.matches(&notification.method, notification.params.as_ref()) {
+                    continue;
+                }
+                let params = notification
+                    .params
+                    .get_or_insert_with(|| Value::Object(serde_json::Map::new()));
+                let Some(object) = params.as_object_mut() else {
+                    continue;
+                };
+                let meta = object
+                    .entry("_meta")
+                    .or_insert_with(|| Value::Object(serde_json::Map::new()));
+                let Some(meta) = meta.as_object_mut() else {
+                    continue;
+                };
+                meta.insert(
+                    SUBSCRIPTION_ID_META_KEY.to_string(),
+                    subscription_id.clone(),
+                );
+                let data =
+                    serde_json::to_string(&notification).unwrap_or_else(|_| "{}".to_string());
+                return Some((
+                    Ok::<Event, Infallible>(Event::default().data(data)),
+                    (None, receiver, filter, subscription_id),
+                ));
+            }
+        },
+    );
+
+    Ok(Sse::new(stream)
+        .keep_alive(
+            axum::response::sse::KeepAlive::new()
+                .interval(Duration::from_secs(30))
+                .text("keep-alive"),
+        )
+        .into_response())
 }
 
 async fn handle_mcp_jsonrpc_request(
@@ -989,7 +1622,7 @@ async fn handle_mcp_jsonrpc_request(
                         RATE_LIMITED_ERROR,
                         Some(serde_json::json!({"retryAfterMs": retry_after_ms})),
                     ),
-                    _ => (error_codes::INTERNAL_ERROR, None),
+                    _ => json_rpc_error_details(&error),
                 };
                 Ok(JsonRpcMessage::Error(JsonRpcError::error(
                     request_id,
@@ -1041,6 +1674,7 @@ fn is_supported_http_notification(notification: &JsonRpcNotification) -> bool {
             | methods::PROMPTS_LIST_CHANGED
             | methods::ROOTS_LIST_CHANGED
             | methods::ELICITATION_COMPLETE
+            | methods::TASKS_STATUS
             | methods::TASKS_STATUS_UPDATE
             | methods::LOGGING_MESSAGE
             | methods::PROGRESS
@@ -1106,6 +1740,13 @@ mod tests {
     use crate::protocol::methods;
     use wiremock::matchers::{header, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    #[test]
+    fn parses_json_rpc_result_from_standard_post_sse() {
+        let body = b"event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":7,\"result\":{\"ok\":true}}\r\n\r\n";
+        let parsed = parse_sse_response(body, &serde_json::json!(7)).unwrap();
+        assert_eq!(parsed["result"]["ok"], true);
+    }
 
     #[tokio::test]
     async fn test_http_client_creation() {
@@ -1388,6 +2029,8 @@ mod tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: None,
+            tool_schemas: HashMap::new(),
+            capabilities: ServerCapabilities::default(),
         }));
         let message = serde_json::from_value::<JsonRpcMessage>(serde_json::json!({
             "jsonrpc": "2.0",
@@ -1411,6 +2054,8 @@ mod tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: None,
+            tool_schemas: HashMap::new(),
+            capabilities: ServerCapabilities::default(),
         }));
         let message = serde_json::from_value::<JsonRpcMessage>(serde_json::json!({
             "jsonrpc": "2.0",
@@ -1432,6 +2077,8 @@ mod tests {
         let state = Arc::new(RwLock::new(HttpServerState {
             notification_sender,
             request_handler: None,
+            tool_schemas: HashMap::new(),
+            capabilities: ServerCapabilities::default(),
         }));
 
         let state_extract = State(state);
@@ -1618,7 +2265,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/mcp/notify"))
+            .and(path("/mcp"))
             .and(header("content-type", "application/json"))
             .respond_with(ResponseTemplate::new(200))
             .mount(&mock_server)
@@ -1707,7 +2354,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/mcp/notify"))
+            .and(path("/mcp"))
             .respond_with(ResponseTemplate::new(400).set_body_string("Bad Request"))
             .mount(&mock_server)
             .await;

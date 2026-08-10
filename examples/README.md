@@ -2,6 +2,8 @@
 
 The canonical learning sequence is the numbered `examples/features/` set. Root-level examples include compatibility, corrected, and diagnostic variants retained for API regression coverage; similar filenames do not represent separate recommended approaches.
 
+`conformance_2026_server.rs` and `conformance_2026_client.rs` are upstream-referee adapters used by CI. The server adapter also carries the official Tasks extension fixtures used for local semantic verification. They are test infrastructure, not application templates.
+
 ## Start here
 
 | Example | Feature |

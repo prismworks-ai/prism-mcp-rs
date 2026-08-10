@@ -193,13 +193,15 @@ async fn main() -> McpResult<()> {
         json!(1),
         "initialize".to_string(),
         Some(InitializeParams::new(
-            LATEST_PROTOCOL_VERSION.to_string(),
+            LEGACY_PROTOCOL_VERSION.to_string(),
             ClientCapabilities::default(),
             ClientInfo {
                 name: "test-client".to_string(),
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Client".to_string()),
+                website_url: None,
+                icons: None,
             },
         )),
     )?;

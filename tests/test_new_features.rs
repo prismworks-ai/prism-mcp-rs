@@ -75,7 +75,7 @@ fn test_schema_introspection() {
     let builder = SchemaBuilder::new();
     let result = builder.build();
 
-    assert_eq!(result.protocol.version, "2025-11-25");
+    assert_eq!(result.protocol.version, "2026-07-28");
     assert!(result
         .protocol
         .supported_versions

@@ -14,7 +14,10 @@ use crate::core::tool_metadata::{
     CategoryFilter, ImprovedToolMetadata, ToolBehaviorHints, ToolCategory, ToolDeprecation,
 };
 use crate::core::validation::{ParameterValidator, ValidationConfig};
-use crate::protocol::types::{ContentBlock, Icon, ToolInfo, ToolInputSchema, ToolResult};
+use crate::protocol::types::{
+    ClientCapabilities, ContentBlock, Icon, Implementation, ToolInfo, ToolInputSchema, ToolResult,
+};
+use crate::protocol::OperationResult;
 
 /// Trait for implementing tool handlers
 #[async_trait]
@@ -27,6 +30,32 @@ pub trait ToolHandler: Send + Sync {
     /// # Returns
     /// Result containing the tool execution result or an error
     async fn call(&self, arguments: HashMap<String, Value>) -> McpResult<ToolResult>;
+}
+
+/// One invocation of an MCP 2026 multi-round-trip capable tool.
+#[derive(Debug, Clone, PartialEq)]
+pub struct MultiRoundToolCall {
+    /// Tool arguments supplied on the original request and every retry.
+    pub arguments: HashMap<String, Value>,
+    /// Results of input requests issued by the previous server response.
+    pub input_responses: HashMap<String, Value>,
+    /// Opaque state minted by the handler and returned byte-for-byte by the client.
+    pub request_state: Option<String>,
+    /// Self-reported client identity from this request.
+    pub client_info: Option<Implementation>,
+    /// Capabilities declared for this request.
+    pub client_capabilities: ClientCapabilities,
+}
+
+/// Handler for tools that may require MCP 2026 multi-round-trip input.
+///
+/// A handler returns [`OperationResult::Complete`] when execution is finished,
+/// or [`OperationResult::InputRequired`] with client input requests and/or
+/// opaque request state. The SDK rejects an input-required result on a legacy
+/// connection.
+#[async_trait]
+pub trait MultiRoundToolHandler: Send + Sync {
+    async fn call(&self, call: MultiRoundToolCall) -> McpResult<OperationResult<ToolResult>>;
 }
 
 // ============================================================================
@@ -1212,6 +1241,7 @@ mod tests {
                 src: "https://example.com/tool-icon.svg".to_string(),
                 mime_type: Some("image/svg+xml".to_string()),
                 sizes: None,
+                theme: None,
             })
             .schema(json!({"type": "object", "properties": {"x": {"type": "number"}}}))
             .build(EchoTool)

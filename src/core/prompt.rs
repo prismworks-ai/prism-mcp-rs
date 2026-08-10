@@ -455,6 +455,7 @@ mod tests {
                 src: "https://example.com/prompt-icon.svg".to_string(),
                 mime_type: Some("image/svg+xml".to_string()),
                 sizes: None,
+                theme: None,
             })
             .required_arg("input", Some("Input text"))
             .optional_arg("format", Some("Output format"))

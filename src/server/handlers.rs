@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::core::error::{McpError, McpResult};
-use crate::protocol::{messages::*, methods, types::*, LATEST_PROTOCOL_VERSION};
+use crate::protocol::{messages::*, methods, types::*, LEGACY_PROTOCOL_VERSION};
 
 /// Handler for initialization requests
 pub struct InitializeHandler;
@@ -30,9 +30,9 @@ impl InitializeHandler {
         };
 
         // Validate protocol version compatibility
-        if params.protocol_version != LATEST_PROTOCOL_VERSION {
+        if params.protocol_version != LEGACY_PROTOCOL_VERSION {
             let protocol_version = params.protocol_version;
-            let expected = LATEST_PROTOCOL_VERSION;
+            let expected = LEGACY_PROTOCOL_VERSION;
             return Err(McpError::Protocol(format!(
                 "Unsupported protocol version: {protocol_version}. Expected: {expected}"
             )));
@@ -52,7 +52,7 @@ impl InitializeHandler {
         }
 
         Ok(InitializeResult::new(
-            LATEST_PROTOCOL_VERSION.to_string(),
+            LEGACY_PROTOCOL_VERSION.to_string(),
             capabilities.clone(),
             server_info.clone(),
         ))
@@ -568,6 +568,8 @@ mod tests {
             version: "1.0.0".to_string(),
             description: None,
             title: Some("Test Server".to_string()),
+            website_url: None,
+            icons: None,
         };
         let capabilities = ServerCapabilities::default();
 
@@ -577,7 +579,7 @@ mod tests {
                 "version": "1.0.0"
             },
             "capabilities": {},
-            "protocolVersion": LATEST_PROTOCOL_VERSION
+            "protocolVersion": LEGACY_PROTOCOL_VERSION
         });
 
         let result = InitializeHandler::handle(&server_info, &capabilities, Some(params)).await;
@@ -585,7 +587,7 @@ mod tests {
 
         let init_result = result.unwrap();
         assert_eq!(init_result.server_info.name, "test-server");
-        assert_eq!(init_result.protocol_version, LATEST_PROTOCOL_VERSION);
+        assert_eq!(init_result.protocol_version, LEGACY_PROTOCOL_VERSION);
     }
 
     #[tokio::test]

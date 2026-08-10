@@ -9,7 +9,7 @@
 //! To use the plugin system, enable the plugin feature in `Cargo.toml`:
 //! ```toml
 //! [dependencies]
-//! prism-mcp-rs = { version = "2", features = ["plugin"] }
+//! prism-mcp-rs = { version = "3", features = ["plugin"] }
 //! ```
 //!
 //! This enables dynamic tool loading and plugin management capabilities.
@@ -25,11 +25,16 @@ use crate::core::{
     error::{McpError, McpResult},
     prompt::{Prompt, PromptHandler},
     resource::{Resource, ResourceHandler},
-    tool::{Tool, ToolHandler},
+    tool::{MultiRoundToolCall, MultiRoundToolHandler, Tool, ToolHandler},
     PromptInfo, ResourceInfo, ToolInfo,
 };
-use crate::protocol::{error_codes::*, messages::*, methods, types::*, validation::*};
+use crate::protocol::tasks::{
+    has_tasks_extension, CancelTaskParams, CreateTaskResult, GetTaskParams, GetTaskResult,
+    TaskAcknowledgement, UpdateTaskParams, TASKS_EXTENSION_ID,
+};
+use crate::protocol::{messages::*, methods, types::*, validation::*, version::*};
 use crate::security::{RequestContext, RequestPolicy, RequestTarget};
+use crate::server::tasks::{ComposedTaskToolHandler, TaskRegistry, TaskToolHandler};
 use crate::transport::traits::ServerTransport;
 
 #[cfg(feature = "plugin")]
@@ -169,6 +174,12 @@ pub struct McpServer {
     resources: Arc<RwLock<HashMap<String, Resource>>>,
     /// Registered tools
     tools: Arc<RwLock<HashMap<String, Tool>>>,
+    /// Registered MCP 2026 multi-round-trip capable tools.
+    multi_round_tools: Arc<RwLock<HashMap<String, RegisteredMultiRoundTool>>>,
+    /// Registered tools that execute through the MCP Tasks extension.
+    task_tools: Arc<RwLock<HashMap<String, RegisteredTaskTool>>>,
+    /// Caller-bound durable task state.
+    task_registry: TaskRegistry,
     /// Registered prompts
     prompts: Arc<RwLock<HashMap<String, Prompt>>>,
     /// Resource templates (New in 2025-11-25)
@@ -184,9 +195,32 @@ pub struct McpServer {
     request_counter: Arc<Mutex<u64>>,
     /// Authorization and rate-limiting policy shared by all transports.
     request_policy: RequestPolicy,
+    /// Revisions this server accepts.
+    protocol_mode: ProtocolMode,
     /// Plugin manager for dynamic tool loading
     #[cfg(feature = "plugin")]
     plugin_manager: Option<Arc<RwLock<PluginManager>>>,
+}
+
+struct RegisteredMultiRoundTool {
+    info: ToolInfo,
+    handler: Box<dyn MultiRoundToolHandler>,
+}
+
+#[derive(Clone)]
+struct RegisteredTaskTool {
+    info: ToolInfo,
+    execution: TaskExecution,
+    fallback: Option<Arc<dyn ToolHandler>>,
+}
+
+#[derive(Clone)]
+enum TaskExecution {
+    Direct(Arc<dyn TaskToolHandler>),
+    Composed {
+        preflight: Arc<dyn MultiRoundToolHandler>,
+        handler: Arc<dyn ComposedTaskToolHandler>,
+    },
 }
 
 /// Internal server state
@@ -215,12 +249,109 @@ fn request_target(request: &JsonRpcRequest) -> RequestTarget {
     RequestTarget::new(request.method.clone(), resource)
 }
 
+fn validate_input_required_result(
+    result: &InputRequiredResult,
+    capabilities: &ClientCapabilities,
+) -> McpResult<()> {
+    if result.result_type != ResultType::InputRequired {
+        return Err(McpError::Validation(
+            "multi-round handler must return resultType input_required".to_string(),
+        ));
+    }
+    if result.input_requests.is_empty() && result.request_state.is_none() {
+        return Err(McpError::Validation(
+            "input_required needs inputRequests or requestState".to_string(),
+        ));
+    }
+    for input_request in result.input_requests.values() {
+        let method = input_request
+            .get("method")
+            .and_then(Value::as_str)
+            .ok_or_else(|| McpError::Validation("input request is missing method".to_string()))?;
+        let required = match method {
+            methods::SAMPLING_CREATE_MESSAGE if capabilities.sampling.is_none() => {
+                Some(serde_json::json!({"sampling": {}}))
+            }
+            methods::ROOTS_LIST if capabilities.roots.is_none() => {
+                Some(serde_json::json!({"roots": {}}))
+            }
+            methods::ELICITATION_CREATE if capabilities.elicitation.is_none() => {
+                Some(serde_json::json!({"elicitation": {}}))
+            }
+            methods::SAMPLING_CREATE_MESSAGE
+            | methods::ROOTS_LIST
+            | methods::ELICITATION_CREATE => None,
+            _ => {
+                return Err(McpError::Validation(format!(
+                    "unsupported input request method: {method}"
+                )))
+            }
+        };
+        if let Some(required) = required {
+            return Err(McpError::MissingRequiredClientCapability(required));
+        }
+    }
+    Ok(())
+}
+
+fn tasks_capability_error() -> McpError {
+    McpError::MissingRequiredClientCapability(serde_json::json!({
+        "extensions": { (TASKS_EXTENSION_ID): {} }
+    }))
+}
+
+fn parse_multi_round_tool_call(
+    raw_params: &Value,
+    arguments: HashMap<String, Value>,
+    modern_context: Option<&ModernRequestContext>,
+) -> McpResult<MultiRoundToolCall> {
+    let raw_object = raw_params.as_object().ok_or_else(|| {
+        McpError::Validation("tool call parameters must be an object".to_string())
+    })?;
+    let input_responses = raw_object
+        .get("inputResponses")
+        .map(|value| {
+            value
+                .as_object()
+                .cloned()
+                .map(|values| values.into_iter().collect())
+                .ok_or_else(|| McpError::Validation("inputResponses must be an object".to_string()))
+        })
+        .transpose()?
+        .unwrap_or_default();
+    let request_state = raw_object
+        .get("requestState")
+        .map(|value| {
+            value
+                .as_str()
+                .map(str::to_string)
+                .ok_or_else(|| McpError::Validation("requestState must be a string".to_string()))
+        })
+        .transpose()?;
+    let (client_info, client_capabilities) = modern_context
+        .map(|context| {
+            (
+                context.client_info.clone(),
+                context.client_capabilities.clone(),
+            )
+        })
+        .unwrap_or_else(|| (None, ClientCapabilities::default()));
+    Ok(MultiRoundToolCall {
+        arguments,
+        input_responses,
+        request_state,
+        client_info,
+        client_capabilities,
+    })
+}
+
 impl McpServer {
     /// Create a new MCP server with the given name and version
     pub fn new(name: String, version: String) -> Self {
         Self {
             info: ServerInfo::new(name, version),
             capabilities: ServerCapabilities {
+                extensions: None,
                 prompts: Some(PromptsCapability {
                     list_changed: Some(true),
                 }),
@@ -239,6 +370,9 @@ impl McpServer {
             config: ServerConfig::default(),
             resources: Arc::new(RwLock::new(HashMap::new())),
             tools: Arc::new(RwLock::new(HashMap::new())),
+            multi_round_tools: Arc::new(RwLock::new(HashMap::new())),
+            task_tools: Arc::new(RwLock::new(HashMap::new())),
+            task_registry: TaskRegistry::default(),
             prompts: Arc::new(RwLock::new(HashMap::new())),
             resource_templates: Arc::new(RwLock::new(HashMap::new())),
             completion_handlers: Arc::new(RwLock::new(HashMap::new())),
@@ -246,6 +380,7 @@ impl McpServer {
             state: Arc::new(RwLock::new(ServerState::Uninitialized)),
             request_counter: Arc::new(Mutex::new(0)),
             request_policy: RequestPolicy::default(),
+            protocol_mode: ProtocolMode::Auto,
             #[cfg(feature = "plugin")]
             plugin_manager: None,
         }
@@ -298,6 +433,16 @@ impl McpServer {
     /// Set server capabilities
     pub fn set_capabilities(&mut self, capabilities: ServerCapabilities) {
         self.capabilities = capabilities;
+    }
+
+    /// Select dual-stack, modern-only, or legacy-only server behavior.
+    pub fn set_protocol_mode(&mut self, mode: ProtocolMode) {
+        self.protocol_mode = mode;
+    }
+
+    /// Return the configured protocol support policy.
+    pub fn protocol_mode(&self) -> ProtocolMode {
+        self.protocol_mode
     }
 
     /// Set server configuration
@@ -412,8 +557,103 @@ impl McpServer {
         let name = name.into();
         let description = description.map(|d| d.into());
         let tool = Tool::new(name.clone(), description, input_schema, handler);
+        self.multi_round_tools.write().await.remove(&name);
+        self.task_tools.write().await.remove(&name);
         self.tools.write().await.insert(name, tool);
         Ok(())
+    }
+
+    /// Add a tool that may return MCP 2026 `input_required` results.
+    pub async fn add_multi_round_tool<H>(
+        &self,
+        name: impl Into<String>,
+        description: Option<impl Into<String>>,
+        input_schema: Value,
+        handler: H,
+    ) -> McpResult<()>
+    where
+        H: MultiRoundToolHandler + 'static,
+    {
+        let name = name.into();
+        let description = description.map(Into::into);
+        let schema_object = input_schema.as_object().ok_or_else(|| {
+            McpError::Validation("tool input schema must be an object".to_string())
+        })?;
+        let info = ToolInfo {
+            name: name.clone(),
+            description,
+            input_schema: ToolInputSchema {
+                schema_type: schema_object
+                    .get("type")
+                    .and_then(Value::as_str)
+                    .unwrap_or("object")
+                    .to_string(),
+                properties: schema_object
+                    .get("properties")
+                    .and_then(Value::as_object)
+                    .map(|properties| {
+                        properties
+                            .iter()
+                            .map(|(key, value)| (key.clone(), value.clone()))
+                            .collect()
+                    }),
+                required: schema_object
+                    .get("required")
+                    .and_then(Value::as_array)
+                    .map(|required| {
+                        required
+                            .iter()
+                            .filter_map(Value::as_str)
+                            .map(str::to_string)
+                            .collect()
+                    }),
+                additional_properties: schema_object
+                    .iter()
+                    .filter(|(key, _)| !matches!(key.as_str(), "type" | "properties" | "required"))
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect(),
+            },
+            output_schema: None,
+            annotations: None,
+            title: None,
+            icons: None,
+            meta: None,
+        };
+        validate_tool_info(&info)?;
+
+        self.tools.write().await.remove(&name);
+        self.task_tools.write().await.remove(&name);
+        self.multi_round_tools.write().await.insert(
+            name,
+            RegisteredMultiRoundTool {
+                info,
+                handler: Box::new(handler),
+            },
+        );
+        self.emit_tools_list_changed().await
+    }
+
+    /// Add a continuation-aware tool with a fully specified tool definition.
+    pub async fn add_multi_round_tool_detailed<H>(
+        &self,
+        info: ToolInfo,
+        handler: H,
+    ) -> McpResult<()>
+    where
+        H: MultiRoundToolHandler + 'static,
+    {
+        validate_tool_info(&info)?;
+        let name = info.name.clone();
+        self.tools.write().await.remove(&name);
+        self.task_tools.write().await.remove(&name);
+        self.multi_round_tools.write().await.insert(
+            name,
+            RegisteredMultiRoundTool {
+                info,
+                handler: Box::new(handler),
+            },
+        );
+        self.emit_tools_list_changed().await
     }
 
     /// Add a tool using a closure
@@ -444,8 +684,92 @@ impl McpServer {
     /// Add a tool using the ToolBuilder result
     pub async fn add_tool_built(&self, tool: Tool) -> McpResult<()> {
         let name = tool.info.name.clone();
+        self.multi_round_tools.write().await.remove(&name);
+        self.task_tools.write().await.remove(&name);
         self.tools.write().await.insert(name, tool);
         Ok(())
+    }
+
+    /// Register a tool whose execution is represented by a durable SEP-2663 task.
+    pub async fn add_task_tool<H>(&self, info: ToolInfo, handler: H) -> McpResult<()>
+    where
+        H: TaskToolHandler + 'static,
+    {
+        validate_tool_info(&info)?;
+        let name = info.name.clone();
+        self.tools.write().await.remove(&name);
+        self.multi_round_tools.write().await.remove(&name);
+        self.task_tools.write().await.insert(
+            name,
+            RegisteredTaskTool {
+                info,
+                execution: TaskExecution::Direct(Arc::new(handler)),
+                fallback: None,
+            },
+        );
+        self.emit_tools_list_changed().await
+    }
+
+    /// Register a durable task tool plus the synchronous behavior used when a
+    /// client has not negotiated `io.modelcontextprotocol/tasks`.
+    pub async fn add_task_tool_with_fallback<H, F>(
+        &self,
+        info: ToolInfo,
+        handler: H,
+        fallback: F,
+    ) -> McpResult<()>
+    where
+        H: TaskToolHandler + 'static,
+        F: ToolHandler + 'static,
+    {
+        validate_tool_info(&info)?;
+        let name = info.name.clone();
+        self.tools.write().await.remove(&name);
+        self.multi_round_tools.write().await.remove(&name);
+        self.task_tools.write().await.insert(
+            name,
+            RegisteredTaskTool {
+                info,
+                execution: TaskExecution::Direct(Arc::new(handler)),
+                fallback: Some(Arc::new(fallback)),
+            },
+        );
+        self.emit_tools_list_changed().await
+    }
+
+    /// Register a required-task tool that gathers request-scoped input through
+    /// MCP multi-round results before creating its durable task.
+    ///
+    /// The preflight handler returns `InputRequired` for intermediate rounds
+    /// and `Complete` when the durable phase may begin. Its completed value is
+    /// only a readiness signal; the composed handler produces the task result
+    /// and receives the entire final [`MultiRoundToolCall`].
+    pub async fn add_composed_task_tool<P, H>(
+        &self,
+        info: ToolInfo,
+        preflight: P,
+        handler: H,
+    ) -> McpResult<()>
+    where
+        P: MultiRoundToolHandler + 'static,
+        H: ComposedTaskToolHandler + 'static,
+    {
+        validate_tool_info(&info)?;
+        let name = info.name.clone();
+        self.tools.write().await.remove(&name);
+        self.multi_round_tools.write().await.remove(&name);
+        self.task_tools.write().await.insert(
+            name,
+            RegisteredTaskTool {
+                info,
+                execution: TaskExecution::Composed {
+                    preflight: Arc::new(preflight),
+                    handler: Arc::new(handler),
+                },
+                fallback: None,
+            },
+        );
+        self.emit_tools_list_changed().await
     }
     /// Get server information
     pub fn info(&self) -> &ServerInfo {
@@ -545,7 +869,12 @@ impl McpServer {
     /// List all registered resources
     pub async fn list_resources(&self) -> McpResult<Vec<ResourceInfo>> {
         let resources = self.resources.read().await;
-        Ok(resources.values().map(|r| r.info.clone()).collect())
+        let mut values: Vec<_> = resources
+            .values()
+            .map(|resource| resource.info.clone())
+            .collect();
+        values.sort_by(|left, right| left.uri.cmp(&right.uri));
+        Ok(values)
     }
 
     /// Read a resource
@@ -582,6 +911,8 @@ impl McpServer {
 
         {
             let mut tools = self.tools.write().await;
+            self.multi_round_tools.write().await.remove(&name);
+            self.task_tools.write().await.remove(&name);
             tools.insert(name, tool);
         }
 
@@ -592,10 +923,13 @@ impl McpServer {
 
     /// Remove a tool from the server
     pub async fn remove_tool(&self, name: &str) -> McpResult<bool> {
-        let removed = {
+        let removed_regular = {
             let mut tools = self.tools.write().await;
             tools.remove(name).is_some()
         };
+        let removed_multi_round = self.multi_round_tools.write().await.remove(name).is_some();
+        let removed_task = self.task_tools.write().await.remove(name).is_some();
+        let removed = removed_regular || removed_multi_round || removed_task;
 
         if removed {
             self.emit_tools_list_changed().await?;
@@ -607,7 +941,24 @@ impl McpServer {
     /// List all registered tools
     pub async fn list_tools(&self) -> McpResult<Vec<ToolInfo>> {
         let tools = self.tools.read().await;
-        Ok(tools.values().map(|t| t.info.clone()).collect())
+        let mut values: Vec<_> = tools.values().map(|tool| tool.info.clone()).collect();
+        drop(tools);
+        values.extend(
+            self.multi_round_tools
+                .read()
+                .await
+                .values()
+                .map(|tool| tool.info.clone()),
+        );
+        values.extend(
+            self.task_tools
+                .read()
+                .await
+                .values()
+                .map(|tool| tool.info.clone()),
+        );
+        values.sort_by(|left, right| left.name.cmp(&right.name));
+        Ok(values)
     }
 
     /// Call a tool
@@ -672,7 +1023,9 @@ impl McpServer {
     /// List all registered prompts
     pub async fn list_prompts(&self) -> McpResult<Vec<PromptInfo>> {
         let prompts = self.prompts.read().await;
-        Ok(prompts.values().map(|p| p.info.clone()).collect())
+        let mut values: Vec<_> = prompts.values().map(|prompt| prompt.info.clone()).collect();
+        values.sort_by(|left, right| left.name.cmp(&right.name));
+        Ok(values)
     }
 
     /// Get a prompt
@@ -712,7 +1065,9 @@ impl McpServer {
     /// List resource templates
     pub async fn list_resource_templates(&self) -> McpResult<Vec<ResourceTemplate>> {
         let templates = self.resource_templates.read().await;
-        Ok(templates.values().cloned().collect())
+        let mut values: Vec<_> = templates.values().cloned().collect();
+        values.sort_by(|left, right| left.uri_template.cmp(&right.uri_template));
+        Ok(values)
     }
 
     /// Remove a resource template
@@ -890,6 +1245,21 @@ impl McpServer {
         }
     }
 
+    /// Notify active MCP 2026 subscriptions that the tool catalog changed.
+    pub async fn notify_tools_list_changed(&self) -> McpResult<()> {
+        self.emit_tools_list_changed().await
+    }
+
+    /// Notify active MCP 2026 subscriptions that the prompt catalog changed.
+    pub async fn notify_prompts_list_changed(&self) -> McpResult<()> {
+        self.emit_prompts_list_changed().await
+    }
+
+    /// Notify active MCP 2026 subscriptions that the resource catalog changed.
+    pub async fn notify_resources_list_changed(&self) -> McpResult<()> {
+        self.emit_resources_list_changed().await
+    }
+
     // ========================================================================
     // Server Lifecycle
     // ========================================================================
@@ -910,9 +1280,36 @@ impl McpServer {
 
         drop(state);
 
+        transport.set_server_capabilities(self.modern_capabilities().await)?;
+        transport.set_task_notifications(self.task_registry.subscribe())?;
+
+        let tool_schemas = {
+            let tools = self.tools.read().await;
+            let mut schemas = tools
+                .iter()
+                .map(|(name, tool)| {
+                    serde_json::to_value(&tool.info.input_schema)
+                        .map(|schema| (name.clone(), schema))
+                        .map_err(McpError::from)
+                })
+                .collect::<McpResult<HashMap<_, _>>>()?;
+            drop(tools);
+            for (name, tool) in self.multi_round_tools.read().await.iter() {
+                schemas.insert(name.clone(), serde_json::to_value(&tool.info.input_schema)?);
+            }
+            for (name, tool) in self.task_tools.read().await.iter() {
+                schemas.insert(name.clone(), serde_json::to_value(&tool.info.input_schema)?);
+            }
+            schemas
+        };
+        transport.set_tool_schemas(tool_schemas)?;
+
         // Create a request handler that delegates to this server
         let resources = self.resources.clone();
         let tools = self.tools.clone();
+        let multi_round_tools = self.multi_round_tools.clone();
+        let task_tools = self.task_tools.clone();
+        let task_registry = self.task_registry.clone();
         let prompts = self.prompts.clone();
         let resource_templates = self.resource_templates.clone();
         let completion_handlers = self.completion_handlers.clone();
@@ -920,11 +1317,15 @@ impl McpServer {
         let capabilities = self.capabilities.clone();
         let config = self.config.clone();
         let request_policy = self.request_policy.clone();
+        let protocol_mode = self.protocol_mode;
 
         let request_handler: crate::transport::traits::ServerRequestHandler =
             Arc::new(move |request| {
                 let resources = resources.clone();
                 let tools = tools.clone();
+                let multi_round_tools = multi_round_tools.clone();
+                let task_tools = task_tools.clone();
+                let task_registry = task_registry.clone();
                 let prompts = prompts.clone();
                 let resource_templates = resource_templates.clone();
                 let completion_handlers = completion_handlers.clone();
@@ -932,7 +1333,6 @@ impl McpServer {
                 let capabilities = capabilities.clone();
                 let config = config.clone();
                 let request_policy = request_policy.clone();
-
                 Box::pin(async move {
                     // Create a temporary server instance to handle the request
                     let temp_server = McpServer {
@@ -941,6 +1341,9 @@ impl McpServer {
                         config,
                         resources,
                         tools,
+                        multi_round_tools,
+                        task_tools,
+                        task_registry,
                         prompts,
                         resource_templates,
                         completion_handlers,
@@ -948,6 +1351,7 @@ impl McpServer {
                         state: Arc::new(RwLock::new(ServerState::Running)),
                         request_counter: Arc::new(Mutex::new(0)),
                         request_policy,
+                        protocol_mode,
                         #[cfg(feature = "plugin")]
                         plugin_manager: None,
                     };
@@ -1117,6 +1521,51 @@ impl McpServer {
             }
 
             // Validate the request if configured to do so
+            let modern_context = match modern_request_context(&request) {
+                Err(McpError::UnsupportedProtocolVersion { requested, .. }) => {
+                    let supported = match self.protocol_mode {
+                        ProtocolMode::Auto => SUPPORTED_PROTOCOL_VERSIONS
+                            .iter()
+                            .map(|version| (*version).to_string())
+                            .collect(),
+                        ProtocolMode::ModernOnly => vec![MODERN_PROTOCOL_VERSION.to_string()],
+                        ProtocolMode::LegacyOnly => vec![LEGACY_PROTOCOL_VERSION.to_string()],
+                    };
+                    return Err(McpError::UnsupportedProtocolVersion {
+                        requested,
+                        supported,
+                    });
+                }
+                result => result?,
+            };
+            let is_modern = modern_context.is_some();
+            if request.method == methods::SERVER_DISCOVER && !is_modern {
+                return Err(McpError::Validation(
+                    "server/discover requires MCP 2026 request metadata".to_string(),
+                ));
+            }
+            match self.protocol_mode {
+                ProtocolMode::ModernOnly if !is_modern => {
+                    return Err(McpError::UnsupportedProtocolVersion {
+                        requested: LEGACY_PROTOCOL_VERSION.to_string(),
+                        supported: vec![MODERN_PROTOCOL_VERSION.to_string()],
+                    });
+                }
+                ProtocolMode::LegacyOnly if is_modern => {
+                    return Err(McpError::UnsupportedProtocolVersion {
+                        requested: MODERN_PROTOCOL_VERSION.to_string(),
+                        supported: vec![LEGACY_PROTOCOL_VERSION.to_string()],
+                    });
+                }
+                _ => {}
+            }
+            if is_modern && is_legacy_only_method(&request.method) {
+                return Err(McpError::MethodNotFound(format!(
+                    "{} is unavailable in MCP {MODERN_PROTOCOL_VERSION}",
+                    request.method
+                )));
+            }
+
             if self.config.validate_requests {
                 validate_jsonrpc_request(&request)?;
                 validate_mcp_request(&request.method, request.params.as_ref())?;
@@ -1125,9 +1574,25 @@ impl McpServer {
             // Route the request to the appropriate handler
             let result = match request.method.as_str() {
                 methods::INITIALIZE => self.handle_initialize(request.params).await,
+                methods::SERVER_DISCOVER => self.handle_server_discover().await,
                 methods::PING => self.handle_ping().await,
                 methods::TOOLS_LIST => self.handle_tools_list(request.params).await,
-                methods::TOOLS_CALL => self.handle_tools_call(request.params).await,
+                methods::TOOLS_CALL => {
+                    self.handle_tools_call(request.params, modern_context.as_ref(), &context)
+                        .await
+                }
+                methods::TASKS_GET => {
+                    self.handle_tasks_get(request.params, modern_context.as_ref(), &context)
+                        .await
+                }
+                methods::TASKS_UPDATE => {
+                    self.handle_tasks_update(request.params, modern_context.as_ref(), &context)
+                        .await
+                }
+                methods::TASKS_CANCEL => {
+                    self.handle_tasks_cancel(request.params, modern_context.as_ref(), &context)
+                        .await
+                }
                 methods::RESOURCES_LIST => self.handle_resources_list(request.params).await,
                 methods::RESOURCES_READ => self.handle_resources_read(request.params).await,
                 methods::RESOURCES_SUBSCRIBE => {
@@ -1148,28 +1613,25 @@ impl McpServer {
                 methods::RPC_DISCOVER => self.handle_rpc_discover(request.params).await,
                 _ => {
                     let method = &request.method;
-                    Err(McpError::Protocol(format!("Unknown method: {method}")))
+                    Err(McpError::MethodNotFound(format!(
+                        "Unknown method: {method}"
+                    )))
                 }
             };
 
             // Convert the result to a JSON-RPC response
             let response = match result {
-                Ok(result_value) => Ok(JsonRpcResponse::success(request.id, result_value)?),
+                Ok(result_value) => {
+                    let result_value = if is_modern {
+                        decorate_modern_result(&request.method, result_value, &self.info)?
+                    } else {
+                        result_value
+                    };
+                    Ok(JsonRpcResponse::success(request.id, result_value)?)
+                }
                 Err(error @ McpError::Forbidden(_)) => Err(error),
                 Err(error @ McpError::RateLimited { .. }) => Err(error),
-                Err(error) => {
-                    let (code, message) = match error {
-                        McpError::ToolNotFound(_) => (TOOL_NOT_FOUND, error.to_string()),
-                        McpError::ResourceNotFound(_) => (RESOURCE_NOT_FOUND, error.to_string()),
-                        McpError::PromptNotFound(_) => (PROMPT_NOT_FOUND, error.to_string()),
-                        McpError::Validation(_) => (INVALID_PARAMS, error.to_string()),
-                        _ => (INTERNAL_ERROR, error.to_string()),
-                    };
-                    // Return proper JSON-RPC error response
-                    Err(McpError::Protocol(format!(
-                        "JSON-RPC error {code}: {message}"
-                    )))
-                }
+                Err(error) => Err(error),
             };
 
             tracing::info!(
@@ -1199,14 +1661,55 @@ impl McpServer {
         };
 
         validate_initialize_params(&params)?;
+        if params.protocol_version != LEGACY_PROTOCOL_VERSION {
+            return Err(McpError::UnsupportedProtocolVersion {
+                requested: params.protocol_version,
+                supported: vec![LEGACY_PROTOCOL_VERSION.to_string()],
+            });
+        }
 
         let result = InitializeResult::new(
-            crate::protocol::LATEST_PROTOCOL_VERSION.to_string(),
+            LEGACY_PROTOCOL_VERSION.to_string(),
             self.capabilities.clone(),
             self.info.clone(),
         );
 
         Ok(serde_json::to_value(result)?)
+    }
+
+    async fn handle_server_discover(&self) -> McpResult<Value> {
+        let supported_versions: Vec<&str> = match self.protocol_mode {
+            ProtocolMode::Auto => SUPPORTED_PROTOCOL_VERSIONS.to_vec(),
+            ProtocolMode::ModernOnly => vec![MODERN_PROTOCOL_VERSION],
+            ProtocolMode::LegacyOnly => vec![LEGACY_PROTOCOL_VERSION],
+        };
+        Ok(serde_json::json!({
+            "supportedVersions": supported_versions,
+            "capabilities": self.modern_capabilities().await,
+            "instructions": self.config.enable_logging.then_some(
+                "Prism MCP server with stateless 2026 and legacy 2025 interoperability"
+            )
+        }))
+    }
+
+    async fn modern_capabilities(&self) -> ServerCapabilities {
+        let mut capabilities = self.capabilities.clone();
+        if let Some(tools) = capabilities.tools.as_mut() {
+            tools.list_changed = Some(true);
+        }
+        if let Some(prompts) = capabilities.prompts.as_mut() {
+            prompts.list_changed = Some(true);
+        }
+        if let Some(resources) = capabilities.resources.as_mut() {
+            resources.list_changed = Some(true);
+        }
+        if !self.task_tools.read().await.is_empty() {
+            capabilities
+                .extensions
+                .get_or_insert_with(HashMap::new)
+                .insert(TASKS_EXTENSION_ID.to_string(), serde_json::json!({}));
+        }
+        capabilities
     }
 
     async fn handle_ping(&self) -> McpResult<Value> {
@@ -1229,20 +1732,174 @@ impl McpServer {
         Ok(serde_json::to_value(result)?)
     }
 
-    async fn handle_tools_call(&self, params: Option<Value>) -> McpResult<Value> {
-        let params: CallToolParams = match params {
-            Some(p) => serde_json::from_value(p)?,
+    async fn handle_tools_call(
+        &self,
+        params: Option<Value>,
+        modern_context: Option<&ModernRequestContext>,
+        request_context: &RequestContext,
+    ) -> McpResult<Value> {
+        let raw_params = match params {
+            Some(params) => params,
             None => {
                 return Err(McpError::Validation(
                     "Missing tool call parameters".to_string(),
                 ));
             }
         };
+        let params: CallToolParams = serde_json::from_value(raw_params.clone())?;
 
         validate_call_tool_params(&params)?;
 
+        let task_tool = self.task_tools.read().await.get(&params.name).cloned();
+        if let Some(tool) = task_tool {
+            let tasks_negotiated = modern_context
+                .map(|context| has_tasks_extension(&context.client_capabilities))
+                .unwrap_or(false);
+            if !tasks_negotiated {
+                if let Some(fallback) = &tool.fallback {
+                    return Ok(serde_json::to_value(
+                        fallback.call(params.arguments.unwrap_or_default()).await?,
+                    )?);
+                }
+                return Err(tasks_capability_error());
+            }
+            let task = match tool.execution {
+                TaskExecution::Direct(handler) => {
+                    self.task_registry
+                        .create(
+                            request_context.principal.id.clone(),
+                            params.arguments.unwrap_or_default(),
+                            handler,
+                        )
+                        .await?
+                }
+                TaskExecution::Composed { preflight, handler } => {
+                    let call = parse_multi_round_tool_call(
+                        &raw_params,
+                        params.arguments.unwrap_or_default(),
+                        modern_context,
+                    )?;
+                    match preflight.call(call.clone()).await? {
+                        OperationResult::Complete(_) => {
+                            self.task_registry
+                                .create_composed(
+                                    request_context.principal.id.clone(),
+                                    call,
+                                    handler,
+                                )
+                                .await?
+                        }
+                        OperationResult::InputRequired(result) => {
+                            validate_input_required_result(&result, &call.client_capabilities)?;
+                            return Ok(serde_json::to_value(result)?);
+                        }
+                    }
+                }
+            };
+            return Ok(serde_json::to_value(CreateTaskResult {
+                result_type: "task".to_string(),
+                task,
+                meta: HashMap::new(),
+            })?);
+        }
+
+        if let Some(tool) = self.multi_round_tools.read().await.get(&params.name) {
+            let call = parse_multi_round_tool_call(
+                &raw_params,
+                params.arguments.unwrap_or_default(),
+                modern_context,
+            )?;
+            let client_capabilities = call.client_capabilities.clone();
+            return match tool.handler.call(call).await? {
+                OperationResult::Complete(result) => Ok(serde_json::to_value(result)?),
+                OperationResult::InputRequired(result) if modern_context.is_some() => {
+                    validate_input_required_result(&result, &client_capabilities)?;
+                    Ok(serde_json::to_value(result)?)
+                }
+                OperationResult::InputRequired(_) => Err(McpError::Protocol(
+                    "input_required is unavailable in MCP 2025-11-25".to_string(),
+                )),
+            };
+        }
+
         let result = self.call_tool(&params.name, params.arguments).await?;
         Ok(serde_json::to_value(result)?)
+    }
+
+    fn require_tasks_context<'a>(
+        &self,
+        modern_context: Option<&'a ModernRequestContext>,
+    ) -> McpResult<&'a ClientCapabilities> {
+        let capabilities = modern_context
+            .map(|context| &context.client_capabilities)
+            .ok_or_else(tasks_capability_error)?;
+        if !has_tasks_extension(capabilities) {
+            return Err(tasks_capability_error());
+        }
+        Ok(capabilities)
+    }
+
+    async fn handle_tasks_get(
+        &self,
+        params: Option<Value>,
+        modern_context: Option<&ModernRequestContext>,
+        context: &RequestContext,
+    ) -> McpResult<Value> {
+        self.require_tasks_context(modern_context)?;
+        let params: GetTaskParams = serde_json::from_value(
+            params.ok_or_else(|| McpError::InvalidParams("Missing taskId".to_string()))?,
+        )?;
+        let task = self
+            .task_registry
+            .get(&params.task_id, &context.principal.id)
+            .await?;
+        Ok(serde_json::to_value(GetTaskResult {
+            result_type: "complete".to_string(),
+            task,
+            meta: HashMap::new(),
+        })?)
+    }
+
+    async fn handle_tasks_update(
+        &self,
+        params: Option<Value>,
+        modern_context: Option<&ModernRequestContext>,
+        context: &RequestContext,
+    ) -> McpResult<Value> {
+        self.require_tasks_context(modern_context)?;
+        let params: UpdateTaskParams = serde_json::from_value(
+            params.ok_or_else(|| McpError::InvalidParams("Missing task update".to_string()))?,
+        )?;
+        self.task_registry
+            .update(
+                &params.task_id,
+                &context.principal.id,
+                params.input_responses,
+            )
+            .await?;
+        Ok(serde_json::to_value(TaskAcknowledgement {
+            result_type: "complete".to_string(),
+            meta: HashMap::new(),
+        })?)
+    }
+
+    async fn handle_tasks_cancel(
+        &self,
+        params: Option<Value>,
+        modern_context: Option<&ModernRequestContext>,
+        context: &RequestContext,
+    ) -> McpResult<Value> {
+        self.require_tasks_context(modern_context)?;
+        let params: CancelTaskParams = serde_json::from_value(
+            params.ok_or_else(|| McpError::InvalidParams("Missing taskId".to_string()))?,
+        )?;
+        self.task_registry
+            .cancel(&params.task_id, &context.principal.id)
+            .await?;
+        Ok(serde_json::to_value(TaskAcknowledgement {
+            result_type: "complete".to_string(),
+            meta: HashMap::new(),
+        })?)
     }
 
     async fn handle_resources_list(&self, params: Option<Value>) -> McpResult<Value> {
@@ -1283,36 +1940,17 @@ impl McpServer {
     }
 
     async fn handle_resources_subscribe(&self, params: Option<Value>) -> McpResult<Value> {
-        let params: SubscribeResourceParams = match params {
-            Some(p) => serde_json::from_value(p)?,
-            None => {
-                return Err(McpError::Validation(
-                    "Missing resource subscribe parameters".to_string(),
-                ));
-            }
-        };
-
-        // Resource subscriptions functionality planned for future implementation
-        let _uri = params.uri;
-        let result = SubscribeResourceResult { meta: None };
-
+        let resources = self.resources.read().await;
+        let result =
+            crate::server::handlers::ResourceHandler::handle_subscribe(&resources, params).await?;
         Ok(serde_json::to_value(result)?)
     }
 
     async fn handle_resources_unsubscribe(&self, params: Option<Value>) -> McpResult<Value> {
-        let params: UnsubscribeResourceParams = match params {
-            Some(p) => serde_json::from_value(p)?,
-            None => {
-                return Err(McpError::Validation(
-                    "Missing resource unsubscribe parameters".to_string(),
-                ));
-            }
-        };
-
-        // Resource subscriptions functionality planned for future implementation
-        let _uri = params.uri;
-        let result = UnsubscribeResourceResult { meta: None };
-
+        let resources = self.resources.read().await;
+        let result =
+            crate::server::handlers::ResourceHandler::handle_unsubscribe(&resources, params)
+                .await?;
         Ok(serde_json::to_value(result)?)
     }
 
@@ -1629,13 +2267,15 @@ mod tests {
         let server = McpServer::new("test-server".to_string(), "1.0.0".to_string());
 
         let init_params = InitializeParams::new(
-            crate::protocol::LATEST_PROTOCOL_VERSION.to_string(),
+            crate::protocol::LEGACY_PROTOCOL_VERSION.to_string(),
             ClientCapabilities::default(),
             ClientInfo {
                 name: "test-client".to_string(),
                 version: "1.0.0".to_string(),
                 description: None,
                 title: Some("Test Client".to_string()),
+                website_url: None,
+                icons: None,
             },
         );
 

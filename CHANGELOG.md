@@ -13,6 +13,47 @@ were inaccurate; current behavior and trust boundaries are documented in
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-08-09
+
+### Added
+
+- Native MCP 2026-07-28 stateless discovery and per-request protocol, identity, and capability metadata.
+- `ProtocolMode` with dual-stack, modern-only, and legacy-only client/server behavior.
+- Typed negotiated-protocol, modern discovery, result discriminant, cache, and multi-round-trip result objects.
+- Automatic, bounded client handling of `input_required` results with fresh request IDs and opaque request-state preservation.
+- Continuation-aware server tool handlers with request-state, input-response, and client-capability validation.
+- MCP 2026 standard HTTP routing headers and header/body integrity validation.
+- `x-mcp-header` tool-schema support with safe parameter encoding and server-side validation.
+- Modern extension capability maps and updated implementation/icon metadata.
+- Dedicated dual-protocol integration tests and a maintained protocol compatibility guide.
+- Standards-track `subscriptions/listen` for HTTP request-scoped SSE and cancellable STDIO streams, including strict filters and subscription correlation metadata.
+- Standard Streamable HTTP client handling for JSON-RPC results returned as either JSON or POST-scoped SSE.
+- Legacy `resources/subscribe` and `resources/unsubscribe` dispatch to registered resource handlers instead of returning no-op acknowledgements.
+- The opt-in `io.modelcontextprotocol/tasks` extension with durable task tools, typed client operations, status notifications, caller binding, TTL, cancellation, and multi-round input.
+- Standards-defined MRTR-to-Task composition through `add_composed_task_tool`.
+- Pinned official MCP conformance adapters and CI for the 2026 server-stateless and selected client scenarios.
+
+### Changed
+
+- The crate version is now 3.0.0 and the latest protocol constant is MCP 2026-07-28.
+- `McpClient::connect` returns revision-neutral `ConnectResult`; server identity is optional.
+- Modern successful results include `resultType`, server identity metadata, and explicit conservative cache policy where required.
+- STDIO automatic negotiation uses a disposable modern probe so legacy initialization starts on a clean process.
+- Tool, prompt, resource, and template listings are deterministic.
+- Recommended transport selection always chooses standards-track HTTP; Prism's proprietary chunked/compressed helpers now require explicit `LegacyOnly` mode.
+- Modern version negotiation retries once when the peer reports the requested 2026 revision as mutually supported.
+
+### Compatibility
+
+- MCP 2025-11-25 initialization, wire result shapes, and stateful methods remain available unchanged in dual-stack and legacy-only modes.
+- Automatic downgrade occurs only after JSON-RPC `Method not found` for `server/discover`; all other failures are surfaced.
+- Modern servers advertise subscription behavior implemented by HTTP and STDIO, and advertise Tasks only when a task tool is registered.
+
+### Security
+
+- Modern HTTP requests with mismatched routing or tool parameter headers are rejected before application dispatch.
+- Malformed discovery responses and unsupported versions cannot trigger a silent legacy downgrade.
+
 ## [2.0.2] - 2026-08-07
 
 ### Added
@@ -306,7 +347,8 @@ were inaccurate; current behavior and trust boundaries are documented in
 ### Contributors
 - Prismworks AI Team
 
-[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.2...v3.0.0
 [2.0.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v1.1.2...v2.0.0

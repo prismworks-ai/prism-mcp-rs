@@ -16,7 +16,7 @@
 // Core types and traits
 pub use crate::core::{
     error::{McpError, McpResult},
-    tool::{Tool, ToolHandler, ToolBuilder, EchoTool},
+    tool::{EchoTool, MultiRoundToolCall, MultiRoundToolHandler, Tool, ToolBuilder, ToolHandler},
     resource::{Resource, ResourceHandler},
     prompt::{Prompt, PromptHandler},
     completion::{CompletionHandler, CompletionProvider},
@@ -38,6 +38,8 @@ pub use crate::protocol::{
     messages::*,
     JsonRpcRequest, JsonRpcResponse, JsonRpcError, JsonRpcMessage,
     JSONRPC_VERSION, LATEST_PROTOCOL_VERSION,
+    LEGACY_PROTOCOL_VERSION, MODERN_PROTOCOL_VERSION, SUPPORTED_PROTOCOL_VERSIONS,
+    ConnectResult, NegotiatedProtocol, ProtocolEra, ProtocolMode,
 };
 
 // Transport layer

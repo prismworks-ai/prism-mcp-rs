@@ -40,6 +40,21 @@ pub enum McpError {
     #[error("Method not found: {0}")]
     MethodNotFound(String),
 
+    /// Requested MCP protocol revision is not supported by the peer.
+    #[error("Unsupported MCP protocol version {requested}; supported: {supported:?}")]
+    UnsupportedProtocolVersion {
+        requested: String,
+        supported: Vec<String>,
+    },
+
+    /// Standard MCP HTTP headers do not match the JSON-RPC body.
+    #[error("MCP HTTP header mismatch: {0}")]
+    HeaderMismatch(String),
+
+    /// A modern request omitted a capability required by the operation.
+    #[error("Missing required client capability: {0}")]
+    MissingRequiredClientCapability(serde_json::Value),
+
     /// Invalid parameters (JSON-RPC error)
     #[error("Invalid parameters: {0}")]
     InvalidParams(String),
@@ -197,6 +212,9 @@ impl McpError {
             McpError::ResourceNotFound(_) => false,
             McpError::PromptNotFound(_) => false,
             McpError::MethodNotFound(_) => false,
+            McpError::UnsupportedProtocolVersion { .. }
+            | McpError::HeaderMismatch(_)
+            | McpError::MissingRequiredClientCapability(_) => false,
             McpError::InvalidParams(_) => false,
             McpError::Authentication(_) => false,
             McpError::Serialization(_) => false,
@@ -228,6 +246,9 @@ impl McpError {
             McpError::ResourceNotFound(_) => "not_found",
             McpError::PromptNotFound(_) => "not_found",
             McpError::MethodNotFound(_) => "not_found",
+            McpError::UnsupportedProtocolVersion { .. } => "protocol_version",
+            McpError::HeaderMismatch(_) => "protocol_header",
+            McpError::MissingRequiredClientCapability(_) => "capability",
             McpError::InvalidParams(_) => "validation",
             McpError::Authentication(_) => "auth",
             McpError::Serialization(_) => "serialization",

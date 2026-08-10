@@ -180,7 +180,7 @@ pub fn mock_initialize(client_name: &str, client_version: &str) -> JsonRpcReques
         json!("init-123"),
         "initialize".to_string(),
         Some(json!({
-            "protocolVersion": LATEST_PROTOCOL_VERSION,
+            "protocolVersion": crate::protocol::LEGACY_PROTOCOL_VERSION,
             "capabilities": {},
             "clientInfo": {
                 "name": client_name,
@@ -334,7 +334,10 @@ mod tests {
         let request = mock_initialize("client", "1.0.0");
         assert_eq!(request.method, "initialize");
         let params = request.params.unwrap();
-        assert_eq!(params["protocolVersion"], LATEST_PROTOCOL_VERSION);
+        assert_eq!(
+            params["protocolVersion"],
+            crate::protocol::LEGACY_PROTOCOL_VERSION
+        );
     }
 
     #[test]

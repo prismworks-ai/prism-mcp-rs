@@ -9,7 +9,8 @@ use prism_mcp_rs::{
     protocol::{
         messages::InitializeParams,
         methods,
-        types::{ClientCapabilities, Implementation, JsonRpcRequest, LATEST_PROTOCOL_VERSION},
+        types::{ClientCapabilities, Implementation, JsonRpcRequest},
+        LEGACY_PROTOCOL_VERSION,
     },
     server::McpServer,
     transport::StdioServerTransport,
@@ -25,13 +26,15 @@ async fn test_initialization_fix() {
 
     // Create an initialize request
     let init_params = InitializeParams {
-        protocol_version: LATEST_PROTOCOL_VERSION.to_string(),
+        protocol_version: prism_mcp_rs::protocol::LEGACY_PROTOCOL_VERSION.to_string(),
         capabilities: ClientCapabilities::default(),
         client_info: Implementation {
             name: "test-client".to_string(),
             version: "1.0.0".to_string(),
             description: None,
             title: Some("Test Client".to_string()),
+            website_url: None,
+            icons: None,
         },
         meta: None,
     };
@@ -76,7 +79,7 @@ async fn test_initialization_fix() {
         // Verify protocol version
         assert_eq!(
             result["protocolVersion"].as_str().unwrap(),
-            LATEST_PROTOCOL_VERSION,
+            LEGACY_PROTOCOL_VERSION,
             "Protocol version should match"
         );
 

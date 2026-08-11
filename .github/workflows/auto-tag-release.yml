@@ -7,6 +7,7 @@ on:
       - "Cargo.toml"
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -82,6 +83,32 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           echo "✅ Created and pushed $TAG"
+
+      - name: Dispatch release workflow
+        if: steps.gate.outputs.should_tag == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.gate.outputs.tag }}"
+          VERSION="${{ steps.gate.outputs.version }}"
+
+          # Tags pushed with GITHUB_TOKEN do not emit another push workflow.
+          # Dispatch explicitly so validation, GitHub Release creation, docs,
+          # and crates.io publication always follow a successful auto-tag.
+          for attempt in {1..5}; do
+            if gh workflow run release.yml --ref "$TAG" -f "version=$VERSION"; then
+              echo "✅ Dispatched release workflow for $TAG"
+              exit 0
+            fi
+            if [ "$attempt" -lt 5 ]; then
+              sleep 2
+            fi
+          done
+
+          echo "❌ Could not dispatch the release workflow for $TAG"
+          exit 1
 
       - name: Summarize decision
         shell: bash

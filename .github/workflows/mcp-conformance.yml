@@ -22,16 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Check out pinned official referee
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: modelcontextprotocol/conformance
           ref: c321dd32035556e6769d3724a8ee97d87c3faaac
           path: .mcp-conformance
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Build pinned official referee
@@ -87,16 +87,16 @@ jobs:
           - json-schema-ref-no-deref
           - json-schema-2020-12-preservation
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Check out pinned official referee
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: modelcontextprotocol/conformance
           ref: c321dd32035556e6769d3724a8ee97d87c3faaac
           path: .mcp-conformance
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Build pinned official referee

@@ -58,8 +58,8 @@ tower-http = { version = "0.6", features = ["cors", "trace"], optional = true }
 axum = { version = "0.8", optional = true }
 
 # WebSocket transport (optional)
-tokio-tungstenite = { version = "0.28", optional = true }
-tungstenite = { version = "0.28", optional = true }
+tokio-tungstenite = { version = "0.30", optional = true }
+tungstenite = { version = "0.30", optional = true }
 
 # Plugin support (optional)
 libloading = { version = "0.9", optional = true }

@@ -13,6 +13,19 @@ were inaccurate; current behavior and trust boundaries are documented in
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-08-11
+
+### Changed
+
+- Upgraded the opt-in OpenTelemetry dependency family as one compatible set: `opentelemetry`, `opentelemetry_sdk`, and `opentelemetry-otlp` to 0.32, plus `tracing-opentelemetry` to 0.33.
+- Grouped future OpenTelemetry and WebSocket dependency updates so coupled crates are tested and reviewed together.
+
+### Fixed
+
+- Restored MCP conformance CI for this library crate by resolving dependencies without requiring an intentionally untracked `Cargo.lock`.
+- Made crates.io publication idempotent, including exact-version API checks, duplicate-publication race recovery, required request identification, and post-publication verification.
+- Enabled GitHub dependency-graph-backed pull-request dependency review.
+
 ## [3.0.0] - 2026-08-09
 
 ### Added
@@ -347,7 +360,8 @@ were inaccurate; current behavior and trust boundaries are documented in
 ### Contributors
 - Prismworks AI Team
 
-[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.2...v3.0.0
 [2.0.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.0...v2.0.1

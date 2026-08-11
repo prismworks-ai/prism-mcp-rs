@@ -10,6 +10,16 @@ updates:
       timezone: Etc/UTC
     open-pull-requests-limit: 10
     groups:
+      opentelemetry:
+        patterns:
+          - "opentelemetry"
+          - "opentelemetry_sdk"
+          - "opentelemetry-otlp"
+          - "tracing-opentelemetry"
+      websocket:
+        patterns:
+          - "tokio-tungstenite"
+          - "tungstenite"
       rust-non-major:
         patterns:
           - "*"

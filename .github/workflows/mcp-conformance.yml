@@ -38,7 +38,7 @@ jobs:
         working-directory: .mcp-conformance
         run: npm ci && npm run build
       - name: Build standards-track server adapter
-        run: cargo build --locked --all-features --example conformance_2026_server
+        run: cargo build --all-features --example conformance_2026_server
       - name: Start adapter
         shell: bash
         run: |
@@ -103,7 +103,7 @@ jobs:
         working-directory: .mcp-conformance
         run: npm ci && npm run build
       - name: Build standards-track client adapter
-        run: cargo build --locked --all-features --example conformance_2026_client
+        run: cargo build --all-features --example conformance_2026_client
       - name: Run pinned official referee
         run: >-
           node .mcp-conformance/dist/index.js client

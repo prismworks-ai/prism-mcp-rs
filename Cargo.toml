@@ -33,10 +33,10 @@ tokio = { version = "1.34", features = ["full"] }
 async-trait = "0.1"
 tracing = "0.1"
 tracing-subscriber = { version = ">=0.3.20, <0.4", features = ["env-filter"] }
-opentelemetry = { version = "0.31", features = ["trace"], optional = true }
-opentelemetry_sdk = { version = "0.31", features = ["trace", "rt-tokio"], optional = true }
-opentelemetry-otlp = { version = "0.31", features = ["trace", "grpc-tonic"], optional = true }
-tracing-opentelemetry = { version = "0.32", optional = true }
+opentelemetry = { version = "0.32", features = ["trace"], optional = true }
+opentelemetry_sdk = { version = "0.32", features = ["trace", "rt-tokio"], optional = true }
+opentelemetry-otlp = { version = "0.32", features = ["trace", "grpc-tonic"], optional = true }
+tracing-opentelemetry = { version = "0.33", optional = true }
 thiserror = "2.0"
 anyhow = "1.0"
 chrono = { version = "0.4.20", features = ["serde"] }

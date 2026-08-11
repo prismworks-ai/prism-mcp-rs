@@ -4,7 +4,7 @@ Repository automation is review-first: dependency changes arrive as pull request
 
 ## Dependency updates
 
-`.github/dependabot.yml` checks Rust dependencies daily at 03:00 UTC and GitHub Actions weekly on Monday at 04:00 UTC. Compatible Rust minor and patch releases are grouped to reduce pull-request noise; major releases remain separate for focused review.
+`.github/dependabot.yml` checks Rust dependencies daily at 03:00 UTC and GitHub Actions weekly on Monday at 04:00 UTC. Compatible Rust minor and patch releases are grouped to reduce pull-request noise; major releases remain separate for focused review. OpenTelemetry and WebSocket dependency families are always grouped because their public APIs and transitive dependency versions must move together.
 
 Dependabot updates version requirements when a change is required. This crate intentionally does not commit `Cargo.lock`, because downstream library consumers resolve their own compatible dependency graph. Maintainers must review Dependabot pull requests and require the normal CI and Security checks before merging.
 
@@ -29,7 +29,7 @@ Open **Actions → Security → Run workflow**. The optional `run_supply_chain` 
 ## Repository settings
 
 - Protect `main` and require CI plus the blocking Security jobs.
-- Enable Dependabot alerts and Dependabot security updates.
+- Enable the dependency graph, Dependabot alerts, and Dependabot security updates. Dependency review cannot run without the dependency graph.
 - Allow GitHub Actions read access by default; grant elevated permissions only to a specific workflow that needs them.
 - Review third-party action updates like application-code changes.
 - Remove `PAT_TOKEN` if it was used only by the retired direct-write updater.

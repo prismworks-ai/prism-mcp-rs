@@ -68,7 +68,7 @@ libloading = { version = "0.9", optional = true }
 # abi_stable = { version = "0.11", optional = true }
 
 # Authentication (optional)
-jsonwebtoken = { version = "10.3", optional = true }
+jsonwebtoken = { version = "11.0", optional = true }
 time = { version = "0.3.47", optional = true }
 argon2 = { version = "0.5", optional = true }
 

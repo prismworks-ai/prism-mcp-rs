@@ -13,6 +13,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CRATES_IO_USER_AGENT: prism-mcp-rs-release-ci/1.0 (+https://github.com/prismworks-ai/prism-mcp-rs)
+
 jobs:
   auto-tag:
     name: Create Release Tag When Version Changes
@@ -58,7 +61,8 @@ jobs:
           fi
 
           # Skip if the version is already on crates.io.
-          if curl -sf "https://crates.io/api/v1/crates/prism-mcp-rs/${VERSION}" >/dev/null; then
+          if curl --fail --silent --user-agent "$CRATES_IO_USER_AGENT" \
+            "https://crates.io/api/v1/crates/prism-mcp-rs/${VERSION}" >/dev/null; then
             echo "should_tag=false" >> "$GITHUB_OUTPUT"
             echo "reason=version-already-published" >> "$GITHUB_OUTPUT"
             exit 0

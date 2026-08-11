@@ -18,6 +18,7 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  CRATES_IO_USER_AGENT: prism-mcp-rs-release-ci/1.0 (+https://github.com/prismworks-ai/prism-mcp-rs)
 
 jobs:
   # Validate library builds across platforms
@@ -257,6 +258,7 @@ jobs:
 
           if curl --fail --silent --show-error \
             --retry 3 --retry-all-errors \
+            --user-agent "$CRATES_IO_USER_AGENT" \
             "https://crates.io/api/v1/crates/prism-mcp-rs/$version" \
             | jq -e --arg version "$version" '.version.num == $version' >/dev/null; then
             echo "ℹ️  Version $version is already published to crates.io"
@@ -285,6 +287,7 @@ jobs:
             echo "Publication returned status $publish_status; checking for an index race..."
             for attempt in {1..12}; do
               if curl --fail --silent --show-error \
+                --user-agent "$CRATES_IO_USER_AGENT" \
                 "https://crates.io/api/v1/crates/prism-mcp-rs/$version" \
                 | jq -e --arg version "$version" '.version.num == $version' >/dev/null; then
                 echo "✅ Version $version is published; treating the duplicate-publication race as success."
@@ -318,6 +321,7 @@ jobs:
 
           for attempt in {1..12}; do
             if curl --fail --silent --show-error \
+              --user-agent "$CRATES_IO_USER_AGENT" \
               "https://crates.io/api/v1/crates/prism-mcp-rs/$version" \
               | jq -e --arg version "$version" '.version.num == $version' >/dev/null; then
               echo "✅ Version $version confirmed available on crates.io!"

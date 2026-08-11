@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786338068604,
+  "lastUpdate": 1786419214658,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -4169,6 +4169,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "endpoint_failover_read",
             "value": 419.21,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "8b56533fe0474fa057d8eaeb083fa7a2af335276",
+          "message": "ci: repair release and dependency automation",
+          "timestamp": "2026-08-10T23:27:11-04:00",
+          "tree_id": "580c1b2657b77b4df0cef7e1a383115ef18e0eed",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/8b56533fe0474fa057d8eaeb083fa7a2af335276"
+        },
+        "date": 1786419212844,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 15.15,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 419.18,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 20.079,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 79.219,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 173.96,
+            "unit": "ns"
+          },
+          {
+            "name": "endpoint_failover_read",
+            "value": 464.01,
             "unit": "ns"
           }
         ]

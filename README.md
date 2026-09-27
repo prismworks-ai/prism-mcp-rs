@@ -1,5 +1,10 @@
 # Prism MCP Rust SDK
 
+## PrismWorks ecosystem role — September 2026
+
+The reusable Rust connectivity and generic request-control substrate for MCP clients and servers. See the [current strategy](docs/product-strategy.md) and [implementation plan](docs/implementation-plan.md) for source evidence, boundaries and remove/modify/add work. Databridle integration is planned unless a versioned passing report establishes otherwise. These documents supersede older expansion and maturity claims below; existing setup/API instructions remain reference material.
+
+
 [![Crates.io](https://img.shields.io/crates/v/prism-mcp-rs.svg?style=flat-square)](https://crates.io/crates/prism-mcp-rs)
 [![Documentation](https://docs.rs/prism-mcp-rs/badge.svg)](https://docs.rs/prism-mcp-rs)
 [![CI](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/ci.yml)

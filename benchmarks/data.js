@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786421901225,
+  "lastUpdate": 1790513915828,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -4341,6 +4341,65 @@ window.BENCHMARK_DATA = {
           {
             "name": "endpoint_failover_read",
             "value": 438.5,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "02f761c38a36dc41912f7e266c60ee03a7865419",
+          "message": "Document PrismWorks accelerator strategy and implementation boundaries",
+          "timestamp": "2026-09-27T14:51:04+02:00",
+          "tree_id": "10687b44c0f1d23d83ceaa0d438ce9cdf3bed06c",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/02f761c38a36dc41912f7e266c60ee03a7865419"
+        },
+        "date": 1790513914170,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.405,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 382.7,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.773,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 75.066,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 170.17,
+            "unit": "ns"
+          },
+          {
+            "name": "server_request_dispatch_ping",
+            "value": 953.1,
+            "unit": "ns"
+          },
+          {
+            "name": "endpoint_failover_read",
+            "value": 449.01,
             "unit": "ns"
           }
         ]

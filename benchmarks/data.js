@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790513915828,
+  "lastUpdate": 1790520461648,
   "repoUrl": "https://github.com/prismworks-ai/prism-mcp-rs",
   "entries": {
     "Benchmark": [
@@ -4400,6 +4400,65 @@ window.BENCHMARK_DATA = {
           {
             "name": "endpoint_failover_read",
             "value": 449.01,
+            "unit": "ns"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "committer": {
+            "email": "rishirandhawa@yahoo.com",
+            "name": "Rishi Randhawa",
+            "username": "Rishirandhawa"
+          },
+          "distinct": true,
+          "id": "c6ac3619ed20069557d6997d3d5f00fb767cc939",
+          "message": "Align accelerator strategy with delegated authority mandates",
+          "timestamp": "2026-09-27T16:43:47+02:00",
+          "tree_id": "0a7490ff9c9231184c47d91487c3861750396a0c",
+          "url": "https://github.com/prismworks-ai/prism-mcp-rs/commit/c6ac3619ed20069557d6997d3d5f00fb767cc939"
+        },
+        "date": 1790520460548,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "plugin_config_creation",
+            "value": 13.404,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_registration",
+            "value": 369.95,
+            "unit": "ns"
+          },
+          {
+            "name": "tool_lookup",
+            "value": 21.523,
+            "unit": "ns"
+          },
+          {
+            "name": "plugin_metadata_creation",
+            "value": 79.836,
+            "unit": "ns"
+          },
+          {
+            "name": "call_tool_result_generation",
+            "value": 171.14,
+            "unit": "ns"
+          },
+          {
+            "name": "server_request_dispatch_ping",
+            "value": 945.89,
+            "unit": "ns"
+          },
+          {
+            "name": "endpoint_failover_read",
+            "value": 420.11,
             "unit": "ns"
           }
         ]

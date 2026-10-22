@@ -22,21 +22,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Check out pinned official referee
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: modelcontextprotocol/conformance
-          ref: c321dd32035556e6769d3724a8ee97d87c3faaac
+          ref: 0e9535048a7a78d425ae96969b848b11ad3471c0
           path: .mcp-conformance
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
-      - name: Build pinned official referee
+      # Keep the upstream source pinned while repairing its npm dependency lock.
+      - name: Apply reviewed referee dependency fixes
         working-directory: .mcp-conformance
-        run: npm ci && npm run build
+        run: git apply ../scripts/conformance/dependencies.patch
+      - name: Build and audit pinned official referee
+        working-directory: .mcp-conformance
+        run: npm ci && npm audit --audit-level=low && npm run build
       - name: Build standards-track server adapter
         run: cargo build --all-features --example conformance_2026_server
       - name: Start adapter
@@ -87,21 +91,25 @@ jobs:
           - json-schema-ref-no-deref
           - json-schema-2020-12-preservation
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Check out pinned official referee
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: modelcontextprotocol/conformance
-          ref: c321dd32035556e6769d3724a8ee97d87c3faaac
+          ref: 0e9535048a7a78d425ae96969b848b11ad3471c0
           path: .mcp-conformance
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
-      - name: Build pinned official referee
+      # Keep the upstream source pinned while repairing its npm dependency lock.
+      - name: Apply reviewed referee dependency fixes
         working-directory: .mcp-conformance
-        run: npm ci && npm run build
+        run: git apply ../scripts/conformance/dependencies.patch
+      - name: Build and audit pinned official referee
+        working-directory: .mcp-conformance
+        run: npm ci && npm audit --audit-level=low && npm run build
       - name: Build standards-track client adapter
         run: cargo build --all-features --example conformance_2026_client
       - name: Run pinned official referee

@@ -4,7 +4,7 @@ Thank you for improving `prism-mcp-rs`. Keep changes focused, preserve compatibi
 
 ## Prerequisites
 
-- Rust 1.85 or newer with `rustfmt` and `clippy`
+- Rust 1.89 or newer with `rustfmt` and `clippy`
 - Git
 - Optional: `cargo-audit`, `cargo-deny`, `cargo-llvm-cov`, and Act
 

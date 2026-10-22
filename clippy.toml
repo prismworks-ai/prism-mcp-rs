@@ -30,7 +30,7 @@ allowed-scripts = ["Latin", "Cyrillic", "Greek", "Arabic", "Hebrew", "Hiragana",
 
 # Function complexity
 avoid-breaking-exported-api = true
-msrv = "1.85"
+# Use package.rust-version from Cargo.toml as the single MSRV source.
 
 # Suppress certain lints for specific patterns
 allowed-idents-below-min-chars = ["a", "b", "c", "i", "j", "k", "x", "y", "z", "id", "db", "tx", "rx"]

@@ -11,7 +11,7 @@ The reusable Rust connectivity and generic request-control substrate for MCP cli
 [![MCP Conformance](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/mcp-conformance.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/mcp-conformance.yml)
 [![Security](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml/badge.svg)](https://github.com/prismworks-ai/prism-mcp-rs/actions/workflows/security.yml)
 [![License](https://img.shields.io/crates/l/prism-mcp-rs.svg?style=flat-square)](LICENSE)
-[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg?style=flat-square)](https://blog.rust-lang.org/2025/01/09/Rust-1.85.0.html)
+[![MSRV](https://img.shields.io/badge/MSRV-1.89-blue.svg?style=flat-square)](https://blog.rust-lang.org/2025/08/07/Rust-1.89.0.html)
 
 `prism-mcp-rs` is an async Rust SDK for building Model Context Protocol (MCP) clients and servers. Version 3 implements the stateless MCP 2026-07-28 lifecycle natively while retaining production-grade MCP 2025-11-25 interoperability.
 
@@ -71,7 +71,7 @@ prism-mcp-rs = {
 }
 ```
 
-`full` enables every optional feature. The minimum supported Rust version is 1.85.
+`full` enables every optional feature. The minimum supported Rust version is 1.89.
 
 ## Minimal STDIO server
 

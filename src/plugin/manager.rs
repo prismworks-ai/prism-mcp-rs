@@ -304,7 +304,7 @@ impl PluginManager {
             .await
             .map_err(|e| McpError::Io(e.to_string()))?;
 
-        let configs: Vec<PluginConfig> = serde_yaml::from_str(&content)
+        let configs: Vec<PluginConfig> = serde_saphyr::from_str(&content)
             .map_err(|e| McpError::Protocol(format!("Invalid plugin config: {e}")))?;
 
         for config in configs {

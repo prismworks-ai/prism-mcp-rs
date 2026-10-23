@@ -13,6 +13,8 @@ were inaccurate; current behavior and trust boundaries are documented in
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-23
+
 ### Fixed
 
 - Propagate failed dependency audits through `tee` in GitHub Actions instead of reporting false success. Supply-chain checks retain their explicit advisory status.
@@ -373,7 +375,8 @@ were inaccurate; current behavior and trust boundaries are documented in
 ### Contributors
 - Prismworks AI Team
 
-[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.1...HEAD
+[Unreleased]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.2...v3.0.0
 [2.0.2]: https://github.com/prismworks-ai/prism-mcp-rs/compare/v2.0.1...v2.0.2

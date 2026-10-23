@@ -1,6 +1,6 @@
 # Migrating from 2.x to 3.x
 
-Version 3 makes MCP 2026-07-28 the preferred protocol and preserves MCP 2025-11-25 interoperability. It requires Rust 1.85 or newer. Treat the upgrade as an API and wire-behavior change, even when a deployment initially remains pinned to 2025.
+Version 3 makes MCP 2026-07-28 the preferred protocol and preserves MCP 2025-11-25 interoperability. The next maintenance release requires Rust 1.89 or newer; the original 3.0 release declared Rust 1.85. Treat the upgrade as an API and wire-behavior change, even when a deployment initially remains pinned to 2025.
 
 ## Dependency
 

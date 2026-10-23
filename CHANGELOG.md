@@ -13,6 +13,19 @@ were inaccurate; current behavior and trust boundaries are documented in
 
 ## [Unreleased]
 
+### Fixed
+
+- Propagate failed dependency audits through `tee` in GitHub Actions instead of reporting false success. Supply-chain checks retain their explicit advisory status.
+- Replace the deprecated plugin YAML dependency and its unmaintained `unsafe-libyaml` backend with `serde-saphyr`; preserve existing manifest/configuration APIs and test legacy YAML values, aliases, defaults, and invalid input.
+- Check dependency policies with all optional features enabled, including plugin and HTTPS dependencies.
+
+### Changed
+
+- Update the WebSocket pair to 0.30, the OpenTelemetry family to 0.33 / tracing integration 0.34, tower-http to 0.7, jsonwebtoken to 11, argon2 to 0.6, base64 to 0.23, sha2 to 0.11, brotli to 9, and zstd to 0.14, and dirs to 7. Update fake to 5.1 and rstest to 0.28 for development.
+- Update GitHub Actions to supported runtime generations and advance the pinned MCP conformance runner to a verified October revision. Apply a reviewed npm lockfile patch and audit it before running conformance; the original runner lock contained 19 vulnerable packages.
+- Require Rust 1.89 and enforce that minimum with an all-feature library build in CI. The previous Rust 1.85 declaration was already below the requirements of optional dependencies.
+- Run the full CI workflow weekly against freshly resolved dependencies and make all-feature tests a required CI gate.
+
 ## [3.0.1] - 2026-08-11
 
 ### Changed

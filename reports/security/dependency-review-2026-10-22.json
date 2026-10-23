@@ -1,0 +1,375 @@
+{
+  "date": "2026-10-22",
+  "base_commit": "c6ac3619ed20069557d6997d3d5f00fb767cc939",
+  "release_status": "Unreleased maintenance candidate; no tag or registry publication",
+  "github_review": {
+    "latest_security_run": "https://github.com/prismworks-ai/prism-mcp-rs/actions/runs/39736308907",
+    "latest_conformance_run": "https://github.com/prismworks-ai/prism-mcp-rs/actions/runs/39233064626",
+    "supply_chain_run": "https://github.com/prismworks-ai/prism-mcp-rs/actions/runs/39282167117",
+    "open_dependabot_alerts": 0,
+    "open_code_scanning_alerts": 0,
+    "open_issues": 0,
+    "historical_release_failure": "August 11 publication failure superseded by successful release run 31457626174; version 3.0.1 exists on crates.io"
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "finding": "Daily audit warning was masked by tee under implicit bash -e. The October 22 run contains RUSTSEC-2024-0449 yet reports success.",
+      "resolution": "Explicit bash with pipefail; replaced serde_yaml/unsafe-libyaml with serde-saphyr."
+    },
+    {
+      "severity": "medium",
+      "finding": "cargo-deny inspected only default features; full-features CI was non-blocking.",
+      "resolution": "Audit policy covers all features; full-feature tests required by CI success."
+    },
+    {
+      "severity": "medium",
+      "finding": "Claimed Rust 1.85 support was below existing optional dependencies.",
+      "resolution": "Rust 1.89 minimum, documentation aligned, required minimum-version CI job."
+    },
+    {
+      "severity": "medium",
+      "finding": "Weekly cargo-vet reports 299 unvetted dependencies.",
+      "resolution": "Retain explicitly advisory check, fix pipeline status visibility; no fabricated attestations or blanket exemptions."
+    },
+    {
+      "severity": "maintenance",
+      "finding": "Actions on deprecated Node 20 runtime and pending dependency upgrades.",
+      "resolution": "Update supported action generations and compatible crate families."
+    }
+  ],
+  "pull_requests": {
+    "incorporated": [
+      114,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125
+    ],
+    "deferred": [
+      {
+        "number": 110,
+        "reason": "serial_test 4.0.1 requires Rust 1.93.1; retain compatible 3.x for Rust 1.89 testing."
+      },
+      {
+        "number": 107,
+        "reason": "Conflicts with main; notification fix already released in 2.0.1; weaker validation and no regression coverage. Do not merge as-is."
+      }
+    ]
+  },
+  "additional_updates": [
+    "OpenTelemetry 0.33 with tracing-opentelemetry 0.34",
+    "rstest 0.28",
+    "dirs 7; upstream change affects preference_dir on Windows, which this crate does not call",
+    "serde-saphyr 2.0"
+  ],
+  "deferred_updates": [
+    {
+      "package": "parking_lot",
+      "version": "0.13.0",
+      "reason": "Requires Rust 1.95, beyond chosen minimum; 0.12 remains compatible."
+    }
+  ],
+  "upstream_conformance": {
+    "latest_commit": "c37eec888e1c6ff140af79987a40008548b7cc5f",
+    "latest_clean_install": "Fails npm ci: missing conformance@0.2.0-alpha.12 in lockfile",
+    "candidate_commit": "0e9535048a7a78d425ae96969b848b11ad3471c0",
+    "candidate_clean_install": "Passed npm ci and npm run build",
+    "adopted_commit": "0e9535048a7a78d425ae96969b848b11ad3471c0",
+    "validation": [
+      {
+        "scenario": "server-stateless",
+        "exit_code": 0
+      },
+      {
+        "scenario": "tools_call",
+        "exit_code": 0
+      },
+      {
+        "scenario": "request-metadata",
+        "exit_code": 0
+      },
+      {
+        "scenario": "http-standard-headers",
+        "exit_code": 0
+      },
+      {
+        "scenario": "json-schema-ref-no-deref",
+        "exit_code": 0
+      },
+      {
+        "scenario": "json-schema-2020-12-preservation",
+        "exit_code": 0
+      }
+    ],
+    "npm_audit_before": {
+      "info": 0,
+      "low": 2,
+      "moderate": 5,
+      "high": 11,
+      "critical": 1,
+      "total": 19
+    },
+    "npm_audit_after": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependency_patch": "scripts/conformance/dependencies.patch",
+    "dependency_patch_sha256": "bfdc8650ccb4799b58dec9750d8d549b40e8b1f6b3c7f532027dd927c6cafd4e",
+    "patched_lock_validation": "Patch applies to a clean checkout and reproduces the tested lockfile byte-for-byte; npm ci, npm build, npm audit and all six selected conformance scenarios pass.",
+    "broader_upstream_tests": {
+      "status": "Not a full-suite pass; stopped after two auth fixture failures and no further progress. Focused reproduction completed.",
+      "baseline": "Both focused tests pass against the original vulnerable npm lock.",
+      "patched": "Both expect old SDK failures, but updated SDK returns no failing checks: resource-parameter-matches-prm and three SEP-2352 credential-reuse checks.",
+      "interpretation": "Fixture expectations must be updated upstream for the repaired TypeScript SDK; selected six protocol conformance scenarios remain green. Upstream source/tests were not modified or suppressed."
+    }
+  },
+  "validation": {
+    "rust": "1.94.0 on macOS x86_64; minimum-version check on Rust 1.89.0 macOS aarch64",
+    "cargo_test_all_features": {
+      "passed": 883,
+      "failed": 0,
+      "ignored_doctests": 4,
+      "environment": "CI=true skips repository example-generation helper; actual rustdoc tests ran and 57 passed."
+    },
+    "selected_official_conformance_checks": {
+      "passed": 59,
+      "failed": 0,
+      "scenarios": 6
+    },
+    "cargo_clippy_all_features_all_targets": "passed with -D warnings",
+    "cargo_check_msrv_all_features_lib": "passed on 1.89.0 with locked dependency graph",
+    "cargo_build_examples_all_features": "passed",
+    "cargo_doc_all_features": "passed with RUSTDOCFLAGS=-D warnings",
+    "cargo_package": "passed --allow-dirty including package rebuild",
+    "cargo_audit": {
+      "found": false,
+      "count": 0,
+      "list": []
+    },
+    "cargo_audit_warnings": {},
+    "cargo_deny": "advisories, bans, licenses and sources passed for all features; duplicate-version and unused-allowance warnings remain",
+    "workflow_lint": "actionlint 1.7.12 passed",
+    "docs_quality": "31 Markdown files checked",
+    "format_and_diff": "passed",
+    "resolved_cargo_lock_sha256": "1604de276fd0ef5760e2dc1e618e5daf853ea41cc7cc7c59813df14624749229",
+    "github_actions": "Pending on maintenance PR; local results do not claim hosted Windows/Linux acceptance."
+  },
+  "manifest_changes": [
+    {
+      "package": "serde-saphyr",
+      "section": "dependencies",
+      "before": null,
+      "after": {
+        "version": "2.0",
+        "optional": true
+      }
+    },
+    {
+      "package": "opentelemetry",
+      "section": "dependencies",
+      "before": {
+        "version": "0.32",
+        "features": [
+          "trace"
+        ],
+        "optional": true
+      },
+      "after": {
+        "version": "0.33",
+        "features": [
+          "trace"
+        ],
+        "optional": true
+      }
+    },
+    {
+      "package": "opentelemetry_sdk",
+      "section": "dependencies",
+      "before": {
+        "version": "0.32",
+        "features": [
+          "trace",
+          "rt-tokio"
+        ],
+        "optional": true
+      },
+      "after": {
+        "version": "0.33",
+        "features": [
+          "trace",
+          "rt-tokio"
+        ],
+        "optional": true
+      }
+    },
+    {
+      "package": "opentelemetry-otlp",
+      "section": "dependencies",
+      "before": {
+        "version": "0.32",
+        "features": [
+          "trace",
+          "grpc-tonic"
+        ],
+        "optional": true
+      },
+      "after": {
+        "version": "0.33",
+        "features": [
+          "trace",
+          "grpc-tonic"
+        ],
+        "optional": true
+      }
+    },
+    {
+      "package": "tracing-opentelemetry",
+      "section": "dependencies",
+      "before": {
+        "version": "0.33",
+        "optional": true
+      },
+      "after": {
+        "version": "0.34",
+        "optional": true
+      }
+    },
+    {
+      "package": "tower-http",
+      "section": "dependencies",
+      "before": {
+        "version": "0.6",
+        "features": [
+          "cors",
+          "trace"
+        ],
+        "optional": true
+      },
+      "after": {
+        "version": "0.7",
+        "features": [
+          "cors",
+          "trace"
+        ],
+        "optional": true
+      }
+    },
+    {
+      "package": "tokio-tungstenite",
+      "section": "dependencies",
+      "before": {
+        "version": "0.28",
+        "optional": true
+      },
+      "after": {
+        "version": "0.30",
+        "optional": true
+      }
+    },
+    {
+      "package": "tungstenite",
+      "section": "dependencies",
+      "before": {
+        "version": "0.28",
+        "optional": true
+      },
+      "after": {
+        "version": "0.30",
+        "optional": true
+      }
+    },
+    {
+      "package": "jsonwebtoken",
+      "section": "dependencies",
+      "before": {
+        "version": "10.3",
+        "optional": true
+      },
+      "after": {
+        "version": "11.0",
+        "optional": true
+      }
+    },
+    {
+      "package": "argon2",
+      "section": "dependencies",
+      "before": {
+        "version": "0.5",
+        "optional": true
+      },
+      "after": {
+        "version": "0.6",
+        "optional": true
+      }
+    },
+    {
+      "package": "brotli",
+      "section": "dependencies",
+      "before": {
+        "version": "8.0",
+        "optional": true
+      },
+      "after": {
+        "version": "9.0",
+        "optional": true
+      }
+    },
+    {
+      "package": "zstd",
+      "section": "dependencies",
+      "before": {
+        "version": "0.13",
+        "optional": true
+      },
+      "after": {
+        "version": "0.14",
+        "optional": true
+      }
+    },
+    {
+      "package": "base64",
+      "section": "dependencies",
+      "before": "0.22",
+      "after": "0.23"
+    },
+    {
+      "package": "sha2",
+      "section": "dependencies",
+      "before": "0.10",
+      "after": "0.11"
+    },
+    {
+      "package": "dirs",
+      "section": "dependencies",
+      "before": {
+        "version": "6.0"
+      },
+      "after": {
+        "version": "7.0"
+      }
+    },
+    {
+      "package": "rstest",
+      "section": "dev-dependencies",
+      "before": "0.26",
+      "after": "0.28"
+    },
+    {
+      "package": "fake",
+      "section": "dev-dependencies",
+      "before": "4.4",
+      "after": "5.1"
+    }
+  ],
+  "recommended_release": "3.1.0 after review and hosted CI; Rust minimum changes from advertised 1.85 to verified 1.89. Version remains 3.0.1 in this maintenance PR to avoid automatic release."
+}

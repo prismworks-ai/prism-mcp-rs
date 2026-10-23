@@ -4,7 +4,7 @@ This guide builds a small STDIO MCP server with the default feature set.
 
 ## Requirements
 
-- Rust 1.85 or newer
+- Rust 1.89 or newer
 - Cargo
 - An MCP client for end-to-end testing
 

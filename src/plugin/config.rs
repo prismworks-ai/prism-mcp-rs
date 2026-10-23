@@ -294,12 +294,12 @@ impl PluginManifest {
             .await
             .map_err(|e| e.to_string())?;
 
-        serde_yaml::from_str(&content).map_err(|e| e.to_string())
+        serde_saphyr::from_str(&content).map_err(|e| e.to_string())
     }
 
     /// Save manifest to YAML file
     pub async fn to_file(&self, path: impl AsRef<std::path::Path>) -> Result<(), String> {
-        let content = serde_yaml::to_string(self).map_err(|e| e.to_string())?;
+        let content = serde_saphyr::to_string(self).map_err(|e| e.to_string())?;
 
         tokio::fs::write(path, content)
             .await
@@ -314,12 +314,12 @@ impl PluginConfigSet {
             .await
             .map_err(|e| e.to_string())?;
 
-        serde_yaml::from_str(&content).map_err(|e| e.to_string())
+        serde_saphyr::from_str(&content).map_err(|e| e.to_string())
     }
 
     /// Save configuration set to YAML file
     pub async fn to_file(&self, path: impl AsRef<std::path::Path>) -> Result<(), String> {
-        let content = serde_yaml::to_string(self).map_err(|e| e.to_string())?;
+        let content = serde_saphyr::to_string(self).map_err(|e| e.to_string())?;
 
         tokio::fs::write(path, content)
             .await
@@ -329,5 +329,67 @@ impl PluginConfigSet {
     /// Sort plugins by priority
     pub fn sort_by_priority(&mut self) {
         self.plugins.sort_by_key(|p| p.priority);
+    }
+}
+
+#[cfg(test)]
+mod yaml_compatibility_tests {
+    use super::*;
+    use serde_json::json;
+
+    #[tokio::test]
+    async fn existing_yaml_config_preserves_defaults_aliases_and_values() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("plugins.yaml");
+        tokio::fs::write(
+            &path,
+            r#"plugins:
+  - name: "café"
+    config: &config
+      enabled: true
+      label: "00123"
+      entries: [one, null, 3]
+    env:
+      REGION: "north"
+  - name: second
+    config: *config
+settings:
+  isolation: process
+"#,
+        )
+        .await
+        .unwrap();
+        let config = PluginConfigSet::from_file(&path).await.unwrap();
+        let expected = json!({"enabled": true, "label": "00123", "entries": ["one", null, 3]});
+        assert_eq!(config.plugins[0].name, "café");
+        assert!(config.plugins[0].enabled);
+        assert_eq!(config.plugins[0].priority, 100);
+        assert_eq!(config.plugins[0].env["REGION"], "north");
+        assert_eq!(config.plugins[0].config.as_ref(), Some(&expected));
+        assert_eq!(config.plugins[1].config.as_ref(), Some(&expected));
+        assert!(matches!(
+            config.settings.as_ref().unwrap().isolation,
+            IsolationLevel::Process
+        ));
+        config.to_file(&path).await.unwrap();
+        let reloaded = PluginConfigSet::from_file(&path).await.unwrap();
+        assert_eq!(
+            serde_json::to_value(config).unwrap(),
+            serde_json::to_value(reloaded).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn invalid_yaml_configs_are_rejected() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("invalid.yaml");
+        for yaml in [
+            "plugins: [",
+            "plugins: [{enabled: true}]",
+            "plugins: wrong-type",
+        ] {
+            tokio::fs::write(&path, yaml).await.unwrap();
+            assert!(PluginConfigSet::from_file(&path).await.is_err(), "{yaml}");
+        }
     }
 }

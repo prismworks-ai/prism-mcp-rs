@@ -6,7 +6,7 @@ Start with the smallest command that reproduces the failure and record the crate
 
 ### Unsupported compiler
 
-The minimum supported Rust version is 1.85.
+The minimum supported Rust version is 1.89.
 
 ```bash
 rustc --version
